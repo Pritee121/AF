@@ -1,0 +1,74 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with Clients</title>
+    <link rel="stylesheet" href="{% static 'css/chat.css' %}">
+</head>
+<body>
+    <header>
+        <a href="{% url 'artist_dashboard' %}">← Back to Dashboard</a>
+    </header>
+
+    <div class="chat-container">
+        <h2>Chat with Clients</h2>
+        <div class="chat-box" id="chatBox">
+            {% for msg in messages %}
+                {% if msg.sender == request.user %}
+                    <p class="user-message"><strong>You:</strong> {{ msg.message }}</p>
+                {% else %}
+                    <p class="artist-message"><strong>{{ msg.sender.first_name }}:</strong> {{ msg.message }}</p>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <!-- ✅ Artist Reply Section -->
+        <input type="text" id="chatInput" placeholder="Type your message..." onkeypress="sendMessage(event)">
+        <button onclick="sendChat()">Send</button>
+    </div>
+
+    <script>
+        const senderId = "{{ request.user.id }}";
+        const receiverId = "{{ receiver_id }}";  // ✅ Use receiver_id from the context
+    
+        function sendMessage(event) {
+            if (event.key === "Enter") {
+                sendChat();
+            }
+        }
+    
+        function sendChat() {
+            var chatBox = document.getElementById("chatBox");
+            var input = document.getElementById("chatInput");
+            var message = input.value.trim();
+    
+            if (message !== "" && receiverId !== "None") {  // ✅ Ensure receiverId is not None
+                chatBox.innerHTML += `<p class="user-message"><strong>You:</strong> ${message}</p>`;
+                input.value = "";
+                chatBox.scrollTop = chatBox.scrollHeight;
+    
+                fetch("{% url 'send_message' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    },
+                    body: JSON.stringify({
+                        sender_id: senderId,
+                        receiver_id: receiverId,
+                        message: message
+                    })
+                });
+            } else {
+                alert("No recipient selected for chat.");
+            }
+        }
+    //     setInterval(() => {
+    //     location.reload();
+    // }, 20000); // Refresh every 1 second
+    </script>
+    
+</body>
+</html>

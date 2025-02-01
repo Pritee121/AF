@@ -1,0 +1,64 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with {{ artist.first_name }}</title>
+    <link rel="stylesheet" href="{% static 'css/chat.css' %}">
+</head>
+<body>
+    <header>
+        <a href="{% url 'artist_detail' artist.id %}">← Back to Artist Profile</a>
+    </header>
+
+    <div class="chat-container">
+        <h2>Chat with {{ artist.first_name }}</h2>
+        <div class="chat-box" id="chatBox">
+            {% for msg in messages %}
+                <p><strong>{{ msg.sender.first_name }}:</strong> {{ msg.message }}</p>
+            {% endfor %}
+        </div>
+        <input type="text" id="chatInput" placeholder="Type your message..." onkeypress="sendMessage(event)">
+        <button onclick="sendChat()">Send</button>
+    </div>
+
+    <script>
+        const senderId = "{{ request.user.id }}";
+        const receiverId = "{{ artist.id }}";
+
+        function sendMessage(event) {
+            if (event.key === "Enter") {
+                sendChat();
+            }
+        }
+
+        function sendChat() {
+            var chatBox = document.getElementById("chatBox");
+            var input = document.getElementById("chatInput");
+            var message = input.value.trim();
+
+            if (message !== "") {
+                chatBox.innerHTML += `<p><strong>You:</strong> ${message}</p>`;
+                input.value = "";
+                chatBox.scrollTop = chatBox.scrollHeight;
+
+                fetch("{% url 'send_message' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    },
+                    body: JSON.stringify({
+                        sender_id: senderId,
+                        receiver_id: receiverId,
+                        message: message
+                    })
+                })
+                .then(response => response.json())
+                .then(data => console.log(data));
+            }
+        }
+    </script>
+</body>
+</html>

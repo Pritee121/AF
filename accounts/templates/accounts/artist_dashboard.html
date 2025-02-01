@@ -1,0 +1,119 @@
+<!-- {% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artist Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/artist_dashboard.css' %}">
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <img src="{% static 'images/logo.png' %}" alt="Artist Finder Logo">
+        </div>
+        <nav class="navbar">
+            <a href="{% url 'artist_dashboard' %}" class="nav-item dashboard">Dashboard</a>
+            <a href="{% url 'artist_profile' %}" class="nav-item">Profile</a>
+            <a href="{% url 'artist_logout' %}" class="nav-item logout">Logout</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h2>Welcome, {{ user.first_name }}</h2>
+
+        <a href="{% url 'add_work' %}" class="btn-add-work">
+            Add Work <i class="fas fa-plus"></i>
+        </a>
+
+        <h2>Your Works</h2>
+        {% if works %}
+        <div class="works-grid">
+            {% for work in works %}
+                <div class="card">
+                    <img src="{{ work.image.url }}" alt="{{ work.title }}">
+                    <div class="card-content">
+                        <h3>{{ work.title }}</h3>
+                        <p>{{ work.description }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        {% else %}
+            <p>No works uploaded yet.</p>
+        {% endif %}
+    </div>
+
+    <footer class="footer">
+        <p>Artist Finder &copy; All rights reserved</p>
+    </footer>
+</body>
+</html> -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artist Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <!-- <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script> -->
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <img src="{% static 'images/logo.png' %}" alt="Artist Finder Logo">
+        </div>
+        <nav class="navbar">
+            <a href="{% url 'artist_dashboard' %}" class="nav-item active">Dashboard</a>
+            <a href="{% url 'artist_profile' %}" class="nav-item">Profile</a>
+            <a href="{% url 'add_work' %}" class="nav-item">Add Work</a>
+            <a href="{% url 'services' %}" class="nav-item">Services</a>
+            <a href="{% url 'bookings' %}" class="nav-item">Bookings</a>
+
+            <a href="{% url 'artist_chat' %}" class="nav-item">
+                Chats
+                {% if unread_messages_count > 0 %}
+                    <span class="notification-badge">{{ unread_messages_count }}</span>
+                {% endif %}
+            </a>
+             <!-- ✅ Opens chat page -->
+            <a href="{% url 'artist_logout' %}" class="nav-item logout">Logout</a>
+        </nav>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <h1>Welcome, {{ user.first_name }}</h1>
+
+        <div class="dashboard-actions">
+            <a href="{% url 'add_work' %}" class="btn">
+                <i class="fas fa-plus"></i> Add Work
+            </a>
+        </div>
+
+        <h2>Your Works</h2>
+        {% if works %}
+        <div class="works-grid">
+            {% for work in works %}
+                <div class="card">
+                    <img src="{{ work.image.url }}" alt="{{ work.title }}">
+                    <div class="card-content">
+                        <h3>{{ work.title }}</h3>
+                        <p>{{ work.description }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        {% else %}
+            <p class="no-works">No works uploaded yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>Artist Finder &copy; All rights reserved</p>
+    </footer>
+</body>
+</html>

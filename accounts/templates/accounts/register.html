@@ -1,0 +1,26 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artist Finder - Register</title>
+    <link rel="stylesheet" href="{% static 'css/register1.css' %}">
+</head>
+<body>
+    <div class="container">
+        <div class="left-panel">
+            <div class="logo">
+                <img src="{% static 'images/logo.png' %}" alt="Artist Finder Logo">
+            </div>
+        </div>
+        <div class="right-panel">
+            <h2>REGISTER</h2>
+            <a href="{% url 'register_normal' %}" class="btn btn-normal">Register As Normal User</a>
+
+            <a href="{% url 'register_artists' %}" class="btn btn-normal">Register As Artist</a>
+            <p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
+        </div>
+    </div>
+</body>
+</html>

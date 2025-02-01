@@ -1,0 +1,76 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artist Profile</title>
+    <link rel="stylesheet" href="{% static 'css/artist_profile.css' %}">
+</head>
+<body>
+     <!-- Header -->
+     <header class="header">
+        <div class="logo">
+            <img src="{% static 'images/logo.png' %}" alt="Artist Finder Logo">
+        </div>
+        <nav class="navbar">
+            <a href="{% url 'artist_dashboard' %}" class="nav-item active">Dashboard</a>
+            <a href="{% url 'artist_profile' %}" class="nav-item">Profile</a>
+            <a href="{% url 'add_work' %}" class="nav-item">Add Work</a>
+            <a href="{% url 'add_work' %}" class="nav-item">Bookings</a>
+            <a href="{% url 'services' %}" class="nav-item">Services</a>
+            <a href="{% url 'add_work' %}" class="nav-item">Chats</a>
+            <a href="{% url 'artist_logout' %}" class="nav-item logout">Logout</a>
+        </nav>
+    </header>
+    <div class="container">
+        <!-- Sidebar: Artist Details -->
+        <aside class="sidebar">
+            <img alt="Profile Picture" class="profile-image" 
+                 src="{% if user.profile_image %}{{ user.profile_image.url }}{% else %}{% static 'images/default.jpg' %}{% endif %}">
+
+            <h2>{{ user.first_name }} {{ user.last_name }}</h2>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Phone:</strong> {{ user.phone }}</p>
+            <p><strong>City:</strong> {{ user.city|default:"Not Provided" }}</p>
+            <p><strong>Works At:</strong> {{ user.works_at|default:"Freelance Artist" }}</p>
+            <p><strong>Experience:</strong> {{ user.experience_years|default:"0" }}+ years</p>
+        </aside>
+
+        <!-- Main Profile Section: Editable Form -->
+        <main class="profile-container">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <label>First Name:</label>
+                <input type="text" name="first_name" value="{{ form.first_name.value }}" required>
+
+                <label>Last Name:</label>
+                <input type="text" name="last_name" value="{{ form.last_name.value }}" required>
+
+                <label>Email:</label>
+                <input type="email" name="email" value="{{ form.email.value }}" required>
+
+                <label>Phone:</label>
+                <input type="text" name="phone" value="{{ form.phone.value }}" required>
+
+                <label>City:</label>
+                <input type="text" name="city" value="{{ form.city.value }}">
+
+                <label>Works At:</label>
+                <input type="text" name="works_at" value="{{ form.works_at.value }}">
+
+                <label>Experience (Years):</label>
+                <input type="number" name="experience_years" value="{{ form.experience_years.value }}">
+
+                <label>Training Certificate:</label>
+                <input type="file" name="training_certificate">
+
+                <button type="submit" class="update-btn">Save Changes</button>
+            </form>
+
+            <a href="{% url 'artist_dashboard' %}" class="back-button">← Back to Dashboard</a>
+        </main>
+    </div>
+</body>
+</html>

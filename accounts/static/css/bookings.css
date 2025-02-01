@@ -1,0 +1,44 @@
+/* ✅ Bookings Page Layout */
+.bookings-container {
+    width: 90%;
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+/* ✅ Table Styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    padding: 10px;
+    border-bottom: 1px solid #D8648C;
+}
+
+th {
+    background: #D8648C;
+    color: white;
+}
+
+td {
+    background: #fbe2eb;
+}
+
+/* ✅ Responsive Design */
+@media (max-width: 600px) {
+    .bookings-container {
+        width: 100%;
+    }
+
+    table {
+        display: block;
+        overflow-x: auto;
+    }
+}

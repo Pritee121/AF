@@ -1,0 +1,171 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f3f4f6; /* Light background */
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+
+.container {
+    display: flex;
+    flex-wrap: wrap; /* Ensure layout adapts to smaller screens */
+    width: 90%;
+    max-width: 1100px;
+    height: auto; /* Allow dynamic height for content */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    border-radius: 20px;
+    overflow: hidden;
+    background-color: #ffffff;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    padding: 0; /* Remove padding to align panels perfectly */
+}
+
+.container:hover {
+    transform: scale(1.02); /* Subtle hover effect */
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+}
+
+.left-panel {
+    background-color: #D8648C;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    min-height: 300px; /* Ensure minimum height for smaller screens */
+    text-align: center;
+}
+
+.left-panel .logo img {
+    width: 130px;
+    height: auto;
+    border-radius: 50%;
+    margin-bottom: 20px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Add a shadow to the logo */
+}
+
+.left-panel .logo h1 {
+    color: white;
+    font-size: 22px;
+    letter-spacing: 1.2px;
+    font-weight: 600;
+    margin-top: 10px;
+}
+
+.right-panel {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px; /* Add padding for better spacing */
+    background-color: #ffffff;
+    min-height: 300px; /* Ensure minimum height for smaller screens */
+    overflow-y: auto; /* Enable scrolling if content overflows */
+}
+
+.right-panel h1 {
+    font-size: 30px;
+    font-weight: bold;
+    margin-bottom: 25px;
+    color: #333;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 2px solid #D8648C;
+    display: inline-block;
+    padding-bottom: 5px;
+}
+
+form {
+    width: 100%;
+    max-width: 400px; /* Ensure the form doesn’t stretch too wide */
+}
+
+form label {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #333;
+    display: block;
+}
+
+form input {
+    width: 100%;
+    padding: 12px 15px;
+    margin: 8px 0 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box; /* Prevent overflow due to padding */
+}
+
+form input:focus {
+    border-color: #D8648C;
+    outline: none;
+    box-shadow: 0 0 8px rgba(216, 100, 140, 0.3);
+}
+
+form button {
+    width: 100%;
+    padding: 12px 0;
+    margin-top: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    background-color: #D8648C;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+form button:hover {
+    background-color: #c3547e;
+    transform: translateY(-2px); /* Lift effect on hover */
+}
+
+.right-panel p {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #555;
+    text-align: center; /* Center-align the text */
+}
+
+.right-panel a {
+    color: #1E88E5;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+.right-panel a:hover {
+    text-decoration: underline;
+    color: #0d47a1; /* Slightly darker shade on hover */
+}
+
+/* Responsive Design for Smaller Screens */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column; /* Stack panels vertically on small screens */
+        height: auto;
+    }
+
+    .left-panel, .right-panel {
+        flex: none; /* Prevent panels from shrinking */
+        width: 100%; /* Full width for each panel */
+        padding: 20px; /* Ensure proper spacing */
+    }
+
+    .left-panel {
+        height: auto;
+    }
+
+    .right-panel {
+        padding: 20px;
+    }
+}

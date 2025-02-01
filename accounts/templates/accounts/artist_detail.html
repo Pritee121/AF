@@ -1,0 +1,77 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ artist.first_name }} {{ artist.last_name }} - Profile</title>
+    <link rel="stylesheet" href="{% static 'css/explore_artist.css' %}">
+</head>
+<body>
+    <header>
+        <a href="{% url 'home' %}">← Back to Artists</a>
+    </header>
+
+    <div class="artist-container">
+        <!-- ✅ Artist Information Section -->
+        <div class="artist-profile">
+            {% if artist.profile_image %}
+                <img src="{{ artist.profile_image.url }}" alt="Artist Image">
+            {% else %}
+                <img src="{% static 'images/default-avatar.png' %}" alt="Artist Image">
+            {% endif %}
+
+            <h2>{{ artist.first_name }} {{ artist.last_name }}</h2>
+            <p><strong>Email:</strong> {{ artist.email }}</p>
+            <p><strong>Phone:</strong> {{ artist.phone }}</p> <!-- ✅ Display phone -->
+            <p><strong>City:</strong> {{ artist.city }}</p>
+            <p><strong>Experience:</strong> {{ artist.experience_years }} years</p>
+            <p><strong>Works At:</strong> {{ artist.works_at }}</p>
+
+            <button onclick="bookArtist('{{ artist.id }}')">Book Now</button>
+            <button onclick="chatWithArtist('{{ artist.id }}')">Chat Now</button>
+        </div>
+
+        <!-- ✅ Training & Certificates Section -->
+        <!-- ✅ Training & Certificates Section -->
+<div class="training-section">
+    <h3>Training & Certificates</h3>
+    {% if artist.training_certificate %}
+        <p><strong>Certificate:</strong></p>
+        <div class="certificate-preview">
+            <iframe src="{{ artist.training_certificate.image.url }}" width="100%" height="300px"></iframe>  <!-- ✅ Preview PDF/Image -->
+        </div>
+        <p><a href="{{ artist.training_certificate.url }}" download class="download-btn">Download Certificate</a></p>  <!-- ✅ Download Option -->
+    {% else %}
+        <p>No certificates available.</p>
+    {% endif %}
+</div>
+
+
+        <!-- ✅ Artist Work Section -->
+        <div class="work-section">
+            <h3>Work Showcase</h3>
+            <div class="work-gallery">
+                {% for work in works %}
+                    <div class="work-card">
+                        <img src="{{ work.image.url }}" alt="{{ work.title }}">
+                        <h4>{{ work.title }}</h4>
+                        <p>{{ work.description }}</p>
+                    </div>
+                {% empty %}
+                    <p>No work uploaded yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function bookArtist(artistId) {
+            alert("Booking artist ID: " + artistId);
+        }
+        function chatWithArtist(artistId) {
+            alert("Starting chat with artist ID: " + artistId);
+        }
+    </script>
+</body>
+</html>

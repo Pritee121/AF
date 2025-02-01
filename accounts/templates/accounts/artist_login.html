@@ -1,0 +1,42 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artist Login</title>
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <h2>Artist Login</h2>
+
+            <form method="POST" class="login-form">
+                {% csrf_token %}
+                <div class="input-group">
+                    <label>Email:</label>
+                    <input type="email" name="email" placeholder="Enter your email" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Password:</label>
+                    <input type="password" name="password" placeholder="Enter your password" required>
+                </div>
+
+                {% if form.non_field_errors %}
+                    <div class="error-message">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <button type="submit" class="btn btn-login">Login</button>
+            </form>
+
+            <p>Don't have an artist account? 
+                <a href="{% url 'register_artists' %}" class="register-link">Register Here</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

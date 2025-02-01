@@ -1,0 +1,103 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book {{ artist.first_name }} {{ artist.last_name }}</title>
+    <link rel="stylesheet" href="{% static 'css/book_artist.css' %}">
+</head>
+<body>
+    <header>
+        <a href="{% url 'artist_chat' %}">← Back to Chats</a>
+    </header>
+
+    <div class="booking-container">
+        <h2>Book {{ artist.first_name }} {{ artist.last_name }}</h2>
+
+        <!-- ✅ Artist Details -->
+        <div class="artist-details">
+            <h3>Artist Details</h3>
+            <p><strong>Name:</strong> {{ artist.first_name }} {{ artist.last_name }}</p>
+            <p><strong>Email:</strong> {{ artist.email }}</p>
+            <p><strong>City:</strong> {{ artist.city }}</p>
+        </div>
+
+        <!-- ✅ User Details -->
+        <div class="user-details">
+            <h3>Your Details</h3>
+            <p><strong>Name:</strong> {{ user.first_name }} {{ user.last_name }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Phone:</strong> {{ user.phone }}</p>
+        </div>
+
+        <!-- ✅ Booking Form -->
+        <form action="" method="POST">
+            {% csrf_token %}
+
+            <!-- ✅ Service Dropdown -->
+            <label for="service">Select Service:</label>
+            <select id="service" name="service" required onchange="updateDuration()">
+                <option value="" disabled selected>Choose a service</option>
+                {% for service in services %}
+                    <option value="{{ service.id }}" data-duration="{{ service.duration }}">
+                        {{ service.service_name }} - ${{ service.price }}
+                    </option>
+                {% empty %}
+                    <option disabled>No services available</option>
+                {% endfor %}
+            </select>
+
+            <!-- ✅ Duration (Auto-filled) -->
+            <label for="duration">Duration:</label>
+            <input type="text" id="duration" name="duration" readonly>
+
+            <label for="date">Select Date:</label>
+            <input type="date" id="date" name="date" required>
+
+            <label for="time">Select Time:</label>
+            <input type="time" id="time" name="time" required>
+
+            <!-- ✅ Payment Method -->
+            <label for="payment_method">Select Payment Method:</label>
+            <select id="payment_method" name="payment_method" required>
+                <option value="khalti">Khalti</option>
+                <option value="cod">Cash on Delivery (COD)</option>
+            </select>
+
+            <button type="submit">Confirm Booking</button>
+        </form>
+    </div>
+
+    <script>
+        function updateDuration() {
+            var serviceSelect = document.getElementById("service");
+            var durationInput = document.getElementById("duration");
+            var selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
+            var duration = selectedOption.getAttribute("data-duration") || "";
+            durationInput.value = duration;
+        }
+
+        document.querySelector("form").addEventListener("submit", function(event) {
+            let paymentMethod = document.getElementById("payment_method").value;
+            if (paymentMethod === "khalti") {
+                event.preventDefault();  // ✅ Prevent default form submission
+    
+                fetch("", {  // ✅ Send form data
+                    method: "POST",
+                    body: new FormData(this),
+                    headers: {
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "redirect") {
+                        window.location.href = data.url;  // ✅ Redirect to Khalti
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

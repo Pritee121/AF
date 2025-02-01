@@ -1,0 +1,141 @@
+/* General Styles */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #fbe3ea;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Profile Container */
+.profile-container {
+    background: white;
+    width: 600px;
+    display: flex;
+    flex-direction: row;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0px 4px 12px rgba(216, 100, 140, 0.2);
+    text-align: left;
+}
+
+/* Sidebar for Saved Data */
+.profile-sidebar {
+    width: 40%;
+    padding: 20px;
+    background-color: #D8648C;
+    color: white;
+    text-align: center;
+    border-radius: 12px 0 0 12px;
+}
+
+.profile-sidebar .profile-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 3px solid white;
+    margin-bottom: 15px;
+}
+
+.profile-sidebar p {
+    font-size: 14px;
+    margin: 5px 0;
+}
+
+/* Edit Form Section */
+.profile-edit {
+    width: 60%;
+    padding: 20px;
+}
+
+/* Labels */
+label {
+    font-size: 14px;
+    font-weight: bold;
+    color: #444;
+    margin-top: 10px;
+    display: block;
+}
+
+/* Input Fields */
+input {
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+    margin-top: 5px;
+    border: 2px solid #f2b6c5;
+    border-radius: 6px;
+    transition: all 0.3s;
+    background-color: #fdf0f3;
+}
+
+input:focus {
+    outline: none;
+    border-color: #D8648C;
+    box-shadow: 0px 0px 8px rgba(216, 100, 140, 0.3);
+}
+
+/* Buttons */
+button {
+    margin-top: 10px;
+    padding: 8px 14px;
+    font-size: 14px;
+    font-weight: bold;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+button[type="button"] {
+    background-color: #D8648C;
+    color: white;
+}
+
+button[type="button"]:hover {
+    background-color: #c6537c;
+}
+
+button[type="submit"] {
+    background-color: #D8648C;
+    color: white;
+    display: none;
+}
+
+button[type="submit"]:hover {
+    background-color: #c6537c;
+}
+
+/* Update Button */
+.update-btn {
+    width: 100%;
+    background-color: #D8648C;
+    color: white;
+    padding: 10px;
+    margin-top: 15px;
+}
+
+.update-btn:hover {
+    background-color: #c6537c;
+}
+
+/* Back Button */
+.back-button {
+    display: block;
+    margin-top: 15px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: bold;
+    color: white;
+    background: #c6537c;
+    padding: 8px;
+    border-radius: 5px;
+    transition: all 0.3s;
+}
+
+.back-button:hover {
+    background: #a84366;
+}

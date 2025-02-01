@@ -1,0 +1,113 @@
+/* General Styles */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #fbe3ea; /* Light pink background */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Form Container - Wider */
+.container {
+    background: white;
+    width: 600px;  /* Increased width */
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0px 4px 12px rgba(216, 100, 140, 0.2);
+    text-align: center;
+    border-top: 5px solid #D8648C; /* Accent border */
+}
+
+/* Heading */
+h2 {
+    color: #D8648C;
+    font-size: 24px;
+    margin-bottom: 15px;
+}
+
+/* Form Layout - Two Columns */
+form {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+/* Labels */
+label {
+    font-size: 14px;
+    font-weight: bold;
+    color: #444;
+    margin-top: 10px;
+    display: block;
+    width: 100%;
+    text-align: left;
+}
+
+/* Input Fields - Adjusted for Two Columns */
+.input-group {
+    width: 48%; /* 2 columns */
+}
+
+input, select {
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+    margin-top: 5px;
+    border: 2px solid #f2b6c5;
+    border-radius: 6px;
+    transition: all 0.3s;
+    background-color: #fdf0f3;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: #D8648C;
+    box-shadow: 0px 0px 8px rgba(216, 100, 140, 0.3);
+}
+
+/* Full-width Inputs */
+.full-width {
+    width: 100%;
+}
+
+/* Buttons */
+button {
+    margin-top: 15px;
+    padding: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s;
+    width: 100%;
+}
+
+button.btn-register {
+    background-color: #D8648C;
+    color: white;
+}
+
+button.btn-register:hover {
+    background-color: #c6537c;
+}
+
+/* Login Link */
+p {
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+p a {
+    color: #D8648C;
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+p a:hover {
+    color: #c6537c;
+}

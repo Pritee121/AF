@@ -1,0 +1,143 @@
+/* General Styles */
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #f9f9f9, #ececec);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Main Container (Smaller Size) */
+.container {
+    display: flex;
+    width: 600px; /* Reduced from 800px */
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+}
+
+/* Sidebar - User Profile */
+.sidebar {
+    width: 40%;
+    background: #d8648c;
+    color: white;
+    padding: 15px;
+    text-align: center;
+}
+
+.profile-image {
+    width: 70px;  /* Reduced size */
+    height: 70px;
+    border-radius: 50%;
+    border: 2px solid white;
+    object-fit: cover;
+    margin-bottom: 10px;
+}
+
+.sidebar h2 {
+    font-size: 16px;
+    margin-bottom: 4px;
+}
+
+.sidebar p {
+    font-size: 12px;
+    margin: 2px 0;
+    opacity: 0.85;
+}
+
+/* Profile Editing Form */
+.profile-container {
+    width: 60%;
+    padding: 15px;
+}
+
+.profile-container form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Labels */
+.profile-container label {
+    font-weight: 600;
+    font-size: 12px;
+    color: #444;
+}
+
+/* Input Fields */
+.profile-container input {
+    padding: 6px;
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+.profile-container input:focus {
+    border-color: #d8648c;
+    outline: none;
+}
+
+/* File Upload */
+.profile-container input[type="file"] {
+    padding: 5px;
+    border: none;
+}
+
+/* Save Button */
+.update-btn {
+    background: #d8648c;
+    color: white;
+    padding: 8px;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.update-btn:hover {
+    background: #b44c70;
+}
+
+/* Back Button */
+.back-button {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 6px 12px;
+    background: #777;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+.back-button:hover {
+    background: #555;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    .container {
+        flex-direction: column;
+        width: 90%;
+    }
+
+    .sidebar, .profile-container {
+        width: 100%;
+        text-align: center;
+    }
+
+    .profile-image {
+        width: 60px;
+        height: 60px;
+    }
+
+    .update-btn, .back-button {
+        width: 100%;
+    }
+}

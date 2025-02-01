@@ -1,0 +1,15 @@
+<div class="artist-container">
+    {% for artist in artists %}
+    <div class="artist-card">
+        <h3>{{ artist.first_name }}</h3>  <!-- ✅ Show artist name -->
+        <p>Email: {{ artist.email }}</p>  <!-- ✅ Show artist email (optional) -->
+
+        <button onclick="bookArtist('{{ artist.id }}')">Book Now</button>
+        <button onclick="chatWithArtist('{{ artist.id }}')">Chat Now</button>
+        <button onclick="window.location.href='{% url 'artist_detail' artist.id %}'">Explore Artist</button>
+
+    </div>
+    {% empty %}
+    <p>No artists registered yet.</p>
+    {% endfor %}
+</div>
