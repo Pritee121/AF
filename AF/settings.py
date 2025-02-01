@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -77,7 +78,7 @@ WSGI_APPLICATION = 'AF.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'ArtistFinder3.sqlite3',
+        'NAME': BASE_DIR / 'ArtistFinder333.sqlite3',
     }
 }
 
@@ -174,3 +175,58 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # ✅ Path to store uploaded files
 # ]
 
 
+# JAZZMIN_SETTINGS = {
+#     "site_title": "Artist Finder Admin",
+#     "site_header": "Artist Finder Dashboard",
+#     "welcome_sign": "Welcome to Artist Finder Admin Panel",
+#     "copyright": "Artist Finder © 2025",
+    
+#     # ✅ Change the default theme
+#     "theme": "darkly",  # Options: cerulean, darkly, flatly, lumen, etc.
+    
+#     # ✅ Customize the navigation menu
+#     "topmenu_links": [
+#         {"name": "Home", "url": "admin:index", "permissions": ["auth.view_user"]},
+#         {"name": "User Profiles", "url": "admin:accounts_user_changelist"},
+#         {"name": "Bookings", "url": "admin:accounts_booking_changelist"},
+#     ],
+
+#     # ✅ Customize sidebar menu
+#     "order_with_respect_to": ["accounts.User", "accounts.Booking"],
+
+#     # ✅ Customize user display
+#     "custom_js": None,  # Add custom JavaScript (Optional)
+#     "custom_css": None,  # Add custom CSS (Optional)
+# }
+
+JAZZMIN_SETTINGS = {
+    "site_title": "Artist Finder Admin",
+    "site_header": "Artist Finder Dashboard",
+    "site_brand": "Artist Finder",
+    "welcome_sign": "Welcome to the Artist Finder Admin Panel",
+    "copyright": "© 2025 Artist Finder, All Rights Reserved",
+    
+    # ✅ THEME SETTINGS (Choose the best professional one)
+    "theme": "superhero",  # Options: cerulean, darkly, flatly, lumen, superhero
+
+    # ✅ NAVBAR & TOP MENU SETTINGS
+    "topmenu_links": [
+        {"name": "Home", "url": "admin:index", "permissions": ["auth.view_user"]},
+        {"name": "View Site", "url": "/", "new_window": True},
+        {"name": "Users", "url": "admin:accounts_user_changelist"},
+        {"name": "Bookings", "url": "admin:bookings_booking_changelist"},
+    ],
+
+    # ✅ SIDEBAR MENU SETTINGS
+    "order_with_respect_to": ["accounts.User", "bookings.Booking"],
+
+    # ✅ ICONS FOR MODELS
+    "icons": {
+        "auth.User": "fas fa-user",
+        "accounts.User": "fas fa-users",
+        "bookings.Booking": "fas fa-calendar-check",
+    },
+
+    # ✅ Customize User Display
+    "user_avatar": "profile_image",  # Show user profile pictures in admin
+}

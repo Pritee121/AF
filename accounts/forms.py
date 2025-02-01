@@ -99,11 +99,61 @@ class WorkUploadForm(forms.ModelForm):
 from django import forms
 from .models import Service
 
+# class ServiceForm(forms.ModelForm):
+#     class Meta:
+#         model = Service
+#         fields = ['service_name', 'price', 'available_date','duration', 'available_time', 'description']
+#         widgets = {
+#             'available_date': forms.DateInput(attrs={'type': 'date'}),
+#             'available_time': forms.TimeInput(attrs={'type': 'time'}),
+#         }
+
+### ✅ Service Form with Auto Duration Handling ###
+from django import forms
+from .models import Service
+from django.core.exceptions import ValidationError
+from datetime import date
+
 class ServiceForm(forms.ModelForm):
     class Meta:
         model = Service
-        fields = ['service_name', 'price', 'available_date','duration', 'available_time', 'description']
+        fields = ['service_name', 'price', 'available_date', 'duration', 'available_time', 'description']
         widgets = {
             'available_date': forms.DateInput(attrs={'type': 'date'}),
             'available_time': forms.TimeInput(attrs={'type': 'time'}),
         }
+
+    def clean_duration(self):
+        """ Ensure that duration is not empty """
+        duration = self.cleaned_data.get('duration')
+        if not duration:
+            raise ValidationError("Duration cannot be empty.")
+        return duration
+
+    def clean_available_date(self):
+        """ Ensure that the available date is not in the past """
+        available_date = self.cleaned_data.get('available_date')
+        if available_date and available_date < date.today():
+            raise ValidationError("Available date cannot be in the past.")
+        return available_date
+
+
+from django import forms
+from .models import Booking
+
+class BookingForm(forms.ModelForm):
+    class Meta:
+        model = Booking
+        fields = ['service', 'date', 'time', 'payment_method']
+
+    def clean(self):
+        cleaned_data = super().clean()
+        artist = cleaned_data.get("service").artist
+        date = cleaned_data.get("date")
+        time = cleaned_data.get("time")
+
+        # Prevent duplicate booking for same artist, date, and time
+        if Booking.objects.filter(artist=artist, date=date, time=time).exists():
+            raise forms.ValidationError("This time slot is already booked. Please select another.")
+
+        return cleaned_data

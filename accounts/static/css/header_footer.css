@@ -1,0 +1,89 @@
+/* ✅ General Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* ✅ Header Styling */
+.header {
+    background-color:  #D8648C;
+    padding: 15px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logo img {
+    height: 50px;
+}
+
+.navbar {
+    display: flex;
+    align-items: center;
+}
+
+.nav-link {
+    color: white;
+    text-decoration: none;
+    padding: 10px 15px;
+    font-size: 16px;
+    transition: background 0.3s ease-in-out;
+}
+
+.nav-link:hover {
+    background: #4a73b9;
+    border-radius: 5px;
+}
+
+/* ✅ User Profile */
+.user-profile {
+    margin-left: 20px;
+}
+
+.user-profile img {
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+}
+
+/* ✅ Footer Styling */
+.footer {
+    background-color: #222;
+    color: white;
+    text-align: center;
+    padding: 20px 0;
+    margin-top: 40px;
+}
+
+.footer-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.footer-links a {
+    color: white;
+    text-decoration: none;
+    padding: 0 10px;
+    font-size: 14px;
+}
+
+.footer-links a:hover {
+    text-decoration: underline;
+}
+
+.footer-contact p {
+    font-size: 14px;
+}
+
+.footer-social a img {
+    height: 30px;
+    margin: 0 5px;
+}
+
+.copyright {
+    font-size: 12px;
+    margin-top: 10px;
+}

@@ -1,0 +1,23 @@
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-logo">
+            <img src="{% static 'images/logo.png' %}" alt="Artist Finder Logo">
+        </div>
+        <div class="footer-links">
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'aboutus' %}">About Us</a>
+            <a href="{% url 'contactus' %}">Contact Us</a>
+            <a href="{% url 'artist_list' %}">View All Artists</a>
+        </div>
+        <div class="footer-contact">
+            <p>Email: support@artistfinder.com</p>
+            <p>Phone: +123 456 7890</p>
+        </div>
+        <div class="footer-social">
+            <a href="#"><img src="{% static 'images/facebook.png' %}" alt="Facebook"></a>
+            <a href="#"><img src="{% static 'images/instagram.png' %}" alt="Instagram"></a>
+            <a href="#"><img src="{% static 'images/twitter.png' %}" alt="Twitter"></a>
+        </div>
+    </div>
+    <p class="copyright">© 2024 Artist Finder. All Rights Reserved.</p>
+</footer>

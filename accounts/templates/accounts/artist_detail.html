@@ -9,7 +9,7 @@
 </head>
 <body>
     <header>
-        <a href="{% url 'home' %}">← Back to Artists</a>
+        <a href="{% url 'home' %}">← Home</a>
     </header>
 
     <div class="artist-container">
@@ -28,8 +28,8 @@
             <p><strong>Experience:</strong> {{ artist.experience_years }} years</p>
             <p><strong>Works At:</strong> {{ artist.works_at }}</p>
 
-            <button onclick="bookArtist('{{ artist.id }}')">Book Now</button>
-            <button onclick="chatWithArtist('{{ artist.id }}')">Chat Now</button>
+            <button onclick="window.location.href='{% url 'book_artist' artist.id %}'">Book Now</button>
+            <button onclick="window.location.href='{% url 'chat_with_artist' artist.id %}'">Chat Now</button>
         </div>
 
         <!-- ✅ Training & Certificates Section -->

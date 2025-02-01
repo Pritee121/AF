@@ -1,0 +1,81 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artist Finder</title>
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <img src="{% static 'images/logo.png' %}" alt="Artist Finder Logo">
+        </div>
+        <nav class="navbar">
+            <a href="#" class="nav-link" style="background-color: #648CD8;">Home</a>
+            <a href="{% url 'booking_history' %}" class="nav-link">Booking History</a>
+            <a href="#" class="nav-link">About Us</a>
+            <a href="#" class="nav-link active">Contact Us</a>
+
+            {% for artist in artists %}
+                <a href="{% url 'user_chat' artist.id %}" class="nav-item">Chat with {{ artist.first_name }}</a>
+            {% endfor %}
+
+            <a href="{% url 'artist_list' %}">View All Artists</a>
+            <a href="{% url 'login' %}" class="nav-link">Logout</a>
+
+            <div class="user-profile">
+                <a href="{% url 'user_profile' %}">
+                    <img src="{% static 'images/mi.jpg' %}" alt="User" class="user-image">
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- 🔍 Search Bar -->
+    <div class="search-section">
+        <form method="GET" action="{% url 'search_artist' %}">
+            <input type="text" name="query" placeholder="Search for artist city..." value="{{ query }}">
+            <button type="submit">Filter</button>
+        </form>
+    </div>
+
+    <!-- ✅ Display Artists Dynamically Based on Search -->
+    <div class="artist-container">
+        {% if artists %}
+            {% for artist in artists %}
+            <div class="artist-card">
+                <img src="{% static 'images/default-avatar.png' %}" alt="Artist Profile">
+                <h3>{{ artist.first_name }} {{ artist.last_name }}</h3>
+                <p>Email: {{ artist.email }}</p>
+                <p>City: {{ artist.city }}</p>
+                <p>Experience: {{ artist.experience_years }} years</p>
+                <p>Works At: {{ artist.works_at }}</p>
+                
+                <button onclick="window.location.href='{% url 'book_artist' artist.id %}'">Book Now</button>
+                <button onclick="window.location.href='{% url 'chat_with_artist' artist.id %}'">Chat Now</button>
+                <button onclick="window.location.href='{% url 'artist_detail' artist.id %}'">Explore Artist</button>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p>No artists found in this city.</p>
+        {% endif %}
+    </div>
+
+    <!-- 🌟 Featured Images Section -->
+    <div class="main-content">
+        <div class="frame">
+            <img src="{% static 'images/work2.jpg' %}" alt="Makeup">
+        </div>
+        <div class="description">
+            <h1>Discover new looks with us</h1>
+            <p>Find Your Perfect Glam!</p>
+        </div>
+        <div class="frame">
+            <img src="{% static 'images/work1.jpg' %}" alt="Makeup Products">
+        </div>
+    </div>
+
+</body>
+</html>

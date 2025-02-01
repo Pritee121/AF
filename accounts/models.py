@@ -1,25 +1,72 @@
-from django.contrib.auth.models import AbstractUser
+# from django.contrib.auth.models import AbstractUser
+# from django.db import models
+
+# class User(AbstractUser):
+#     username = models.CharField(max_length=150, unique=True, null=True, blank=True)  # Allow blank username
+#     email = models.EmailField(unique=True)  # Email as the unique identifier
+#     phone = models.CharField(max_length=15, unique=True)
+#     password = models.CharField(max_length=100)
+#     profile_image = models.ImageField(upload_to='profile_images/', null=True, blank=True)
+#     is_verified = models.BooleanField(default=False)
+#     is_artist = models.BooleanField(default=False)
+#     otp = models.CharField(max_length=6, blank=True, null=True)  # ✅ Stores OTP
+#     city = models.CharField(max_length=100, null=True, blank=True)
+#     works_at = models.CharField(max_length=255, null=True, blank=True)
+#     experience_years = models.IntegerField(default=0, null=True, blank=True)
+#     training_certificate = models.FileField(upload_to='certificates/', null=True, blank=True)
+
+#     USERNAME_FIELD = "email"  # ✅ Login using email instead of username
+#     REQUIRED_FIELDS = []  # ✅ Don't require username
+
+#     def __str__(self):
+#         return self.email
+
+
+
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 
+class CustomUserManager(BaseUserManager):
+    def create_user(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError("The Email field must be set")
+        email = self.normalize_email(email)
+        extra_fields.setdefault("is_active", True)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
+
+        return self.create_user(email, password, **extra_fields)
+
 class User(AbstractUser):
-    username = models.CharField(max_length=150, unique=True, null=True, blank=True)  # Allow blank username
+    username = None  # ✅ Remove username field completely
     email = models.EmailField(unique=True)  # Email as the unique identifier
     phone = models.CharField(max_length=15, unique=True)
     password = models.CharField(max_length=100)
-    profile_image = models.ImageField(upload_to='profile_images/', null=True, blank=True)
+    profile_image = models.ImageField(upload_to="profile_images/", null=True, blank=True)
     is_verified = models.BooleanField(default=False)
     is_artist = models.BooleanField(default=False)
     otp = models.CharField(max_length=6, blank=True, null=True)  # ✅ Stores OTP
     city = models.CharField(max_length=100, null=True, blank=True)
     works_at = models.CharField(max_length=255, null=True, blank=True)
     experience_years = models.IntegerField(default=0, null=True, blank=True)
-    training_certificate = models.FileField(upload_to='certificates/', null=True, blank=True)
+    training_certificate = models.FileField(upload_to="certificates/", null=True, blank=True)
 
     USERNAME_FIELD = "email"  # ✅ Login using email instead of username
     REQUIRED_FIELDS = []  # ✅ Don't require username
 
+    objects = CustomUserManager()  # ✅ Use custom manager
+
     def __str__(self):
         return self.email
+
+
+
 
 
 class Work(models.Model):
@@ -84,14 +131,66 @@ class Booking(models.Model):
         ("khalti", "Khalti"),
         ("cod", "Cash on Delivery"),
     ]
+    STATUS_CHOICES = [
+        ("Pending", "Pending"),
+        ("Confirmed", "Confirmed"),
+        ("Cancelled", "Cancelled"),
+    ]
     artist = models.ForeignKey(User, on_delete=models.CASCADE, related_name="bookings")
     client = models.ForeignKey(User, on_delete=models.CASCADE, related_name="client_bookings")
     payment_method = models.CharField(max_length=10, choices=PAYMENT_CHOICES, default="cod")  # ✅ Add payment method
     date = models.DateField()
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="Pending")  # ✅ Add Status Field
     service = models.ForeignKey(Service, on_delete=models.CASCADE, null=True, blank=True)  # ✅ Link to Service
-
     time = models.TimeField()
     created_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        unique_together = ('artist', 'date', 'time')  # ✅ Prevent duplicate bookings
 
     def __str__(self):
         return f"{self.client.first_name} booked {self.artist.first_name} for {self.service.service_name} on {self.date} using {self.payment_method}"
+    
+
+
+
+
+
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notifications")
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Notification for {self.client.first_name}: {self.message}"
+
+
+from django.db import models
+
+class AboutUs(models.Model):
+    title = models.CharField(max_length=255, default="About Us")
+    content = models.TextField()  # ✅ Stores the about us content
+
+    def __str__(self):
+        return self.title  # ✅ Display title in admin panel
+
+
+from django.db import models
+
+class ContactUsPage(models.Model):
+    title = models.CharField(max_length=255, default="Contact Us")
+    content = models.TextField()  # ✅ Editable contact page content from admin
+    email = models.EmailField()  # ✅ Admin email for contact
+
+    def __str__(self):
+        return self.title
+
+class ContactMessage(models.Model):
+    name = models.CharField(max_length=255)
+    email = models.EmailField()
+    subject = models.CharField(max_length=255)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Message from {self.name} - {self.subject}"

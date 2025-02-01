@@ -2,6 +2,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- ✅ SweetAlert2 for better popups -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book {{ artist.first_name }} {{ artist.last_name }}</title>
@@ -9,7 +12,7 @@
 </head>
 <body>
     <header>
-        <a href="{% url 'artist_chat' %}">← Back to Chats</a>
+        <a href="{% url 'home' %}">← Home</a>
     </header>
 
     <div class="booking-container">
@@ -69,7 +72,7 @@
         </form>
     </div>
 
-    <script>
+    <!-- <script>
         function updateDuration() {
             var serviceSelect = document.getElementById("service");
             var durationInput = document.getElementById("duration");
@@ -78,26 +81,127 @@
             durationInput.value = duration;
         }
 
-        document.querySelector("form").addEventListener("submit", function(event) {
-            let paymentMethod = document.getElementById("payment_method").value;
-            if (paymentMethod === "khalti") {
-                event.preventDefault();  // ✅ Prevent default form submission
-    
-                fetch("", {  // ✅ Send form data
-                    method: "POST",
-                    body: new FormData(this),
-                    headers: {
-                        "X-CSRFToken": "{{ csrf_token }}"
-                    }
-                })
+        // ✅ Disable already booked time slots dynamically
+        document.getElementById("date").addEventListener("change", function() {
+            var selectedDate = this.value;
+            var timeSelect = document.getElementById("time");
+            timeSelect.innerHTML = "<option value='' disabled selected>Choose a time</option>";  // Reset time options
+
+            fetch(`/get-booked-slots/{{ artist.id }}/?date=${selectedDate}`)
                 .then(response => response.json())
                 .then(data => {
-                    if (data.status === "redirect") {
-                        window.location.href = data.url;  // ✅ Redirect to Khalti
-                    }
+                    let allTimes = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
+
+                    allTimes.forEach(time => {
+                        let option = document.createElement("option");
+                        option.value = time;
+                        option.textContent = time;
+                        if (data.booked_times.includes(time)) {
+                            option.disabled = true;  // Disable booked slots
+                        }
+                        timeSelect.appendChild(option);
+                    });
                 });
-            }
+        });
+
+        // ✅ AJAX form submission to prevent page refresh
+        document.getElementById("bookingForm").addEventListener("submit", function(event) {
+            event.preventDefault();  // ✅ Prevent default page refresh
+
+            let formData = new FormData(this);
+            fetch(window.location.href, {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}"
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "error") {
+                    alert(data.message);  // ✅ Show error message
+                } else if (data.status === "redirect") {
+                    window.location.href = data.url;  // ✅ Redirect for payment
+                } else {
+                    alert("Booking successful!");
+                    location.reload();  // ✅ Reload page after success
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        });
+
+    </script> -->
+    <script>
+        function updateDuration() {
+            var serviceSelect = document.getElementById("service");
+            var durationInput = document.getElementById("duration");
+            var selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
+            var duration = selectedOption.getAttribute("data-duration") || "";
+            durationInput.value = duration;
+        }
+    
+        // ✅ Disable already booked time slots dynamically
+        document.getElementById("date").addEventListener("change", function() {
+            var selectedDate = this.value;
+            var timeSelect = document.getElementById("time");
+            timeSelect.innerHTML = "<option value='' disabled selected>Choose a time</option>"; // Reset time options
+    
+            fetch(`/get-booked-slots/{{ artist.id }}/?date=${selectedDate}`)
+                .then(response => response.json())
+                .then(data => {
+                    let allTimes = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
+    
+                    allTimes.forEach(time => {
+                        let option = document.createElement("option");
+                        option.value = time;
+                        option.textContent = time;
+                        if (data.booked_times.includes(time)) {
+                            option.disabled = true;  // Disable booked slots
+                        }
+                        timeSelect.appendChild(option);
+                    });
+                });
+        });
+    
+        // ✅ AJAX form submission with SweetAlert2 pop-up
+        document.querySelector("form").addEventListener("submit", function(event) {
+            event.preventDefault();  // ✅ Prevent page refresh
+    
+            let formData = new FormData(this);
+            fetch(window.location.href, {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}"
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "error") {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Oops...",
+                        text: data.message
+                    });
+                } else if (data.status === "redirect") {
+                    window.location.href = data.url;  // ✅ Redirect for payment
+                } else {
+                    // ✅ Show SweetAlert2 confirmation dialog
+                    Swal.fire({
+                        title: "Booking Listed!",
+                        text: "Your booking has been listed. You will get confirmation message soon.",
+                        icon: "success",
+                        confirmButtonText: "Go to Home"
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = "/home";  // ✅ Redirect to Bookings page
+                        }
+                    });
+                }
+            })
+            .catch(error => console.error("Error:", error));
         });
     </script>
+    
 </body>
 </html>

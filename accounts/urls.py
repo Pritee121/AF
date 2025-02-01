@@ -62,7 +62,10 @@ from django.urls import path
 from .views import user_chat, artist_chat, send_message
 from .views import book_artist
 from .views import bookings
-
+from .views import update_booking_status
+from .views import booking_history
+from .views import aboutus
+from .views import contact_us
 
 urlpatterns = [
     # User Authentication
@@ -79,7 +82,7 @@ urlpatterns = [
     path('artist-dashboard/', views.artist_dashboard, name='artist_dashboard'),
     path('artist-profile/', views.artist_profile, name='artist_profile'),
     path('artist-logout/', views.artist_logout, name='artist_logout'),
-
+    path("booking-history/", booking_history, name="booking_history"),
     # Work Management
     path('add-work/', views.add_work, name='add_work'),
 
@@ -95,6 +98,11 @@ urlpatterns = [
     path('send_message/', send_message, name='send_message'),
     path('book/<int:artist_id>/', book_artist, name='book_artist'),
     path('bookings/', bookings, name='bookings'),
+     path("update-booking-status/<int:booking_id>/", update_booking_status, name="update_booking_status"),
+      path("about-us/", aboutus, name="aboutus"),  # ✅ Route for About Us page
+      path("contact-us/", contact_us, name="contactus"),
+
+     
 ]
 
 # ✅ Serve media files during development only
