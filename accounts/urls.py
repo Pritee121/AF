@@ -70,6 +70,7 @@ from .views import add_review
 from .views import delete_work
 from .views import delete_service, edit_service
 from .views import availability_status, toggle_availability
+from .views import cancel_booking
 
 
 urlpatterns = [
@@ -112,6 +113,7 @@ urlpatterns = [
            path("service/<int:service_id>/delete/", delete_service, name="delete_service"),
         path("services/edit/<int:service_id>/", edit_service, name="edit_service"),  
      path("availability/", availability_status, name="availability_status"),  # ✅ New URL
+     path("cancel-booking/<int:booking_id>/", cancel_booking, name="cancel_booking"),
      path("availability/toggle/", toggle_availability, name="toggle_availability"),
 ]
 

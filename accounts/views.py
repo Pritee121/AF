@@ -181,6 +181,21 @@ def home_page(request):
         "booked_artists": list(booked_artists)  # Convert to list for easy use in template
     })
 
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import Booking
+
+@login_required
+def cancel_booking(request, booking_id):
+    booking = get_object_or_404(Booking, id=booking_id, client=request.user)
+
+    if booking.status in ["Confirmed", "Pending"]:  # ✅ Allow cancelling both statuses
+        booking.status = "Cancelled"
+        booking.save()
+        messages.success(request, "Your booking has been successfully cancelled.")
+
+    return redirect("booking_history")  # ✅ Redirect user to their booking history
 
 # from django.shortcuts import render
 

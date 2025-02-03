@@ -230,3 +230,5 @@ JAZZMIN_SETTINGS = {
     # ✅ Customize User Display
     "user_avatar": "profile_image",  # Show user profile pictures in admin
 }
+
+
