@@ -1,0 +1,32 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Service</title>
+    <link rel="stylesheet" href="{% static 'css/add_service.css' %}">
+</head>
+<body>
+
+    <header class="header">
+        <div class="logo">
+            <img src="{% static 'images/logo.png' %}" alt="Artist Finder Logo">
+        </div>
+        <nav class="navbar">
+            <a href="{% url 'services' %}" class="nav-item">⬅ Back to Services</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h1 class="text-center">Edit Service</h1>
+
+        <form method="POST">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="submit-btn">Update Service</button>
+        </form>
+    </div>
+
+</body>
+</html>

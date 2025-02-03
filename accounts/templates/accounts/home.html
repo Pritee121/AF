@@ -144,7 +144,28 @@
             <p>Experience: {{ artist.experience_years }} years</p>
             <p>Works At: {{ artist.works_at }}</p>
 
-            <button onclick="window.location.href='{% url 'book_artist' artist.id %}'">Book Now</button>
+            <!-- ✅ Display Availability Status -->
+            <p class="availability-status {% if artist.is_available %}available{% else %}not-available{% endif %}">
+                {% if artist.is_available %}
+                    ✅ Available
+                {% else %}
+                    ❌ Not Available
+                {% endif %}
+            </p>
+
+            <!-- ✅ Conditional Book Now Button -->
+            {% if artist.is_available %}
+                <button onclick="window.location.href='{% url 'book_artist' artist.id %}'" class="book-btn">
+                    Book Now
+                </button>
+            {% else %}
+                <button class="book-btn disabled" disabled title="This artist is currently unavailable">
+                    Not Available
+                </button>
+            {% endif %}
+
+            <!-- ✅ Explore Artist Button -->
+            <button onclick="window.location.href='{% url 'artist_detail' artist.id %}'">Explore Artist</button>
 
             <!-- ✅ Show Review Button only if user has a confirmed booking -->
             {% if user.is_authenticated %}
@@ -157,13 +178,12 @@
             <h4>Reviews:</h4>
             {% for review in artist.artist_reviews.all %}
                 <p>⭐ {{ review.rating }}/5 - {{ review.user.first_name }}: {{ review.comment }}</p>
-                {% if request.user == review.user %}  <!-- ✅ Only show delete button for the review owner -->
+                {% if request.user == review.user %}
                 <form id="delete-form-{{ review.id }}" action="{% url 'delete_review' review.id %}" method="POST" style="display:inline;">
                     {% csrf_token %}
                     <button type="button" class="delete-btn" onclick="confirmDelete('{{ review.id }}')">❌ Delete</button>
                 </form>
-                
-        {% endif %}
+                {% endif %}
             {% empty %}
                 <p>No reviews yet.</p>
             {% endfor %}
@@ -173,6 +193,9 @@
         <p>No artists available in this city.</p>
     {% endif %}
 </div>
+
+</div>
+
 
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

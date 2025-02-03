@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Our Services</title>
     <link rel="stylesheet" href="{% static 'css/services.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
     <header class="header">
@@ -26,12 +27,10 @@
     <section class="services-container text-center mt-10">
         <h1 class="text-3xl font-bold text-gray-800">Our Services</h1>
 
-        <!-- ✅ Add Service Button (Fixed) -->
-        <div class="mt-6">
-            <a href="{% url 'add_service' %}" class="add-service-btn">
-                <i class="fas fa-plus-circle"></i> Add Service
-            </a>
-        </div>
+        <a href="{% url 'add_service' %}" class="add-service-btn">
+            <i class="fas fa-plus-circle"></i> Add Service
+        </a>
+        
 
         <div class="services-container">
             <div class="grid">
@@ -42,7 +41,7 @@
                     <p class="availability">Available: {{ service.available_date }} at {{ service.available_time }}</p>
                     <p class="description">{{ service.description }}</p>
                     <p class="description">Duration: {{ service.duration }}</p>
-
+                
                     <!-- ✅ Show Reviews for Each Service -->
                     <div class="reviews-section">
                         <h4>Customer Reviews:</h4>
@@ -52,7 +51,15 @@
                             <p>No reviews yet for this service.</p>
                         {% endfor %}
                     </div>
+                
+                    <!-- ✅ Edit & Delete Buttons -->
+                    <a href="{% url 'edit_service' service.id %}" class="edit-btn">✏ Edit</a>
+                    <form id="delete-service-{{ service.id }}" action="{% url 'delete_service' service.id %}" method="POST" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="button" class="delete-btn" onclick="confirmDeleteService('{{ service.id }}')">❌ Delete Service</button>
+                    </form>
                 </div>
+                
                 {% empty %}
                 <p class="no-services">No services available yet.</p>
                 {% endfor %}
@@ -64,5 +71,25 @@
     <footer class="footer">
         <p>Artist Finder &copy; All rights reserved</p>
     </footer>
+
+    <script>
+    function confirmDeleteService(serviceId) {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to undo this action!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#D8648C",
+            cancelButtonColor: "#6c757d",
+            confirmButtonText: "Yes, delete it!",
+            cancelButtonText: "Cancel"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById(`delete-service-${serviceId}`).submit();
+            }
+        });
+    }
+    </script>
+
 </body>
 </html>

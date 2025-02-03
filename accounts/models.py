@@ -56,6 +56,7 @@ class User(AbstractUser):
     works_at = models.CharField(max_length=255, null=True, blank=True)
     experience_years = models.IntegerField(default=0, null=True, blank=True)
     training_certificate = models.FileField(upload_to="certificates/", null=True, blank=True)
+    is_available = models.BooleanField(default=True) 
 
     USERNAME_FIELD = "email"  # ✅ Login using email instead of username
     REQUIRED_FIELDS = []  # ✅ Don't require username
@@ -64,6 +65,8 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.email
+
+
 
 
 

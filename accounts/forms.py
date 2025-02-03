@@ -171,3 +171,7 @@ class ReviewForm(forms.ModelForm):
             'rating': forms.Select(choices=[(i, i) for i in range(1, 6)]),
             'comment': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Write your review...'})
         }
+
+
+
+

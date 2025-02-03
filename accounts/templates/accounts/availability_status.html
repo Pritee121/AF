@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Availability Status</title>
+    <link rel="stylesheet" href="{% static 'css/availability.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <header>
+        <h1>Update Your Availability</h1>
+        <a href="{% url 'artist_dashboard' %}" class="back-btn">⬅ Back to Dashboard</a>
+    </header>
+
+    <div class="availability-container">
+        <h2>Your Current Status:</h2>
+        <p class="status {% if request.user.is_available %}available{% else %}not-available{% endif %}">
+            {% if request.user.is_available %}
+                ✅ Available
+            {% else %}
+                ❌ Not Available
+            {% endif %}
+        </p>
+
+        <form action="{% url 'toggle_availability' %}" method="POST">
+            {% csrf_token %}
+            <button type="submit" class="toggle-btn">
+                {% if request.user.is_available %}Mark as Not Available{% else %}Mark as Available{% endif %}
+            </button>
+        </form>
+    </div>
+
+    <script>
+        document.querySelector('.toggle-btn').addEventListener('click', function(event) {
+            event.preventDefault();
+            Swal.fire({
+                title: "Confirm Availability Change",
+                text: "Do you want to update your availability status?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#D8648C",
+                cancelButtonColor: "#6c757d",
+                confirmButtonText: "Yes, update it!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    event.target.closest("form").submit();
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

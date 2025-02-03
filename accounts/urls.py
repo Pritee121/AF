@@ -67,6 +67,9 @@ from .views import booking_history
 from .views import aboutus
 from .views import contact_us
 from .views import add_review
+from .views import delete_work
+from .views import delete_service, edit_service
+from .views import availability_status, toggle_availability
 
 
 urlpatterns = [
@@ -104,8 +107,12 @@ urlpatterns = [
       path("about-us/", aboutus, name="aboutus"),  # ✅ Route for About Us page
       path("contact-us/", contact_us, name="contactus"),
       path('artist/<int:artist_id>/review/', add_review, name='add_review'),
-       path('delete-review/<int:review_id>/', views.delete_review, name='delete_review'),  # ✅ New URL pattern
-     
+       path('delete-review/<int:review_id>/', views.delete_review, name='delete_review'),
+          path('work/delete/<int:work_id>/', delete_work, name='delete_work'),  # ✅ New URL pattern
+           path("service/<int:service_id>/delete/", delete_service, name="delete_service"),
+        path("services/edit/<int:service_id>/", edit_service, name="edit_service"),  
+     path("availability/", availability_status, name="availability_status"),  # ✅ New URL
+     path("availability/toggle/", toggle_availability, name="toggle_availability"),
 ]
 
 # ✅ Serve media files during development only

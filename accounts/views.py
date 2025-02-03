@@ -298,19 +298,37 @@ def services(request):
     artist_services = Service.objects.filter(artist=request.user).prefetch_related('service_reviews')  # ✅ Load reviews efficiently
     return render(request, 'accounts/services.html', {'services': artist_services})
 
-# ✅ Add Service
-@login_required(login_url='artist_login')
+# # ✅ Add Service
+# @login_required(login_url='artist_login')
+# def add_service(request):
+#     if request.method == 'POST':
+#         form = ServiceForm(request.POST)
+#         if form.is_valid():
+#             service = form.save(commit=False)
+#             service.artist = request.user
+#             service.save()
+#             return redirect('services')
+    
+#     return render(request, 'accounts/add_service.html', {'form': ServiceForm()})
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from .models import Service
+from .forms import ServiceForm  # ✅ Ensure you have a form for adding a service
+
+@login_required
 def add_service(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         form = ServiceForm(request.POST)
         if form.is_valid():
             service = form.save(commit=False)
-            service.artist = request.user
+            service.artist = request.user  # ✅ Ensure the logged-in artist is assigned
             service.save()
-            return redirect('services')
-    
-    return render(request, 'accounts/add_service.html', {'form': ServiceForm()})
+            return redirect("services")  # ✅ Redirect to services page after adding
+    else:
+        form = ServiceForm()
 
+    return render(request, "accounts/add_service.html", {"form": form})
 
 from django.shortcuts import render
 from .models import User
@@ -738,3 +756,94 @@ def delete_review(request, review_id):
     if request.user == review.user:
         review.delete()
     return redirect('home')  # ✅ Redirect back to home after deletion
+
+
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import Work
+
+@login_required
+def delete_work(request, work_id):
+    work = get_object_or_404(Work, id=work_id, artist=request.user)
+
+    if request.method == "POST":
+        work.delete()
+        messages.success(request, "Work deleted successfully!")
+        return redirect('artist_dashboard')
+
+    return redirect('artist_dashboard')
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import Service
+
+@login_required
+def delete_service(request, service_id):
+    service = get_object_or_404(Service, id=service_id)
+
+    # ✅ Ensure only the owner can delete
+    if request.user != service.artist:
+        messages.error(request, "You can only delete your own services.")
+        return redirect("services")
+
+    service.delete()
+    messages.success(request, "Service deleted successfully.")
+    return redirect("services")
+
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from .models import Service
+from .forms import ServiceForm
+
+@login_required
+def edit_service(request, service_id):
+    service = get_object_or_404(Service, id=service_id, artist=request.user)
+
+    if request.method == "POST":
+        form = ServiceForm(request.POST, instance=service)
+        if form.is_valid():
+            form.save()
+            return redirect("services")  # ✅ Redirect back to services page
+    else:
+        form = ServiceForm(instance=service)
+
+    return render(request, "accounts/edit_service.html", {"form": form, "service": service})
+
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from .models import Service
+
+@login_required
+def availability_status(request):
+    services = Service.objects.filter(artist=request.user)  # ✅ Get services of logged-in artist
+    return render(request, "accounts/availability_status.html", {"services": services})
+
+
+
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import User
+
+@login_required
+def availability_status(request):
+    if not request.user.is_artist:
+        messages.error(request, "Only artists can update availability.")
+        return redirect("home")  # Redirect if not an artist
+
+    return render(request, "accounts/availability_status.html")
+
+@login_required
+def toggle_availability(request):
+    if request.user.is_artist:
+        request.user.is_available = not request.user.is_available  # ✅ Toggle availability status
+        request.user.save()
+        messages.success(request, f"Availability updated to {'Available' if request.user.is_available else 'Not Available'}!")
+    return redirect("availability_status")  
