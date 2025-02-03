@@ -21,7 +21,7 @@
         <form method="POST" class="review-form" id="reviewForm">
             {% csrf_token %}
 
-            <!-- ✅ Only show booked services -->
+            <!-- Only show booked services -->
             <label for="service">Service:</label>
             <select name="service" required>
                 {% for service in services %}
@@ -31,7 +31,7 @@
                 {% endfor %}
             </select>
 
-            <!-- ✅ Star Rating System -->
+            <!--  Star Rating System -->
             <label for="rating">Rating:</label>
             <div class="star-rating">
                 <input type="radio" id="star5" name="rating" value="5" required><label for="star5">★</label>
@@ -41,7 +41,7 @@
                 <input type="radio" id="star1" name="rating" value="1"><label for="star1">★</label>
             </div>
 
-            <!-- ✅ Review Comment Box -->
+            <!--  Review Comment Box -->
             <label for="comment">Your Review:</label>
             <textarea name="comment" rows="4" placeholder="Write your review here..." required></textarea>
 
@@ -59,10 +59,10 @@
                 icon: "success",
                 confirmButtonText: "OK"
             }).then(() => {
-                window.location.href = "{% url 'home' %}";  // ✅ Redirect to home page
+                window.location.href = "{% url 'home' %}";  // Redirect to home page
             });
     
-            this.submit();  // ✅ Submit the form
+            this.submit();  //  Submit the form
         });
     </script>
     

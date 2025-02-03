@@ -71,6 +71,7 @@ from .views import delete_work
 from .views import delete_service, edit_service
 from .views import availability_status, toggle_availability
 from .views import cancel_booking
+from django.contrib.auth import views as auth_views
 
 
 urlpatterns = [
@@ -115,8 +116,47 @@ urlpatterns = [
      path("availability/", availability_status, name="availability_status"),  # ✅ New URL
      path("cancel-booking/<int:booking_id>/", cancel_booking, name="cancel_booking"),
      path("availability/toggle/", toggle_availability, name="toggle_availability"),
+     # ✅ Password Reset URLs
+    path('artist/password_reset/', 
+         auth_views.PasswordResetView.as_view(template_name="accounts/password_reset.html"), 
+         name='password_reset'),
+
+    path('artist/password_reset/done/', 
+         auth_views.PasswordResetDoneView.as_view(template_name="accounts/password_reset_done.html"), 
+         name='password_reset_done'),
+
+    path('artist/reset/<uidb64>/<token>/', 
+         auth_views.PasswordResetConfirmView.as_view(template_name="accounts/password_reset_confirm.html"), 
+         name='password_reset_confirm'),
+
+    path('artist/reset/done/', 
+         auth_views.PasswordResetCompleteView.as_view(template_name="accounts/password_reset_complete.html"), 
+         name='password_reset_complete'),
+
+         path('artist/password_reset/', 
+         auth_views.PasswordResetView.as_view(template_name="accounts/artist_password_reset.html"), 
+         name='artist_password_reset'),
+
+    path('artist/password_reset/done/', 
+         auth_views.PasswordResetDoneView.as_view(template_name="accounts/artist_password_reset_done.html"), 
+         name='artist_password_reset_done'),
+
+    path('artist/reset/<uidb64>/<token>/', 
+         auth_views.PasswordResetConfirmView.as_view(template_name="accounts/artist_password_reset_confirm.html"), 
+         name='artist_password_reset_confirm'),
+
+    path('artist/reset/done/', 
+         auth_views.PasswordResetCompleteView.as_view(template_name="accounts/artist_password_reset_complete.html"), 
+         name='artist_password_reset_complete'),
+
 ]
 
 # ✅ Serve media files during development only
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+
+
+
+
+    

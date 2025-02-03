@@ -33,6 +33,11 @@
                 <button type="submit" class="btn btn-login">Login</button>
             </form>
 
+            <!-- Forgot Password Link -->
+            <p>
+                <a href="{% url 'artist_password_reset' %}" class="forgot-password">Forgot Password?</a>
+            </p>
+
             <p>Don't have an artist account? 
                 <a href="{% url 'register_artists' %}" class="register-link">Register Here</a>
             </p>
