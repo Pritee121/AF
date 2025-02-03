@@ -194,3 +194,23 @@ class ContactMessage(models.Model):
 
     def __str__(self):
         return f"Message from {self.name} - {self.subject}"
+
+
+
+
+
+
+
+
+
+
+class Review(models.Model):
+    artist = models.ForeignKey(User, on_delete=models.CASCADE, related_name="artist_reviews")  # ✅ Link to artist
+    service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name="service_reviews", null=True, blank=True)  # ✅ Allow NULL
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user_reviews")
+    rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)], default=5)
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.first_name} reviewed {self.artist.first_name} - {self.rating} Stars"

@@ -144,20 +144,57 @@ def artist_login(request):
 
 
 
+# from django.shortcuts import render
+# from .models import User  # Assuming User model stores artist details
+# @login_required(login_url='login')
+# def home_page(request):
+#     query = request.GET.get("search", "").strip()  # ✅ Get search input and remove extra spaces
+    
+#     if query:
+#         artists = User.objects.filter(city__iexact=query, is_artist=True)  # ✅ Exact case-insensitive match
+#     else:
+#         artists = User.objects.filter(is_artist=True)  # ✅ Show all artists if no search query
+    
+#     return render(request, "accounts/home.html", {"artists": artists, "query": query})
 from django.shortcuts import render
-from .models import User  # Assuming User model stores artist details
+from django.contrib.auth.decorators import login_required
+from .models import User, Booking  # Import Booking model
+
 @login_required(login_url='login')
 def home_page(request):
-    query = request.GET.get("search", "").strip()  # ✅ Get search input and remove extra spaces
+    query = request.GET.get("search", "").strip()
     
     if query:
-        artists = User.objects.filter(city__iexact=query, is_artist=True)  # ✅ Exact case-insensitive match
+        artists = User.objects.filter(city__icontains=query, is_artist=True)
+        message = "No artists found in this city." if not artists.exists() else ""
     else:
-        artists = User.objects.filter(is_artist=True)  # ✅ Show all artists if no search query
-    
-    return render(request, "accounts/home.html", {"artists": artists, "query": query})
+        artists = User.objects.filter(is_artist=True)
+        message = ""
+
+    # ✅ Fetch all artist IDs where the user has a confirmed booking
+    booked_artists = Booking.objects.filter(client=request.user, status="Confirmed").values_list('artist_id', flat=True)
+
+    return render(request, "accounts/home.html", {
+        "artists": artists,
+        "query": query,
+        "message": message,
+        "booked_artists": list(booked_artists)  # Convert to list for easy use in template
+    })
 
 
+# from django.shortcuts import render
+
+# from .models import User
+
+# def home(request):
+#     artists = User.objects.filter(is_artist=True)
+
+#     # ✅ Get a list of artists the user has booked and confirmed
+#     booked_artists = []
+#     if request.user.is_authenticated:
+#         booked_artists = Booking.objects.filter(client=request.user, status="Confirmed").values_list("artist_id", flat=True)
+
+#     return render(request, "home.html", {"artists": artists, "booked_artists": booked_artists})
 
 
 
@@ -252,10 +289,13 @@ def add_work(request):
 
     return render(request, 'accounts/add_work.html')
 
-# ✅ Services Page
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import Service, Review
+
 @login_required(login_url='artist_login')
 def services(request):
-    artist_services = Service.objects.filter(artist=request.user)
+    artist_services = Service.objects.filter(artist=request.user).prefetch_related('service_reviews')  # ✅ Load reviews efficiently
     return render(request, 'accounts/services.html', {'services': artist_services})
 
 # ✅ Add Service
@@ -587,3 +627,114 @@ def contact_us(request):
         return JsonResponse({"success": True})  # ✅ Return JSON response
 
     return render(request, "accounts/contactus.html", {"contact_page": contact_page})
+
+
+
+
+
+from django import forms
+from .models import Review
+
+class ReviewForm(forms.ModelForm):
+    class Meta:
+        model = Review
+        fields = ['rating', 'comment']
+        widgets = {
+            'rating': forms.Select(choices=[(i, i) for i in range(1, 6)]),
+            'comment': forms.Textarea(attrs={'rows': 4}),
+        }
+
+
+
+
+
+# from django.shortcuts import render, get_object_or_404, redirect
+# from django.contrib.auth.decorators import login_required
+# from django.contrib import messages
+# from .models import User, Review, Booking, Service
+# from .forms import ReviewForm
+
+# @login_required
+# def add_review(request, artist_id):
+#     artist = get_object_or_404(User, id=artist_id, is_artist=True)
+
+#     # ✅ Get the confirmed booking for this artist
+#     booking = Booking.objects.filter(artist=artist, client=request.user, status="Confirmed").first()
+
+#     if not booking:
+#         messages.error(request, "You can only review artists you've booked.")
+#         return redirect('home')
+
+#     services = Service.objects.filter(artist=artist)  # ✅ Get all services by this artist
+
+#     if request.method == "POST":
+#         form = ReviewForm(request.POST)
+#         service_id = request.POST.get("service")  # ✅ Get service_id from form
+
+#         if form.is_valid():
+#             review = form.save(commit=False)
+#             review.artist = artist
+#             review.user = request.user
+#             review.service = Service.objects.get(id=service_id) if service_id else None  # ✅ Assign service
+#             review.save()
+#             messages.success(request, "Your review has been submitted successfully!")
+#             return redirect('home')
+#     else:
+#         form = ReviewForm()
+
+#     return render(request, 'accounts/review_form.html', {'form': form, 'artist': artist, 'services': services})
+
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import User, Review, Booking, Service
+from .forms import ReviewForm
+
+@login_required
+def add_review(request, artist_id):
+    artist = get_object_or_404(User, id=artist_id, is_artist=True)
+
+    # ✅ Get only the services that the user has booked and confirmed
+    booked_services = Service.objects.filter(
+        booking__client=request.user, booking__artist=artist, booking__status="Confirmed"
+    ).distinct()
+
+    if not booked_services.exists():
+        messages.error(request, "You can only review services you've booked and confirmed.")
+        return redirect('home')
+
+    if request.method == "POST":
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.artist = artist
+            review.user = request.user
+            review.service = get_object_or_404(Service, id=request.POST.get("service"))
+            review.save()
+            messages.success(request, "Your review has been submitted successfully!")
+            return redirect('home')  # Redirect to services page
+    else:
+        form = ReviewForm()
+
+    return render(request, 'accounts/review_form.html', {
+        'form': form,
+        'artist': artist,
+        'services': booked_services  # ✅ Pass only booked services
+    })
+
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import User, Review, Booking
+
+@login_required(login_url='login')
+def delete_review(request, review_id):
+    review = get_object_or_404(Review, id=review_id)
+
+    # ✅ Ensure only the user who created the review can delete it
+    if request.user == review.user:
+        review.delete()
+    return redirect('home')  # ✅ Redirect back to home after deletion

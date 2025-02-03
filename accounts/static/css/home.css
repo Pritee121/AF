@@ -111,6 +111,22 @@ body {
     border-radius: 50%;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Add shadow to user image */
 }
+/* Delete Button */
+.delete-btn {
+    background: #D8648C;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+}
+
+.delete-btn:hover {
+    background: #C65379;
+    transform: scale(1.05);
+}
 
 
 /* Main Content */

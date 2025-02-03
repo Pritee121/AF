@@ -66,6 +66,8 @@ from .views import update_booking_status
 from .views import booking_history
 from .views import aboutus
 from .views import contact_us
+from .views import add_review
+
 
 urlpatterns = [
     # User Authentication
@@ -101,7 +103,8 @@ urlpatterns = [
      path("update-booking-status/<int:booking_id>/", update_booking_status, name="update_booking_status"),
       path("about-us/", aboutus, name="aboutus"),  # ✅ Route for About Us page
       path("contact-us/", contact_us, name="contactus"),
-
+      path('artist/<int:artist_id>/review/', add_review, name='add_review'),
+       path('delete-review/<int:review_id>/', views.delete_review, name='delete_review'),  # ✅ New URL pattern
      
 ]
 

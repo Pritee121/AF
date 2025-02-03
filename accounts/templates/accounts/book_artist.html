@@ -72,65 +72,7 @@
         </form>
     </div>
 
-    <!-- <script>
-        function updateDuration() {
-            var serviceSelect = document.getElementById("service");
-            var durationInput = document.getElementById("duration");
-            var selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
-            var duration = selectedOption.getAttribute("data-duration") || "";
-            durationInput.value = duration;
-        }
-
-        // ✅ Disable already booked time slots dynamically
-        document.getElementById("date").addEventListener("change", function() {
-            var selectedDate = this.value;
-            var timeSelect = document.getElementById("time");
-            timeSelect.innerHTML = "<option value='' disabled selected>Choose a time</option>";  // Reset time options
-
-            fetch(`/get-booked-slots/{{ artist.id }}/?date=${selectedDate}`)
-                .then(response => response.json())
-                .then(data => {
-                    let allTimes = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
-
-                    allTimes.forEach(time => {
-                        let option = document.createElement("option");
-                        option.value = time;
-                        option.textContent = time;
-                        if (data.booked_times.includes(time)) {
-                            option.disabled = true;  // Disable booked slots
-                        }
-                        timeSelect.appendChild(option);
-                    });
-                });
-        });
-
-        // ✅ AJAX form submission to prevent page refresh
-        document.getElementById("bookingForm").addEventListener("submit", function(event) {
-            event.preventDefault();  // ✅ Prevent default page refresh
-
-            let formData = new FormData(this);
-            fetch(window.location.href, {
-                method: "POST",
-                body: formData,
-                headers: {
-                    "X-CSRFToken": "{{ csrf_token }}"
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === "error") {
-                    alert(data.message);  // ✅ Show error message
-                } else if (data.status === "redirect") {
-                    window.location.href = data.url;  // ✅ Redirect for payment
-                } else {
-                    alert("Booking successful!");
-                    location.reload();  // ✅ Reload page after success
-                }
-            })
-            .catch(error => console.error("Error:", error));
-        });
-
-    </script> -->
+   
     <script>
         function updateDuration() {
             var serviceSelect = document.getElementById("service");

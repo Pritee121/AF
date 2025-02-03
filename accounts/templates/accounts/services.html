@@ -6,10 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Our Services</title>
     <link rel="stylesheet" href="{% static 'css/services.css' %}">
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
 <body>
-    <!-- Header -->
     <header class="header">
         <div class="logo">
             <img src="{% static 'images/logo.png' %}" alt="Artist Finder Logo">
@@ -20,7 +18,6 @@
             <a href="{% url 'add_work' %}" class="nav-item">Add Work</a>
             <a href="{% url 'artist_profile' %}" class="nav-item">Bookings</a>
             <a href="{% url 'services' %}" class="nav-item active">Services</a>
-            <a href="{% url 'artist_profile' %}" class="nav-item">Chats</a>
             <a href="{% url 'artist_logout' %}" class="nav-item logout">Logout</a>
         </nav>
     </header>
@@ -29,31 +26,37 @@
     <section class="services-container text-center mt-10">
         <h1 class="text-3xl font-bold text-gray-800">Our Services</h1>
 
-        <!-- Add Service Button -->
+        <!-- ✅ Add Service Button (Fixed) -->
         <div class="mt-6">
             <a href="{% url 'add_service' %}" class="add-service-btn">
                 <i class="fas fa-plus-circle"></i> Add Service
             </a>
         </div>
 
-        <!-- Display Services -->
-<div class="services-container">
-    <div class="grid">
-        {% for service in services %}
-        <div class="service-card">
-            <h3>{{ service.service_name }}</h3>
-            <p class="price">Price: Rs.{{ service.price }}</p>
-            <p class="availability">Available: {{ service.available_date }} at {{ service.available_time }}</p>
-            <p class="description">{{ service.description }}</p>
-            <p class="description">{{ service.duration }}</p>
-        </div>
-        {% empty %}
-        <p class="no-services">No services available yet.</p>
-        {% endfor %}
-    </div>
-</div>
+        <div class="services-container">
+            <div class="grid">
+                {% for service in services %}
+                <div class="service-card">
+                    <h3>{{ service.service_name }}</h3>
+                    <p class="price">Price: Rs.{{ service.price }}</p>
+                    <p class="availability">Available: {{ service.available_date }} at {{ service.available_time }}</p>
+                    <p class="description">{{ service.description }}</p>
+                    <p class="description">Duration: {{ service.duration }}</p>
 
-
+                    <!-- ✅ Show Reviews for Each Service -->
+                    <div class="reviews-section">
+                        <h4>Customer Reviews:</h4>
+                        {% for review in service.service_reviews.all %}
+                            <p>⭐ {{ review.rating }}/5 - {{ review.user.first_name }}: {{ review.comment }}</p>
+                        {% empty %}
+                            <p>No reviews yet for this service.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% empty %}
+                <p class="no-services">No services available yet.</p>
+                {% endfor %}
+            </div>
         </div>
     </section>
 

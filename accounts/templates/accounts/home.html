@@ -112,8 +112,8 @@
     
    
 
-<!-- ✅ Display Artists Dynamically -->
-<div class="artist-container">
+
+<!-- <div class="artist-container">
     {% if artists %}
         {% for artist in artists %}
         <div class="artist-card">
@@ -131,9 +131,70 @@
         </div>
         {% endfor %}
     {% else %}
-        <p>No artists available in this city.</p>  <!-- ✅ Show message if no results -->
+        <p>No artists available in this city.</p>  
+    {% endif %}
+</div> -->
+<div class="artist-container">
+    {% if artists %}
+        {% for artist in artists %}
+        <div class="artist-card">
+            <h3>{{ artist.first_name }} {{ artist.last_name }}</h3>
+            <p>Email: {{ artist.email }}</p>
+            <p>City: {{ artist.city }}</p>
+            <p>Experience: {{ artist.experience_years }} years</p>
+            <p>Works At: {{ artist.works_at }}</p>
+
+            <button onclick="window.location.href='{% url 'book_artist' artist.id %}'">Book Now</button>
+
+            <!-- ✅ Show Review Button only if user has a confirmed booking -->
+            {% if user.is_authenticated %}
+                {% if artist.id in booked_artists %}
+                    <button onclick="window.location.href='{% url 'add_review' artist.id %}'">Add Review</button>
+                {% endif %}
+            {% endif %}
+
+            <!-- ✅ Show Artist Reviews -->
+            <h4>Reviews:</h4>
+            {% for review in artist.artist_reviews.all %}
+                <p>⭐ {{ review.rating }}/5 - {{ review.user.first_name }}: {{ review.comment }}</p>
+                {% if request.user == review.user %}  <!-- ✅ Only show delete button for the review owner -->
+                <form id="delete-form-{{ review.id }}" action="{% url 'delete_review' review.id %}" method="POST" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="button" class="delete-btn" onclick="confirmDelete('{{ review.id }}')">❌ Delete</button>
+                </form>
+                
+        {% endif %}
+            {% empty %}
+                <p>No reviews yet.</p>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>No artists available in this city.</p>
     {% endif %}
 </div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+function confirmDelete(reviewId) {
+    Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to undo this action!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#D8648C",
+        cancelButtonColor: "#6c757d",
+        confirmButtonText: "Yes, delete it!",
+        cancelButtonText: "Cancel"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById(`delete-form-${reviewId}`).submit();
+        }
+    });
+}
+</script>
 
  
 </body>
