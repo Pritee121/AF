@@ -945,3 +945,6 @@ def toggle_availability(request):
         request.user.save()
         messages.success(request, f"Availability updated to {'Available' if request.user.is_available else 'Not Available'}!")
     return redirect("availability_status")  
+
+
+

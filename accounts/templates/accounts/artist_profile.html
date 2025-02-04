@@ -41,7 +41,10 @@
         <main class="profile-container">
             <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
-
+                <!-- Profile Image Upload -->
+                <label>Upload Profile Picture:</label>
+                <input type="file" id="profile_image" name="profile_image" accept="image/*" onchange="previewImage(event)">
+                
                 <label>First Name:</label>
                 <input type="text" name="first_name" value="{{ form.first_name.value }}" required>
 

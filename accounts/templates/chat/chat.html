@@ -1,0 +1,104 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with {{ artist.first_name }}</title>
+    <link rel="stylesheet" href="{% static 'css/chat.css' %}">
+</head>
+<body>
+    <h1>Chat with {{ artist.first_name }}</h1>
+
+    <div id="chat-log">
+        {% for message in messages %}
+            <p><strong>{{ message.sender.first_name }}:</strong> {{ message.message }}</p>
+        {% endfor %}
+    </div>
+
+    <input id="chat-message-input" type="text">
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        let chatSocket;
+        let selectedChatId = null;  // Store the current chat ID
+    
+        document.addEventListener("DOMContentLoaded", function () {
+            let firstChat = document.querySelector(".chat-sidebar ul li");
+            if (firstChat) {
+                firstChat.click();  // Auto-click the first chat in the list
+            }
+        });
+    
+        function openChat(chatId, chatName) {
+            selectedChatId = chatId;
+            document.getElementById("chat-header").innerText = "Chat with " + chatName;
+            document.getElementById("chat-log").innerHTML = "";  // Clear previous messages
+    
+            if (chatSocket) {
+                chatSocket.close();
+            }
+    
+            console.log(`Connecting to WebSocket: ws://${window.location.host}/ws/chat/${chatId}/`);
+    
+            // ✅ Connect WebSocket for real-time chat
+            chatSocket = new WebSocket(`ws://${window.location.host}/ws/chat/${chatId}/`);
+    
+            chatSocket.onopen = function() {
+                console.log("WebSocket connected.");
+            };
+    
+            chatSocket.onerror = function(error) {
+                console.error("WebSocket Error: ", error);
+            };
+    
+            chatSocket.onmessage = function(e) {
+                console.log("Message received: ", e.data);
+                const data = JSON.parse(e.data);
+                document.getElementById("chat-log").innerHTML += `<p><strong>${data.sender}:</strong> ${data.message}</p>`;
+    
+                // ✅ Update sidebar with the latest message
+                updateSidebar(chatId, data.sender, data.message);
+            };
+    
+            chatSocket.onclose = function() {
+                console.log("WebSocket disconnected.");
+            };
+    
+            // ✅ Fetch old messages when opening a chat
+            fetch(`/chat/messages/${chatId}/`)
+                .then(response => response.json())
+                .then(messages => {
+                    console.log("Previous messages loaded: ", messages);
+                    messages.forEach(msg => {
+                        document.getElementById("chat-log").innerHTML += `<p><strong>${msg.sender}:</strong> ${msg.message}</p>`;
+                    });
+                });
+        }
+    
+        function sendMessage() {
+            const messageInput = document.getElementById("chat-message-input");
+            const message = messageInput.value;
+            if (message.trim() !== "" && selectedChatId) {
+                chatSocket.send(JSON.stringify({
+                    "message": message,
+                    "sender": "{{ request.user.first_name }}"
+                }));
+                console.log("Message sent:", message);
+                messageInput.value = "";
+            }
+        }
+    
+        function updateSidebar(chatId, sender, message) {
+            let chatItems = document.querySelectorAll(".chat-sidebar ul li");
+            chatItems.forEach((item) => {
+                if (item.getAttribute("data-chat-id") == chatId) {
+                    item.innerHTML = `<strong>${sender}:</strong> ${message}`;
+                }
+            });
+        }
+    </script>
+    
+    
+</body>
+</html>

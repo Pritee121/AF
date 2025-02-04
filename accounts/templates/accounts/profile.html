@@ -13,6 +13,15 @@
             document.getElementById(buttonId).style.display = 'none';
             document.getElementById(fieldId + '_save').style.display = 'inline-block';
         }
+
+        function previewImage(event) {
+            var reader = new FileReader();
+            reader.onload = function() {
+                var output = document.getElementById('profile-preview');
+                output.src = reader.result;
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
     </script>
 </head>
 <body>
@@ -20,7 +29,7 @@
 
         <!-- Sidebar: Displays Saved Data -->
         <div class="profile-sidebar">
-            <img src="{% if user.profile_image %}{{ user.profile_image.url }}{% else %}{% static 'images/default.jpg' %}{% endif %}" 
+            <img id="profile-preview" src="{% if user.profile_image %}{{ user.profile_image.url }}{% else %}{% static 'images/default.jpg' %}{% endif %}" 
                  alt="User" class="profile-image">
 
             <h2>{{ user.first_name }} {{ user.last_name }}</h2>
@@ -37,6 +46,10 @@
             <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
 
+                <!-- Profile Image Upload -->
+                <label>Upload Profile Picture:</label>
+                <input type="file" id="profile_image" name="profile_image" accept="image/*" onchange="previewImage(event)">
+                
                 <!-- First Name -->
                 <label>First Name:</label>
                 <input type="text" id="first_name" name="first_name" value="{{ user.first_name }}" readonly>

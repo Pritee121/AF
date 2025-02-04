@@ -1,0 +1,186 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Room</title>
+    <link rel="stylesheet" href="{% static 'css/chat.css' %}">
+</head>
+<body>
+    <div class="chat-container">
+        <!-- Left Sidebar: Chat List -->
+        <div class="chat-sidebar">
+            <h2>Chats</h2>
+            <ul>
+                {% for chat in chat_rooms %}
+                    <li data-chat-id="{{ chat.id }}" onclick="openChat('{{ chat.id }}', '{{ chat.user.first_name }}')">
+                        <strong>{{ chat.user.first_name }}</strong> ({{ chat.artist.first_name }})
+                    </li>
+                {% endfor %}
+            </ul>
+            
+        </div>
+
+        <!-- Chat Box -->
+        <div class="chat-box">
+            <div id="chat-header">Select a Chat</div>
+            <div id="chat-log"></div>
+            <div class="chat-input">
+                <input type="text" id="chat-message-input" placeholder="Type a message...">
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let chatSocket;
+        let selectedChatId = null;  // Store the current chat ID
+    
+        document.addEventListener("DOMContentLoaded", function () {
+            let firstChat = document.querySelector(".chat-sidebar ul li");
+            if (firstChat) {
+                firstChat.click();  // Auto-click the first chat in the list
+            }
+        });
+    
+        function openChat(chatId, chatName) {
+    selectedChatId = chatId;
+    document.getElementById("chat-header").innerText = "Chat with " + chatName;
+    document.getElementById("chat-log").innerHTML = "";  // Clear previous messages
+
+    if (chatSocket) {
+        chatSocket.close();
+    }
+
+    console.log(`Connecting to WebSocket: ws://${window.location.host}/ws/chat/${chatId}/`);
+
+    // ✅ Connect WebSocket for real-time chat
+    chatSocket = new WebSocket(`ws://${window.location.host}/ws/chat/${chatId}/`);
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        document.getElementById("chat-log").innerHTML += `<p><strong>${data.sender}:</strong> ${data.message}</p>`;
+        updateSidebar(chatId, data.sender, data.message);
+    };
+
+    chatSocket.onopen = function() {
+        console.log("WebSocket connected.");
+        loadChatMessages(chatId);  // ✅ Fetch old messages when chat opens
+    };
+
+    chatSocket.onerror = function(error) {
+        console.error("WebSocket Error: ", error);
+    };
+
+    chatSocket.onclose = function() {
+        console.log("WebSocket disconnected.");
+    };
+}
+
+// ✅ Function to fetch old messages when chat opens
+function loadChatMessages(chatId) {
+    fetch(`/chat/messages/${chatId}/`)
+        .then(response => response.json())
+        .then(data => {
+            console.log("Previous messages loaded: ", data);
+            let chatLog = document.getElementById("chat-log");
+            data.messages.forEach(msg => {
+                chatLog.innerHTML += `<p><strong>${msg.sender}:</strong> ${msg.message} <span class="timestamp">${msg.timestamp}</span></p>`;
+            });
+        });
+}
+
+        function sendMessage() {
+            const messageInput = document.getElementById("chat-message-input");
+            const message = messageInput.value;
+            if (message.trim() !== "" && selectedChatId) {
+                chatSocket.send(JSON.stringify({
+                    "message": message,
+                    "sender": "{{ request.user.first_name }}"
+                }));
+                messageInput.value = "";
+            }
+        }
+    
+        function updateSidebar(chatId, sender, message) {
+            let chatItems = document.querySelectorAll(".chat-sidebar ul li");
+            chatItems.forEach((item) => {
+                if (item.getAttribute("data-chat-id") == chatId) {
+                    item.innerHTML = `<strong>${sender}:</strong> ${message}`;
+                }
+            });
+        }
+    </script>
+    
+    
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+        .chat-container {
+            display: flex;
+            height: 100vh;
+        }
+        .chat-sidebar {
+            width: 25%;
+            background: #333;
+            color: white;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .chat-sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+        .chat-sidebar ul li {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid gray;
+        }
+        .chat-sidebar ul li:hover {
+            background: #444;
+        }
+        .chat-box {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            padding: 20px;
+        }
+        #chat-header {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        #chat-log {
+            flex-grow: 1;
+            overflow-y: auto;
+            max-height: 70vh;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background: #fafafa;
+        }
+        .chat-input {
+            display: flex;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+        .chat-input button {
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .chat-input button:hover {
+            background: #0056b3;
+        }
+    </style>
+</body>
+</html>

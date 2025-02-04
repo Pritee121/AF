@@ -72,9 +72,8 @@
 
             <a href="{% url 'contactus' %}" class="nav-link active">Contact Us</a>
 
-            {% for artist in artists %}
-    <a href="{% url 'user_chat' artist.id %}" class="nav-item">Chat with {{ artist.first_name }}</a>
-{% endfor %}
+      
+
 
 
 
@@ -85,7 +84,8 @@
 
             <div class="user-profile">
                 <a href="{% url 'user_profile' %}">
-                    <img src="{% static 'images/mi.jpg' %}" alt="User" class="user-image">
+                    <img src="{{ user.profile_image.url }}" alt="User" class="user-image">
+
                 </a>
             </div>
         </nav>
@@ -166,6 +166,7 @@
 
             <!-- ✅ Explore Artist Button -->
             <button onclick="window.location.href='{% url 'artist_detail' artist.id %}'">Explore Artist</button>
+            <button> Chat Now </button>
 
             <!-- ✅ Show Review Button only if user has a confirmed booking -->
             {% if user.is_authenticated %}

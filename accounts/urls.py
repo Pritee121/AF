@@ -74,6 +74,7 @@ from .views import cancel_booking
 from django.contrib.auth import views as auth_views
 
 
+
 urlpatterns = [
     # User Authentication
     path('', views.register_page, name='register'),
@@ -148,7 +149,7 @@ urlpatterns = [
     path('artist/reset/done/', 
          auth_views.PasswordResetCompleteView.as_view(template_name="accounts/artist_password_reset_complete.html"), 
          name='artist_password_reset_complete'),
-
+     
 ]
 
 # ✅ Serve media files during development only
