@@ -543,40 +543,122 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+# from django.http import JsonResponse
+# from django.views.decorators.csrf import csrf_exempt
+# import json
+# from django.contrib.auth.decorators import login_required
+# from .models import Booking, Notification
+
+# @login_required
+# @csrf_exempt
+# def update_booking_status(request, booking_id):
+#     if request.method == "POST":
+#         try:
+#             data = json.loads(request.body)
+#             new_status = data.get("status")
+
+#             # ✅ Ensure booking exists
+#             booking = Booking.objects.get(id=booking_id)
+
+#             # ✅ Ensure only the artist can update the booking
+#             if request.user != booking.artist:
+#                 return JsonResponse({"success": False, "error": "Only the assigned artist can update this booking."}, status=403)
+
+#             # ✅ Update the status
+#             booking.status = new_status
+#             booking.save()
+
+#             # ✅ Create a notification for the client
+#             Notification.objects.create(
+#                 user=booking.client,
+#                 message=f"Your booking with {booking.artist.first_name} has been {new_status.lower()}."
+#             )
+
+#             # ✅ Return success response
+#             return JsonResponse({
+#                 "success": True, 
+#                 "message": f"Booking has been {new_status.lower()}!",
+#                 "status": booking.status
+#             })
+
+#         except Booking.DoesNotExist:
+#             return JsonResponse({"success": False, "error": "Booking not found"}, status=404)
+
+#         except json.JSONDecodeError:
+#             return JsonResponse({"success": False, "error": "Invalid JSON request"}, status=400)
+
+#     return JsonResponse({"success": False, "error": "Invalid request method"}, status=400)
+
+
+
+from django.shortcuts import get_object_or_404, redirect
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
+from django.core.mail import send_mail
 from django.contrib.auth.decorators import login_required
-from .models import Booking, Notification
+from django.contrib import messages
+from .models import Booking
 
 @login_required
 @csrf_exempt
 def update_booking_status(request, booking_id):
+    """ Allows an artist to confirm or cancel a booking and send email notifications. """
     if request.method == "POST":
         try:
             data = json.loads(request.body)
             new_status = data.get("status")
+            booking = get_object_or_404(Booking, id=booking_id)
 
-            # ✅ Ensure booking exists
-            booking = Booking.objects.get(id=booking_id)
-
-            # ✅ Ensure only the artist can update the booking
+            # ✅ Ensure only the assigned artist can update the booking
             if request.user != booking.artist:
                 return JsonResponse({"success": False, "error": "Only the assigned artist can update this booking."}, status=403)
 
-            # ✅ Update the status
+            # ✅ Update the booking status
             booking.status = new_status
             booking.save()
 
-            # ✅ Create a notification for the client
-            Notification.objects.create(
-                user=booking.client,
-                message=f"Your booking with {booking.artist.first_name} has been {new_status.lower()}."
+            # ✅ Construct email details
+            subject = f"Booking {new_status}: {booking.service.service_name}"
+            message = f"""
+                Hello {booking.client.first_name},
+
+                Your booking for {booking.service.service_name} with {booking.artist.first_name} {booking.artist.last_name} has been {new_status.lower()}.
+
+                Booking Details:
+                - Service: {booking.service.service_name}
+                - Artist: {booking.artist.first_name} {booking.artist.last_name}
+                - Date: {booking.date}
+                - Time: {booking.time}
+                - Payment Method: {booking.payment_method}
+                - Price: ${booking.service.price}
+
+                If you have any questions, please contact the artist at {booking.artist.email}.
+
+                Best regards,
+                Artist Finder Team
+            """
+
+            # ✅ Send email to client
+            send_mail(
+                subject,
+                message,
+                "no-reply@artistfinder.com",
+                [booking.client.email],
+                fail_silently=False,
             )
 
-            # ✅ Return success response
+            # ✅ Send email to artist as well
+            send_mail(
+                f"Booking {new_status} - {booking.client.first_name}",
+                f"Hello {booking.artist.first_name},\n\nYou have {new_status.lower()} a booking.\n\n{message}",
+                "no-reply@artistfinder.com",
+                [booking.artist.email],
+                fail_silently=False,
+            )
+
             return JsonResponse({
-                "success": True, 
+                "success": True,
                 "message": f"Booking has been {new_status.lower()}!",
                 "status": booking.status
             })
@@ -588,6 +670,7 @@ def update_booking_status(request, booking_id):
             return JsonResponse({"success": False, "error": "Invalid JSON request"}, status=400)
 
     return JsonResponse({"success": False, "error": "Invalid request method"}, status=400)
+
 
 
 

@@ -6,6 +6,7 @@ from django.core.validators import MinLengthValidator
 class RegistrationForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput(), validators=[MinLengthValidator(6)])
     confirm_password = forms.CharField(widget=forms.PasswordInput())
+    
 
     class Meta:
         model = User
