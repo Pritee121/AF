@@ -95,20 +95,6 @@ class WorkUploadForm(forms.ModelForm):
         fields = ['title', 'description', 'image']
 
 
-
-
-from django import forms
-from .models import Service
-
-# class ServiceForm(forms.ModelForm):
-#     class Meta:
-#         model = Service
-#         fields = ['service_name', 'price', 'available_date','duration', 'available_time', 'description']
-#         widgets = {
-#             'available_date': forms.DateInput(attrs={'type': 'date'}),
-#             'available_time': forms.TimeInput(attrs={'type': 'time'}),
-#         }
-
 ### ✅ Service Form with Auto Duration Handling ###
 from django import forms
 from .models import Service

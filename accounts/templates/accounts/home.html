@@ -113,27 +113,7 @@
    
 
 
-<!-- <div class="artist-container">
-    {% if artists %}
-        {% for artist in artists %}
-        <div class="artist-card">
-            <img src="{% static 'images/default-avatar.png' %}" alt="Artist Profile">
-    
-            <h3>{{ artist.first_name }} {{ artist.last_name }}</h3>
-            <p>Email: {{ artist.email }}</p>
-            <p>City: {{ artist.city }}</p>
-            <p>Experience: {{ artist.experience_years }} years</p>
-            <p>Works At: {{ artist.works_at }}</p>
-    
-            <button onclick="window.location.href='{% url 'book_artist' artist.id %}'">Book Now</button>
-            <button onclick="window.location.href='{% url 'chat_with_artist' artist.id %}'">Chat Now</button>
-            <button onclick="window.location.href='{% url 'artist_detail' artist.id %}'">Explore Artist</button>
-        </div>
-        {% endfor %}
-    {% else %}
-        <p>No artists available in this city.</p>  
-    {% endif %}
-</div> -->
+
 <div class="artist-container">
     {% if artists %}
         {% for artist in artists %}

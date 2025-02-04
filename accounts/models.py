@@ -1,25 +1,4 @@
-# from django.contrib.auth.models import AbstractUser
-# from django.db import models
 
-# class User(AbstractUser):
-#     username = models.CharField(max_length=150, unique=True, null=True, blank=True)  # Allow blank username
-#     email = models.EmailField(unique=True)  # Email as the unique identifier
-#     phone = models.CharField(max_length=15, unique=True)
-#     password = models.CharField(max_length=100)
-#     profile_image = models.ImageField(upload_to='profile_images/', null=True, blank=True)
-#     is_verified = models.BooleanField(default=False)
-#     is_artist = models.BooleanField(default=False)
-#     otp = models.CharField(max_length=6, blank=True, null=True)  # ✅ Stores OTP
-#     city = models.CharField(max_length=100, null=True, blank=True)
-#     works_at = models.CharField(max_length=255, null=True, blank=True)
-#     experience_years = models.IntegerField(default=0, null=True, blank=True)
-#     training_certificate = models.FileField(upload_to='certificates/', null=True, blank=True)
-
-#     USERNAME_FIELD = "email"  # ✅ Login using email instead of username
-#     REQUIRED_FIELDS = []  # ✅ Don't require username
-
-#     def __str__(self):
-#         return self.email
 
 
 

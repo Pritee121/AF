@@ -135,27 +135,7 @@ def artist_login(request):
 
 
 
-# # ✅ Home Page
-# @login_required(login_url='login')
-# def home_page(request):
-#    artists = User.objects.filter(is_artist=True)  # ✅ Fetch only artists
-#    return render(request, 'accounts/home.html', {'artists': artists})  #
 
-
-
-
-# from django.shortcuts import render
-# from .models import User  # Assuming User model stores artist details
-# @login_required(login_url='login')
-# def home_page(request):
-#     query = request.GET.get("search", "").strip()  # ✅ Get search input and remove extra spaces
-    
-#     if query:
-#         artists = User.objects.filter(city__iexact=query, is_artist=True)  # ✅ Exact case-insensitive match
-#     else:
-#         artists = User.objects.filter(is_artist=True)  # ✅ Show all artists if no search query
-    
-#     return render(request, "accounts/home.html", {"artists": artists, "query": query})
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from .models import User, Booking  # Import Booking model
@@ -197,19 +177,6 @@ def cancel_booking(request, booking_id):
 
     return redirect("booking_history")  # ✅ Redirect user to their booking history
 
-# from django.shortcuts import render
-
-# from .models import User
-
-# def home(request):
-#     artists = User.objects.filter(is_artist=True)
-
-#     # ✅ Get a list of artists the user has booked and confirmed
-#     booked_artists = []
-#     if request.user.is_authenticated:
-#         booked_artists = Booking.objects.filter(client=request.user, status="Confirmed").values_list("artist_id", flat=True)
-
-#     return render(request, "home.html", {"artists": artists, "booked_artists": booked_artists})
 
 
 
@@ -313,18 +280,7 @@ def services(request):
     artist_services = Service.objects.filter(artist=request.user).prefetch_related('service_reviews')  # ✅ Load reviews efficiently
     return render(request, 'accounts/services.html', {'services': artist_services})
 
-# # ✅ Add Service
-# @login_required(login_url='artist_login')
-# def add_service(request):
-#     if request.method == 'POST':
-#         form = ServiceForm(request.POST)
-#         if form.is_valid():
-#             service = form.save(commit=False)
-#             service.artist = request.user
-#             service.save()
-#             return redirect('services')
-    
-#     return render(request, 'accounts/add_service.html', {'form': ServiceForm()})
+
 
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
@@ -446,9 +402,7 @@ def send_message(request):
 
 
 
-# def home_page(request):
-#     artists = User.objects.filter(is_artist=True)  # Get all artists
-#     return render(request, 'accounts/home.html', {'artists': artists})
+
 
 
 
@@ -543,51 +497,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-# from django.http import JsonResponse
-# from django.views.decorators.csrf import csrf_exempt
-# import json
-# from django.contrib.auth.decorators import login_required
-# from .models import Booking, Notification
 
-# @login_required
-# @csrf_exempt
-# def update_booking_status(request, booking_id):
-#     if request.method == "POST":
-#         try:
-#             data = json.loads(request.body)
-#             new_status = data.get("status")
-
-#             # ✅ Ensure booking exists
-#             booking = Booking.objects.get(id=booking_id)
-
-#             # ✅ Ensure only the artist can update the booking
-#             if request.user != booking.artist:
-#                 return JsonResponse({"success": False, "error": "Only the assigned artist can update this booking."}, status=403)
-
-#             # ✅ Update the status
-#             booking.status = new_status
-#             booking.save()
-
-#             # ✅ Create a notification for the client
-#             Notification.objects.create(
-#                 user=booking.client,
-#                 message=f"Your booking with {booking.artist.first_name} has been {new_status.lower()}."
-#             )
-
-#             # ✅ Return success response
-#             return JsonResponse({
-#                 "success": True, 
-#                 "message": f"Booking has been {new_status.lower()}!",
-#                 "status": booking.status
-#             })
-
-#         except Booking.DoesNotExist:
-#             return JsonResponse({"success": False, "error": "Booking not found"}, status=404)
-
-#         except json.JSONDecodeError:
-#             return JsonResponse({"success": False, "error": "Invalid JSON request"}, status=400)
-
-#     return JsonResponse({"success": False, "error": "Invalid request method"}, status=400)
 
 
 
@@ -702,29 +612,6 @@ from .models import AboutUs
 def aboutus(request):
     about = AboutUs.objects.first()  # ✅ Get the first About Us entry
     return render(request, "accounts/aboutus.html", {"about": about})
-
-
-
-# from django.shortcuts import render, redirect
-# from django.contrib import messages
-# from .models import ContactUsPage, ContactMessage
-
-# def contact_us(request):
-#     contact_page = ContactUsPage.objects.first()  # ✅ Get the first Contact Us page entry
-
-#     if request.method == "POST":
-#         name = request.POST.get("name")
-#         email = request.POST.get("email")
-#         subject = request.POST.get("subject")
-#         message = request.POST.get("message")
-
-#         # ✅ Save user message in the database
-#         ContactMessage.objects.create(name=name, email=email, subject=subject, message=message)
-
-#         messages.success(request, "Your message has been sent successfully!")
-#         return redirect("contactus")
-
-#     return render(request, "accounts/contactus.html", {"contact_page": contact_page})
 from django.shortcuts import render
 from django.http import JsonResponse
 from .models import ContactUsPage, ContactMessage
@@ -764,41 +651,6 @@ class ReviewForm(forms.ModelForm):
 
 
 
-# from django.shortcuts import render, get_object_or_404, redirect
-# from django.contrib.auth.decorators import login_required
-# from django.contrib import messages
-# from .models import User, Review, Booking, Service
-# from .forms import ReviewForm
-
-# @login_required
-# def add_review(request, artist_id):
-#     artist = get_object_or_404(User, id=artist_id, is_artist=True)
-
-#     # ✅ Get the confirmed booking for this artist
-#     booking = Booking.objects.filter(artist=artist, client=request.user, status="Confirmed").first()
-
-#     if not booking:
-#         messages.error(request, "You can only review artists you've booked.")
-#         return redirect('home')
-
-#     services = Service.objects.filter(artist=artist)  # ✅ Get all services by this artist
-
-#     if request.method == "POST":
-#         form = ReviewForm(request.POST)
-#         service_id = request.POST.get("service")  # ✅ Get service_id from form
-
-#         if form.is_valid():
-#             review = form.save(commit=False)
-#             review.artist = artist
-#             review.user = request.user
-#             review.service = Service.objects.get(id=service_id) if service_id else None  # ✅ Assign service
-#             review.save()
-#             messages.success(request, "Your review has been submitted successfully!")
-#             return redirect('home')
-#     else:
-#         form = ReviewForm()
-
-#     return render(request, 'accounts/review_form.html', {'form': form, 'artist': artist, 'services': services})
 
 
 

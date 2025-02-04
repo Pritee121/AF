@@ -57,88 +57,12 @@
             <p>No bookings found.</p>  <!-- ✅ Show message if there are no bookings -->
         {% endif %}  <!-- ✅ Properly close the 'if' statement -->
 
-        <!-- <script>
-            function updateBookingStatus(bookingId, status) {
-                fetch(`/update-booking-status/${bookingId}/`, {
-                    method: "POST",
-                    headers: {
-                        "X-CSRFToken": "{{ csrf_token }}",
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ status: status })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        document.getElementById(`status-${bookingId}`).innerText = status;
-                    } else {
-                        alert("Error updating booking status.");
-                    }
-                })
-                .catch(error => console.error("Error:", error));
-            }
-        </script> -->
+      
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-        <!-- <script>
-            function updateBookingStatus(bookingId, status) {
-                // ✅ Show confirmation pop-up before proceeding
-                Swal.fire({
-                    title: `Are you sure?`,
-                    text: `Do you want to ${status.toLowerCase()} this booking?`,
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonText: "Yes, proceed!",
-                    cancelButtonText: "No, cancel"
-                }).then((result) => {
-                    if (!result.isConfirmed) {
-                        return; // ✅ If user cancels, do nothing
-                    }
-        
-                    // ✅ Proceed with status update
-                    fetch(`/update-booking-status/${bookingId}/`, {
-                        method: "POST",
-                        headers: {
-                            "X-CSRFToken": "{{ csrf_token }}",
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify({ status: status })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // ✅ Update status dynamically in table
-                            document.getElementById(`status-${bookingId}`).innerText = data.status;
-        
-                            // ✅ Show success notification
-                            Swal.fire({
-                                title: "Success!",
-                                text: data.message,
-                                icon: "success",
-                                confirmButtonText: "OK"
-                            });
-        
-                        } else {
-                            Swal.fire({
-                                title: "Error!",
-                                text: data.error || "Could not update booking. Try again later.",
-                                icon: "error"
-                            });
-                        }
-                    })
-                    .catch(error => {
-                        console.error("Error:", error);
-                        Swal.fire({
-                            title: "Error!",
-                            text: "Something went wrong! Please try again later.",
-                            icon: "error"
-                        });
-                    });
-                });
-            }
-        </script> -->
+      
         <script>
             function updateBookingStatus(bookingId, status) {
                 Swal.fire({
