@@ -47,6 +47,7 @@
                         <h4>Customer Reviews:</h4>
                         {% for review in service.service_reviews.all %}
                             <p>⭐ {{ review.rating }}/5 - {{ review.user.first_name }}: {{ review.comment }}</p>
+                            <small>🕒 {{ review.created_at|date:"F d, Y h:i A" }}</small>  <!-- ✅ Display formatted timestamp -->
                         {% empty %}
                             <p>No reviews yet for this service.</p>
                         {% endfor %}

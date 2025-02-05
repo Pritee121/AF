@@ -59,7 +59,7 @@ class ArtistRegisterForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'phone', 'password', 'profile_image',
+        fields = ['first_name', 'last_name', 'email', 'phone', 'password', 
                   'city', 'works_at', 'experience_years', 'training_certificate']
 
     def clean(self):

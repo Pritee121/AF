@@ -72,6 +72,7 @@ from .views import delete_service, edit_service
 from .views import availability_status, toggle_availability
 from .views import cancel_booking
 from django.contrib.auth import views as auth_views
+ # Ensure you import the view
 
 
 

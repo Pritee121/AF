@@ -17,30 +17,60 @@ from .forms import (
 )
 import random
 
-# ✅ Artist Profile (Fully Fixed)
+# # ✅ Artist Profile (Fully Fixed)
+# @login_required(login_url='artist_login')
+# def artist_profile(request):
+#     user = request.user
+
+#     if request.method == 'POST':
+#         form = ProfileUpdateForm(request.POST, request.FILES, instance=user)
+
+#         if form.is_valid():
+#             updated_user = form.save(commit=False)
+
+#             # ✅ Preserve password if not changed
+#             new_password = form.cleaned_data.get('password')
+#             if new_password:
+#                 updated_user.password = make_password(new_password)  # ✅ Hash new password
+#             else:
+#                 updated_user.password = user.password  # ✅ Keep old password
+
+#             updated_user.save()
+#             update_session_auth_hash(request, updated_user)  # ✅ Prevent logout after update
+
+#             return redirect('artist_profile')
+
+#     return render(request, 'accounts/artist_profile.html', {'form': ProfileUpdateForm(instance=user)})
+
+
+
 @login_required(login_url='artist_login')
 def artist_profile(request):
-    user = request.user
+    if request.session.get('user_type') != 'artist':  # Ensure artist is logged in
+        return redirect('artist_login')
+
+    user = request.user  # Fetch logged-in artist data
 
     if request.method == 'POST':
         form = ProfileUpdateForm(request.POST, request.FILES, instance=user)
-
         if form.is_valid():
             updated_user = form.save(commit=False)
-
-            # ✅ Preserve password if not changed
-            new_password = form.cleaned_data.get('password')
-            if new_password:
-                updated_user.password = make_password(new_password)  # ✅ Hash new password
+            if not form.cleaned_data.get('password'):
+                updated_user.password = user.password
             else:
-                updated_user.password = user.password  # ✅ Keep old password
+                updated_user.password = make_password(form.cleaned_data['password'])
 
             updated_user.save()
-            update_session_auth_hash(request, updated_user)  # ✅ Prevent logout after update
-
+            update_session_auth_hash(request, updated_user)
             return redirect('artist_profile')
 
-    return render(request, 'accounts/artist_profile.html', {'form': ProfileUpdateForm(instance=user)})
+    return render(request, 'accounts/artist_profile.html', {
+        'form': ProfileUpdateForm(instance=user),
+        'artist': user  # Pass artist-specific data
+    })
+
+
+
 
 # ✅ Registration Page
 def register_page(request):
@@ -90,7 +120,68 @@ def verify_otp(request):
 
     return render(request, 'accounts/verify_otp.html', {'form': OTPForm()})
 
-# ✅ User Login (Fully Fixed)
+# # ✅ User Login (Fully Fixed)
+# def login_page(request):
+#     if request.method == 'POST':
+#         form = LoginForm(request.POST)
+#         if form.is_valid():
+#             email = form.cleaned_data['email']
+#             password = form.cleaned_data['password']
+#             user = authenticate(request, email=email, password=password)
+
+#             if user is not None and not user.is_artist:
+#                 login(request, user)
+#                 return redirect('home')
+#             else:
+#                 form.add_error(None, 'Invalid email or password.')
+
+#     return render(request, 'accounts/login.html', {'form': LoginForm()})
+
+# def artist_login(request):
+#     if request.method == 'POST':
+#         form = LoginForm(request.POST)
+#         if form.is_valid():
+#             email = form.cleaned_data['email']
+#             password = form.cleaned_data['password']
+#             user = authenticate(request, email=email, password=password)  # ✅ Ensure correct authentication
+
+#             if user is None:
+#                 form.add_error(None, 'Invalid email or password.')
+#                 return render(request, "accounts/artist_login.html", {'form': form})
+
+#             if user.is_artist:
+#                 if not user.is_verified:
+#                     form.add_error(None, 'Account not verified. Please verify via OTP.')
+#                     return render(request, "accounts/artist_login.html", {'form': form})
+
+#                 login(request, user)  # ✅ Ensures user remains authenticated
+#                 return redirect('artist_dashboard')
+
+#             else:
+#                 form.add_error(None, 'Invalid email or password.')
+
+#     return render(request, "accounts/artist_login.html", {'form': LoginForm()})
+
+
+
+# def login_page(request):
+#     if request.method == 'POST':
+#         form = LoginForm(request.POST)
+#         if form.is_valid():
+#             email = form.cleaned_data['email']
+#             password = form.cleaned_data['password']
+#             user = authenticate(request, email=email, password=password)
+
+#             if user is not None and not user.is_artist:
+#                 login(request, user)
+#                 request.session['user_type'] = 'client'  # ✅ Track user type
+#                 return redirect('home')
+#             else:
+#                 form.add_error(None, 'Invalid email or password.')
+
+#     return render(request, 'accounts/login.html', {'form': LoginForm()})
+
+
 def login_page(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
@@ -101,11 +192,42 @@ def login_page(request):
 
             if user is not None and not user.is_artist:
                 login(request, user)
+                request.session['user_type'] = 'client'  # Ensure session stores user type
                 return redirect('home')
             else:
                 form.add_error(None, 'Invalid email or password.')
 
     return render(request, 'accounts/login.html', {'form': LoginForm()})
+
+
+
+
+
+# def artist_login(request):
+#     if request.method == 'POST':
+#         form = LoginForm(request.POST)
+#         if form.is_valid():
+#             email = form.cleaned_data['email']
+#             password = form.cleaned_data['password']
+#             user = authenticate(request, email=email, password=password)
+
+#             if user is None:
+#                 form.add_error(None, 'Invalid email or password.')
+#                 return render(request, "accounts/artist_login.html", {'form': form})
+
+#             if user.is_artist:
+#                 if not user.is_verified:
+#                     form.add_error(None, 'Account not verified. Please verify via OTP.')
+#                     return render(request, "accounts/artist_login.html", {'form': form})
+
+#                 login(request, user)
+#                 request.session['user_type'] = 'artist'  # ✅ Track artist login
+#                 return redirect('artist_dashboard')
+
+#             else:
+#                 form.add_error(None, 'Invalid email or password.')
+
+#     return render(request, "accounts/artist_login.html", {'form': LoginForm()})
 
 def artist_login(request):
     if request.method == 'POST':
@@ -113,7 +235,7 @@ def artist_login(request):
         if form.is_valid():
             email = form.cleaned_data['email']
             password = form.cleaned_data['password']
-            user = authenticate(request, email=email, password=password)  # ✅ Ensure correct authentication
+            user = authenticate(request, email=email, password=password)
 
             if user is None:
                 form.add_error(None, 'Invalid email or password.')
@@ -124,7 +246,8 @@ def artist_login(request):
                     form.add_error(None, 'Account not verified. Please verify via OTP.')
                     return render(request, "accounts/artist_login.html", {'form': form})
 
-                login(request, user)  # ✅ Ensures user remains authenticated
+                login(request, user)
+                request.session['user_type'] = 'artist'  # Store artist separately
                 return redirect('artist_dashboard')
 
             else:
@@ -134,31 +257,71 @@ def artist_login(request):
 
 
 
+# from django.shortcuts import render
+# from django.contrib.auth.decorators import login_required
+# from .models import User, Booking  # Import Booking model
 
+# @login_required(login_url='login')
+# def home_page(request):
+#     query = request.GET.get("search", "").strip()
+    
+#     if query:
+#         artists = User.objects.filter(city__icontains=query, is_artist=True)
+#         message = "No artists found in this city." if not artists.exists() else ""
+#     else:
+#         artists = User.objects.filter(is_artist=True)
+#         message = ""
 
+#     # ✅ Fetch all artist IDs where the user has a confirmed booking
+#     booked_artists = Booking.objects.filter(client=request.user, status="Confirmed").values_list('artist_id', flat=True)
+
+#     return render(request, "accounts/home.html", {
+#         "artists": artists,
+#         "query": query,
+#         "message": message,
+#         "booked_artists": list(booked_artists)  # Convert to list for easy use in template
+#     })
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from .models import User, Booking  # Import Booking model
+from django.core.paginator import Paginator
+from django.db.models import Avg
+from .models import User, Booking
 
 @login_required(login_url='login')
 def home_page(request):
     query = request.GET.get("search", "").strip()
-    
+    sort_by = request.GET.get("sort_by", "rating")  # Default sorting by rating
+
+    # ✅ Filter artists based on search query (city)
+    artists = User.objects.filter(is_artist=True)
     if query:
-        artists = User.objects.filter(city__icontains=query, is_artist=True)
-        message = "No artists found in this city." if not artists.exists() else ""
-    else:
-        artists = User.objects.filter(is_artist=True)
-        message = ""
+        artists = artists.filter(city__icontains=query)
+
+    # ✅ Annotate artists with their average rating (FIXED FIELD NAME)
+    artists = artists.annotate(avg_rating=Avg('artist_reviews__rating'))  # Use correct related name
+
+    # ✅ Sorting logic
+    if sort_by == "rating":
+        artists = artists.order_by('-avg_rating')  # Highest rating first
+    elif sort_by == "name":
+        artists = artists.order_by('first_name', 'last_name')  # Alphabetical
+    elif sort_by == "experience":
+        artists = artists.order_by('-experience_years')  # Most experienced first
+
+    # ✅ Pagination (10 artists per page)
+    paginator = Paginator(artists, 10)  
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
 
     # ✅ Fetch all artist IDs where the user has a confirmed booking
     booked_artists = Booking.objects.filter(client=request.user, status="Confirmed").values_list('artist_id', flat=True)
 
     return render(request, "accounts/home.html", {
-        "artists": artists,
+        "artists": page_obj,  # Paginated artists
         "query": query,
-        "message": message,
-        "booked_artists": list(booked_artists)  # Convert to list for easy use in template
+        "message": "No artists found in this city." if not artists.exists() else "",
+        "booked_artists": list(booked_artists),  # Convert to list
+        "sort_by": sort_by,
     })
 
 from django.shortcuts import render, redirect, get_object_or_404
@@ -242,10 +405,20 @@ def artist_dashboard(request):
     works = Work.objects.filter(artist=artist)
     return render(request, 'accounts/artist_dashboard.html', {'works': works})
 
-# ✅ Artist Logout (Fully Fixed)
+# # ✅ Artist Logout (Fully Fixed)
+# def artist_logout(request):
+#     logout(request)  # ✅ Clears session but NOT password
+#     return redirect('artist_login')  # ✅ Redirect to login page
 def artist_logout(request):
     logout(request)  # ✅ Clears session but NOT password
-    return redirect('artist_login')  # ✅ Redirect to login page
+    request.session.flush()  # ✅ Ensure complete session reset
+    return redirect('artist_login')
+
+
+def user_logout(request):
+    logout(request)
+    request.session.flush()  # ✅ Clear user type session
+    return redirect('login')
 
 # ✅ Add Work
 @login_required(login_url='artist_login')

@@ -118,6 +118,8 @@
     {% if artists %}
         {% for artist in artists %}
         <div class="artist-card">
+            <img src="{% if artist.profile_image %}{{ artist.profile_image.url }}{% else %}{% static 'images/default.jpg' %}{% endif %}" 
+                 alt="{{ artist.first_name }}'s Profile Image" class="artist-profile-image">
             <h3>{{ artist.first_name }} {{ artist.last_name }}</h3>
             <p>Email: {{ artist.email }}</p>
             <p>City: {{ artist.city }}</p>
@@ -157,17 +159,23 @@
 
             <!-- ✅ Show Artist Reviews -->
             <h4>Reviews:</h4>
-            {% for review in artist.artist_reviews.all %}
-                <p>⭐ {{ review.rating }}/5 - {{ review.user.first_name }}: {{ review.comment }}</p>
-                {% if request.user == review.user %}
-                <form id="delete-form-{{ review.id }}" action="{% url 'delete_review' review.id %}" method="POST" style="display:inline;">
-                    {% csrf_token %}
-                    <button type="button" class="delete-btn" onclick="confirmDelete('{{ review.id }}')">❌ Delete</button>
-                </form>
-                {% endif %}
-            {% empty %}
-                <p>No reviews yet.</p>
-            {% endfor %}
+{% for review in artist.artist_reviews.all %}
+    <p>
+        ⭐ {{ review.rating }}/5 - 
+        <strong>{{ review.user.first_name }}</strong>: {{ review.comment }}
+        <br>
+        <small>🕒 {{ review.created_at|date:"F d, Y h:i A" }}</small>  <!-- ✅ Display formatted timestamp -->
+    </p>
+    {% if request.user == review.user %}
+    <form id="delete-form-{{ review.id }}" action="{% url 'delete_review' review.id %}" method="POST" style="display:inline;">
+        {% csrf_token %}
+        <button type="button" class="delete-btn" onclick="confirmDelete('{{ review.id }}')">❌ Delete</button>
+    </form>
+    {% endif %}
+{% empty %}
+    <p>No reviews yet.</p>
+{% endfor %}
+
         </div>
         {% endfor %}
     {% else %}

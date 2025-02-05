@@ -89,7 +89,7 @@ WSGI_APPLICATION = 'AF.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'ArtistFinderDetails2.sqlite3',
+        'NAME': BASE_DIR / 'ArtistFinderDetails22.sqlite3',
     }
 }
 
@@ -156,11 +156,18 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
-# Session settings
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # Store session in the database
-SESSION_COOKIE_AGE = 86400  # 1 day (24 hours)
-SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Session remains even after closing browser
-SESSION_SAVE_EVERY_REQUEST = True  # Update session expiration with every request
+# # Session settings
+# SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # Store session in the database
+# SESSION_COOKIE_AGE = 86400  # 1 day (24 hours)
+# SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Session remains even after closing browser
+# SESSION_SAVE_EVERY_REQUEST = True  # Update session expiration with every request
+# SESSION_COOKIE_NAME = 'sessionid'
+
+
+SESSION_ENGINE = "django.contrib.sessions.backends.db"  # Default Django session engine
+SESSION_COOKIE_NAME = "sessionid"  # Ensure different users don’t share session data
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Prevent session conflicts
+SESSION_SAVE_EVERY_REQUEST = True  # Save session on every request
 
 
 
