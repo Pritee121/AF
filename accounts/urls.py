@@ -56,10 +56,7 @@ from django.conf.urls.static import static
 from . import views
 from .views import artist_list
 from .views import artist_detail
-from .views import chat_with_artist
-from .views import chat_with_artist, send_message
-from django.urls import path
-from .views import user_chat, artist_chat, send_message
+
 from .views import book_artist
 from .views import bookings
 from .views import update_booking_status
@@ -100,11 +97,9 @@ urlpatterns = [
     path('add-service/', views.add_service, name='add_service'),
     path('artists/', artist_list, name='artist_list'),
     path('artist/<int:artist_id>/', artist_detail, name='artist_detail'),  # ✅ Dynamic artist page
-      path('chat/<int:artist_id>/', chat_with_artist, name='chat_with_artist'),
+    
     #   path('send_message/', send_message, name='send_message'),
-      path('chat/user/<int:artist_id>/', user_chat, name='user_chat'),
-    path('chat/artist/', artist_chat, name='artist_chat'),
-    path('send_message/', send_message, name='send_message'),
+
     path('book/<int:artist_id>/', book_artist, name='book_artist'),
     path('bookings/', bookings, name='bookings'),
      path("update-booking-status/<int:booking_id>/", update_booking_status, name="update_booking_status"),

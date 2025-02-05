@@ -500,78 +500,12 @@ def artist_detail(request, artist_id):
 
 
 
-from django.shortcuts import render, get_object_or_404
-from .models import User
-
-def chat_with_artist(request, artist_id):
-    artist = get_object_or_404(User, id=artist_id, is_artist=True)
-    return render(request, 'accounts/chat.html', {'artist': artist})
 
 
 
 
-from django.shortcuts import render, get_object_or_404
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-import json
-from .models import User, ChatMessage
 
-from django.shortcuts import render, get_object_or_404
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-import json
-from .models import User, ChatMessage
 
-def user_chat(request, artist_id):
-    """ Chat page for users messaging an artist """
-    artist = get_object_or_404(User, id=artist_id, is_artist=True)
-    messages = ChatMessage.objects.filter(sender=request.user, receiver=artist) | \
-               ChatMessage.objects.filter(sender=artist, receiver=request.user)
-    messages = messages.order_by('timestamp')
-    
-    return render(request, 'accounts/user_chat.html', {'artist': artist, 'messages': messages})
-
-from django.shortcuts import render, get_object_or_404
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-import json
-from .models import User, ChatMessage
-
-from django.shortcuts import render, get_object_or_404
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-import json
-from .models import User, ChatMessage
-
-def artist_chat(request):
-    artist = request.user
-    if not artist.is_artist:
-        return JsonResponse({"error": "Only artists can access this page."}, status=403)
-
-    messages = ChatMessage.objects.filter(receiver=artist) | ChatMessage.objects.filter(sender=artist)
-    messages = messages.order_by('timestamp')
-
-    # ✅ Define receiver_id properly
-    if messages.exists():
-        first_message = messages.first()
-        receiver_id = first_message.sender.id if first_message.sender.id != request.user.id else first_message.receiver.id
-    else:
-        receiver_id = None  # No messages yet
-
-    return render(request, 'accounts/artist_chat.html', {'messages': messages, 'receiver_id': receiver_id})
-
-# ✅ Handle Message Sending (Allows Artists to Reply)
-@csrf_exempt
-def send_message(request):
-    if request.method == "POST":
-        data = json.loads(request.body)
-        sender = User.objects.get(id=data['sender_id'])
-        receiver = User.objects.get(id=data['receiver_id'])
-        message = data['message']
-
-        chat_message = ChatMessage.objects.create(sender=sender, receiver=receiver, message=message)
-        return JsonResponse({"status": "Message sent", "message": message})
-    return JsonResponse({"error": "Invalid request"}, status=400)
 
 
 

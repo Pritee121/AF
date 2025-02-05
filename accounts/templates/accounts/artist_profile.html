@@ -8,21 +8,7 @@
     <link rel="stylesheet" href="{% static 'css/artist_profile.css' %}">
 </head>
 <body>
-     <!-- Header -->
-     <header class="header">
-        <div class="logo">
-            <img src="{% static 'images/logo.png' %}" alt="Artist Finder Logo">
-        </div>
-        <nav class="navbar">
-            <a href="{% url 'artist_dashboard' %}" class="nav-item active">Dashboard</a>
-            <a href="{% url 'artist_profile' %}" class="nav-item">Profile</a>
-            <a href="{% url 'add_work' %}" class="nav-item">Add Work</a>
-            <a href="{% url 'add_work' %}" class="nav-item">Bookings</a>
-            <a href="{% url 'services' %}" class="nav-item">Services</a>
-            <a href="{% url 'add_work' %}" class="nav-item">Chats</a>
-            <a href="{% url 'artist_logout' %}" class="nav-item logout">Logout</a>
-        </nav>
-    </header>
+    
     <div class="container">
         <!-- Sidebar: Artist Details -->
         <aside class="sidebar">

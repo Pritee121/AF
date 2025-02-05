@@ -5,7 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Our Services</title>
-    <link rel="stylesheet" href="{% static 'css/services.css' %}">
+    <!-- <link rel="stylesheet" href="{% static 'css/services.css' %}"> -->
+     <link rel="stylesheet" href="{% static 'css/services.css' %}">
+     <!-- <link rel="stylesheet" href="{% static 'css/artist_dashboard.css' %}"> -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
@@ -14,15 +16,22 @@
             <img src="{% static 'images/logo.png' %}" alt="Artist Finder Logo">
         </div>
         <nav class="navbar">
-            <a href="{% url 'artist_dashboard' %}" class="nav-item">Dashboard</a>
+            <a href="{% url 'artist_dashboard' %}" class="nav-item active">Dashboard</a>
             <a href="{% url 'artist_profile' %}" class="nav-item">Profile</a>
             <a href="{% url 'add_work' %}" class="nav-item">Add Work</a>
-            <a href="{% url 'artist_profile' %}" class="nav-item">Bookings</a>
-            <a href="{% url 'services' %}" class="nav-item active">Services</a>
+            <a href="{% url 'services' %}" class="nav-item">Services</a>
+            <a href="{% url 'bookings' %}" class="nav-item">Bookings</a>
+            <a href="{% url 'availability_status' %}" class="nav-item">Availability Status</a>
+
+            <a href="{% url 'artist_chat' %}" class="nav-item">
+                Chats
+                {% if unread_messages_count > 0 %}
+                    <span class="notification-badge">{{ unread_messages_count }}</span>
+                {% endif %}
+            </a>
             <a href="{% url 'artist_logout' %}" class="nav-item logout">Logout</a>
         </nav>
     </header>
-
     <!-- Services Section -->
     <section class="services-container text-center mt-10">
         <h1 class="text-3xl font-bold text-gray-800">Our Services</h1>
