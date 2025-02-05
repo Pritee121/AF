@@ -75,6 +75,7 @@ class Service(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     available_date = models.DateField()
     available_time = models.TimeField()
+    
     duration = models.CharField(max_length=50, default="30 mins")  # ✅ Added duration field
     description = models.TextField(blank=True, null=True)  
     created_at = models.DateTimeField(auto_now_add=True)
