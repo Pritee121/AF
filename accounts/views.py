@@ -907,3 +907,23 @@ def toggle_availability(request):
 
 
 
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import Work
+from .forms import WorkUploadForm  # ✅ Ensure the form is imported
+
+@login_required(login_url='artist_login')
+def update_work(request, work_id):
+    work = get_object_or_404(Work, id=work_id, artist=request.user)
+
+    if request.method == "POST":
+        form = WorkUploadForm(request.POST, request.FILES, instance=work)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Work updated successfully!")
+            return redirect("artist_dashboard")
+    else:
+        form = WorkUploadForm(instance=work)
+
+    return render(request, "accounts/update_work.html", {"form": form, "work": work})

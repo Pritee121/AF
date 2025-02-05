@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Chat with {{ receiver.first_name }}</h2>
+
+<div class="chat-box" id="chat-box">
+    {% for msg in messages %}
+        <p><strong>{{ msg.sender.first_name }}:</strong> {{ msg.message }}</p>
+    {% endfor %}
+</div>
+
+<form id="chat-form">
+    <input type="text" id="message-input" placeholder="Type a message..." required>
+    <button type="submit">Send</button>
+</form>
+
+<script>
+    const chatSocket = new WebSocket(
+        'ws://' + window.location.host + '/ws/chat/{{ room_name }}/'
+    );
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const chatBox = document.getElementById('chat-box');
+        chatBox.innerHTML += `<p><strong>${data.sender}:</strong> ${data.message}</p>`;
+    };
+
+    document.getElementById('chat-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const messageInput = document.getElementById('message-input');
+        chatSocket.send(JSON.stringify({
+            'message': messageInput.value,
+            'sender': '{{ user_id }}',
+            'receiver': '{{ receiver.id }}'
+        }));
+        messageInput.value = '';
+    });
+</script>
+
+<a href="{% url 'chat_list' %}">Back to Messages</a>
+{% endblock %}

@@ -70,8 +70,10 @@ from .views import availability_status, toggle_availability
 from .views import cancel_booking
 from django.contrib.auth import views as auth_views
  # Ensure you import the view
-
-
+from django.urls import path
+ # Import the chat_room view
+from django.urls import path
+from .views import update_work
 
 urlpatterns = [
     # User Authentication
@@ -133,7 +135,7 @@ urlpatterns = [
          path('artist/password_reset/', 
          auth_views.PasswordResetView.as_view(template_name="accounts/artist_password_reset.html"), 
          name='artist_password_reset'),
-
+ path('update-work/<int:work_id>/', update_work, name='update_work'),
     path('artist/password_reset/done/', 
          auth_views.PasswordResetDoneView.as_view(template_name="accounts/artist_password_reset_done.html"), 
          name='artist_password_reset_done'),
@@ -145,6 +147,8 @@ urlpatterns = [
     path('artist/reset/done/', 
          auth_views.PasswordResetCompleteView.as_view(template_name="accounts/artist_password_reset_complete.html"), 
          name='artist_password_reset_complete'),
+
+          path('update-work/<int:work_id>/', update_work, name='update_work'),
      
 ]
 
