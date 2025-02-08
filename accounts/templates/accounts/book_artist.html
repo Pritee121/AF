@@ -2,12 +2,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- ✅ SweetAlert2 for better popups -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book {{ artist.first_name }} {{ artist.last_name }}</title>
+
+    <!-- ✅ Flatpickr for date restriction -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <!-- ✅ SweetAlert2 for better alerts -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <link rel="stylesheet" href="{% static 'css/book_artist.css' %}">
 </head>
 <body>
@@ -35,7 +40,7 @@
         </div>
 
         <!-- ✅ Booking Form -->
-        <form action="" method="POST">
+        <form id="booking-form" method="POST">
             {% csrf_token %}
 
             <!-- ✅ Service Dropdown -->
@@ -44,7 +49,7 @@
                 <option value="" disabled selected>Choose a service</option>
                 {% for service in services %}
                     <option value="{{ service.id }}" data-duration="{{ service.duration }}">
-                        {{ service.service_name }} - ${{ service.price }}
+                        {{ service.service_name }} - Rs.{{ service.price }}
                     </option>
                 {% empty %}
                     <option disabled>No services available</option>
@@ -55,11 +60,15 @@
             <label for="duration">Duration:</label>
             <input type="text" id="duration" name="duration" readonly>
 
+            <!-- ✅ Select Date -->
             <label for="date">Select Date:</label>
-            <input type="date" id="date" name="date" required>
+            <input type="text" id="date" name="date" required placeholder="Choose a date">
 
+            <!-- ✅ Select Time -->
             <label for="time">Select Time:</label>
-            <input type="time" id="time" name="time" required>
+            <select id="time" name="time" required>
+                <option value="" disabled selected>Select time</option>
+            </select>
 
             <!-- ✅ Payment Method -->
             <label for="payment_method">Select Payment Method:</label>
@@ -72,43 +81,76 @@
         </form>
     </div>
 
-   
+    <!-- ✅ JavaScript -->
     <script>
-        function updateDuration() {
-            var serviceSelect = document.getElementById("service");
-            var durationInput = document.getElementById("duration");
-            var selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
-            var duration = selectedOption.getAttribute("data-duration") || "";
-            durationInput.value = duration;
-        }
-    
-        // ✅ Disable already booked time slots dynamically
-        document.getElementById("date").addEventListener("change", function() {
-            var selectedDate = this.value;
-            var timeSelect = document.getElementById("time");
-            timeSelect.innerHTML = "<option value='' disabled selected>Choose a time</option>"; // Reset time options
-    
-            fetch(`/get-booked-slots/{{ artist.id }}/?date=${selectedDate}`)
+        document.addEventListener("DOMContentLoaded", function () {
+            let dateInput = document.getElementById("date");
+            let timeInput = document.getElementById("time");
+
+            // ✅ Fetch only available dates for the artist
+            fetch(`/get-available-dates/{{ artist.id }}/`)
                 .then(response => response.json())
                 .then(data => {
-                    let allTimes = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
-    
-                    allTimes.forEach(time => {
-                        let option = document.createElement("option");
-                        option.value = time;
-                        option.textContent = time;
-                        if (data.booked_times.includes(time)) {
-                            option.disabled = true;  // Disable booked slots
-                        }
-                        timeSelect.appendChild(option);
-                    });
-                });
+                    if (data.available_dates.length === 0) {
+                        Swal.fire({
+                            icon: "info",
+                            title: "No Available Dates",
+                            text: "This artist has no available slots. Please check later.",
+                            confirmButtonText: "OK"
+                        });
+                        dateInput.disabled = true;  // Disable if no dates are available
+                    } else {
+                        // ✅ Use Flatpickr to restrict to available dates
+                        flatpickr(dateInput, {
+                            dateFormat: "Y-m-d",
+                            enable: data.available_dates,  // ✅ Only allow available dates
+                            disableMobile: true
+                        });
+
+                        // ✅ Fetch available time slots dynamically when date is selected
+                        dateInput.addEventListener("change", function () {
+                            let selectedDate = this.value;
+                            timeInput.innerHTML = "<option value='' disabled selected>Choose a time</option>"; // Reset time options
+
+                            fetch(`/get-available-times/{{ artist.id }}/?date=${selectedDate}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.available_times.length === 0) {
+                                        Swal.fire({
+                                            icon: "info",
+                                            title: "No Available Slots",
+                                            text: "No slots available for this date. Please choose another date.",
+                                            confirmButtonText: "OK"
+                                        });
+                                    } else {
+                                        data.available_times.forEach(time => {
+                                            let option = document.createElement("option");
+                                            option.value = time;
+                                            option.textContent = time;
+                                            timeInput.appendChild(option);
+                                        });
+                                    }
+                                })
+                                .catch(error => console.error("Error fetching available slots:", error));
+                        });
+                    }
+                })
+                .catch(error => console.error("Error fetching available dates:", error));
         });
-    
+
+        // ✅ Update Duration when Service is Selected
+        function updateDuration() {
+            let serviceSelect = document.getElementById("service");
+            let durationInput = document.getElementById("duration");
+            let selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
+            let duration = selectedOption.getAttribute("data-duration") || "";
+            durationInput.value = duration;
+        }
+
         // ✅ AJAX form submission with SweetAlert2 pop-up
-        document.querySelector("form").addEventListener("submit", function(event) {
+        document.getElementById("booking-form").addEventListener("submit", function(event) {
             event.preventDefault();  // ✅ Prevent page refresh
-    
+
             let formData = new FormData(this);
             fetch(window.location.href, {
                 method: "POST",
@@ -130,8 +172,8 @@
                 } else {
                     // ✅ Show SweetAlert2 confirmation dialog
                     Swal.fire({
-                        title: "Booking Listed!",
-                        text: "Your booking has been listed. You will get confirmation message soon.",
+                        title: "Booking Confirmed!",
+                        text: "Your booking has been confirmed. You will receive a notification soon.",
                         icon: "success",
                         confirmButtonText: "Go to Home"
                     }).then((result) => {
@@ -144,6 +186,5 @@
             .catch(error => console.error("Error:", error));
         });
     </script>
-    
 </body>
 </html>

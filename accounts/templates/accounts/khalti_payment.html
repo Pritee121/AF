@@ -1,0 +1,100 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pay with Khalti</title>
+    <script src="https://khalti.com/static/khalti-checkout.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>  
+</head>
+<body>
+    <h2>Confirm Your Payment</h2>
+    <p>Amount: Rs. <span id="display-amount">{{ amount|default:"0"|floatformat:2 }}</span></p>
+
+
+    <button id="khalti-pay">Pay with Khalti</button>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+    console.log("✅ JavaScript Loaded!");
+
+    var amountInPaisa = parseInt("{{ amount }}");
+    console.log("Received amount:", amountInPaisa);
+
+    if (isNaN(amountInPaisa) || amountInPaisa <= 0) {
+        console.error("❌ Invalid Amount:", amountInPaisa);
+        document.getElementById("display-amount").innerText = "Error!";
+        return;
+    }
+
+    var config = {
+        publicKey: "{{ public_key }}",
+        productIdentity: "{{ service_id }}",
+        productName: "Service Booking",
+        productUrl: window.location.href,
+        eventHandler: {
+            onSuccess(payload) {
+                console.log("✅ Khalti Payment Token:", payload.token);
+                console.log("✅ Khalti Payment Amount:", amountInPaisa);
+
+                fetch("/khalti-verify/", {
+                    method: "POST",
+                    headers: { 
+                        "X-CSRFToken": "{{ csrf_token }}", 
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ 
+                        token: payload.token, 
+                        amount: amountInPaisa 
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: "✅ Payment Successful!",
+                            text: "Your booking is confirmed.",
+                            icon: "success",
+                            confirmButtonText: "OK"
+                        }).then(() => window.location.href = "/home");
+                    } else {
+                        console.error("❌ Payment Failed:", data);
+                        Swal.fire({
+                            icon: "error",
+                            title: "❌ Payment Failed",
+                            text: data.message || "Payment verification failed. Please try again."
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error("❌ Fetch Error:", error);
+                    Swal.fire({
+                        icon: "error",
+                        title: "❌ Payment Verification Error",
+                        text: "Could not verify payment. Please try again."
+                    });
+                });
+            },
+            onError(error) {
+                console.error("❌ Khalti Payment Error:", error);
+                Swal.fire({
+                    icon: "error",
+                    title: "❌ Payment Error",
+                    text: "Something went wrong! Please try again."
+                });
+            },
+        }
+    };
+
+    var checkout = new KhaltiCheckout(config);
+
+    document.getElementById("khalti-pay").addEventListener("click", function () {
+        console.log("🟢 Khalti Payment Button Clicked");
+        checkout.show({ amount: amountInPaisa });
+    });
+});
+
+    </script>
+</body>
+</html>

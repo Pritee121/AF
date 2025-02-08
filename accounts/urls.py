@@ -74,6 +74,10 @@ from django.urls import path
  # Import the chat_room view
 from django.urls import path
 from .views import update_work
+from django.urls import path
+from .views import get_available_slots
+from .views import get_available_dates, get_available_times
+
 
 urlpatterns = [
     # User Authentication
@@ -147,9 +151,12 @@ urlpatterns = [
     path('artist/reset/done/', 
          auth_views.PasswordResetCompleteView.as_view(template_name="accounts/artist_password_reset_complete.html"), 
          name='artist_password_reset_complete'),
-
+      path("get-available-slots/<int:artist_id>/", get_available_slots, name="get_available_slots"),
           path('update-work/<int:work_id>/', update_work, name='update_work'),
-     
+#      path("khalti-request/", khalti_request, name="khalti_request"),
+#     path("khalti-verify/", khalti_verify, name="khalti_verify"),
+path("get-available-dates/<int:artist_id>/", get_available_dates, name="get_available_dates"),
+    path("get-available-times/<int:artist_id>/", get_available_times, name="get_available_times"),
 ]
 
 # ✅ Serve media files during development only

@@ -69,23 +69,50 @@ class Work(models.Model):
 
 
 
+# class Service(models.Model):
+#     artist = models.ForeignKey(User, on_delete=models.CASCADE)  # Link to artist
+#     service_name = models.CharField(max_length=255)
+#     price = models.DecimalField(max_digits=10, decimal_places=2)
+#     available_date = models.DateField()
+#     available_time = models.TimeField()
+    
+#     duration = models.CharField(max_length=50, default="30 mins")  # ✅ Added duration field
+#     description = models.TextField(blank=True, null=True)  
+#     created_at = models.DateTimeField(auto_now_add=True)
+
+#     def __str__(self):
+#         return f"{self.service_name} ({self.duration}) - {self.artist.first_name}"
+
+
+
+
+from django.db import models
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+
 class Service(models.Model):
     artist = models.ForeignKey(User, on_delete=models.CASCADE)  # Link to artist
     service_name = models.CharField(max_length=255)
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    available_date = models.DateField()
-    available_time = models.TimeField()
-    
     duration = models.CharField(max_length=50, default="30 mins")  # ✅ Added duration field
-    description = models.TextField(blank=True, null=True)  
+    description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.service_name} ({self.duration}) - {self.artist.first_name}"
 
+class ServiceAvailability(models.Model):
+    service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name="availabilities")
+    available_date = models.DateField()
+    available_time = models.TimeField()
 
+    class Meta:
+        unique_together = ('service', 'available_date', 'available_time')  # Prevent duplicate entries
 
-
+    def __str__(self):
+        return f"{self.service.service_name} - {self.available_date} at {self.available_time}"
 
 
 
@@ -95,6 +122,33 @@ class Service(models.Model):
 
     
 
+
+# class Booking(models.Model):
+#     PAYMENT_CHOICES = [
+#         ("khalti", "Khalti"),
+#         ("cod", "Cash on Delivery"),
+#     ]
+#     STATUS_CHOICES = [
+#         ("Pending", "Pending"),
+#         ("Confirmed", "Confirmed"),
+#         ("Cancelled", "Cancelled"),
+#     ]
+#     artist = models.ForeignKey(User, on_delete=models.CASCADE, related_name="bookings")
+#     client = models.ForeignKey(User, on_delete=models.CASCADE, related_name="client_bookings")
+#     payment_method = models.CharField(max_length=10, choices=PAYMENT_CHOICES, default="cod")  # ✅ Add payment method
+#     date = models.DateField()
+#     payment_status = models.CharField(max_length=20, default="Pending") 
+#     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="Pending")  # ✅ Add Status Field
+#     service = models.ForeignKey(Service, on_delete=models.CASCADE, null=True, blank=True)  # ✅ Link to Service
+#     time = models.TimeField()
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     class Meta:
+#         unique_together = ('artist', 'date', 'time')  # ✅ Prevent duplicate bookings
+
+#     def __str__(self):
+#         return f"{self.client.first_name} booked {self.artist.first_name} for {self.service.service_name} on {self.date} using {self.payment_method}"
+    
+from django.core.exceptions import ValidationError
 
 class Booking(models.Model):
     PAYMENT_CHOICES = [
@@ -106,20 +160,35 @@ class Booking(models.Model):
         ("Confirmed", "Confirmed"),
         ("Cancelled", "Cancelled"),
     ]
+    
     artist = models.ForeignKey(User, on_delete=models.CASCADE, related_name="bookings")
     client = models.ForeignKey(User, on_delete=models.CASCADE, related_name="client_bookings")
-    payment_method = models.CharField(max_length=10, choices=PAYMENT_CHOICES, default="cod")  # ✅ Add payment method
+    service = models.ForeignKey(Service, on_delete=models.CASCADE, null=True, blank=True)
     date = models.DateField()
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="Pending")  # ✅ Add Status Field
-    service = models.ForeignKey(Service, on_delete=models.CASCADE, null=True, blank=True)  # ✅ Link to Service
     time = models.TimeField()
+    payment_method = models.CharField(max_length=10, choices=PAYMENT_CHOICES, default="cod")
+    payment_status = models.CharField(max_length=20, default="Pending")
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="Pending")
     created_at = models.DateTimeField(auto_now_add=True)
+
     class Meta:
         unique_together = ('artist', 'date', 'time')  # ✅ Prevent duplicate bookings
 
+    def clean(self):
+        """ ✅ Ensure artist is available at the selected time """
+        existing_booking = Booking.objects.filter(
+            artist=self.artist, date=self.date, time=self.time
+        ).exclude(id=self.id)  # Exclude the current instance during updates
+
+        if existing_booking.exists():
+            raise ValidationError(f"{self.artist.first_name} is already booked at this time.")
+
+    def save(self, *args, **kwargs):
+        self.clean()  # ✅ Ensure validation before saving
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.client.first_name} booked {self.artist.first_name} for {self.service.service_name} on {self.date} using {self.payment_method}"
-    
 
 
 

@@ -53,8 +53,10 @@
                     <th>⌛ Duration</th>
                     <th>💳 Payment</th>
                     <th>💰 Price</th>
+                   
                     <th>📌 Status</th>
                     <th>❌ Cancel</th>
+                    <th>💰 Payment Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -106,7 +108,26 @@
                     document.getElementById(`cancel-booking-${bookingId}`).submit();
                 }
             });
+        }function handleCODBooking(userId, serviceId) {
+    fetch("/cod_booking/", {
+        method: "POST",
+        body: JSON.stringify({
+            user_id: userId,
+            service_id: serviceId
+        }),
+        headers: { "Content-Type": "application/json" }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert("Booking successful! Payment is pending.");
+            window.location.href = "/dashboard";  // ✅ Redirect to Dashboard
+        } else {
+            alert("Booking failed! Please try again.");
         }
+    });
+}
+
     </script>
 
 </body>

@@ -455,24 +455,131 @@ def services(request):
 
 
 
+# from django.shortcuts import render, redirect
+# from django.contrib.auth.decorators import login_required
+# from .models import Service
+# from .forms import ServiceForm  # ✅ Ensure you have a form for adding a service
+
+# @login_required
+# def add_service(request):
+#     if request.method == "POST":
+#         form = ServiceForm(request.POST)
+#         if form.is_valid():
+#             service = form.save(commit=False)
+#             service.artist = request.user  # ✅ Ensure the logged-in artist is assigned
+#             service.save()
+#             return redirect("services")  # ✅ Redirect to services page after adding
+#     else:
+#         form = ServiceForm()
+
+#     return render(request, "accounts/add_service.html", {"form": form})
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
 from .models import Service
-from .forms import ServiceForm  # ✅ Ensure you have a form for adding a service
+from .forms import ServiceForm, ServiceAvailabilityFormSet
+from django.contrib.auth.decorators import login_required
 
 @login_required
 def add_service(request):
     if request.method == "POST":
-        form = ServiceForm(request.POST)
-        if form.is_valid():
-            service = form.save(commit=False)
-            service.artist = request.user  # ✅ Ensure the logged-in artist is assigned
-            service.save()
-            return redirect("services")  # ✅ Redirect to services page after adding
-    else:
-        form = ServiceForm()
+        service_form = ServiceForm(request.POST)
+        formset = ServiceAvailabilityFormSet(request.POST)
 
-    return render(request, "accounts/add_service.html", {"form": form})
+        if service_form.is_valid() and formset.is_valid():
+            service = service_form.save(commit=False)
+            service.artist = request.user  # Assign artist before saving
+            service.save()
+
+            availabilities = formset.save(commit=False)
+            for availability in availabilities:
+                availability.service = service
+                availability.save()
+
+            return redirect('services')  # Redirect after successful submission
+
+    else:
+        service_form = ServiceForm()
+        formset = ServiceAvailabilityFormSet()
+
+    return render(request, 'accounts/add_service.html', {
+        'service_form': service_form,
+        'formset': formset
+    })
+
+
+
+
+
+
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from .models import Booking, ServiceAvailability, User
+
+def get_available_slots(request, artist_id):
+    selected_date = request.GET.get("date")
+    artist = get_object_or_404(User, id=artist_id)
+
+    if not selected_date:
+        return JsonResponse({"error": "Invalid date selected"}, status=400)
+
+    # ✅ Get all booked slots for this artist and date
+    booked_slots = Booking.objects.filter(artist=artist, date=selected_date).values_list("time", flat=True)
+
+    # ✅ Get only the available time slots set by the artist for this date
+    available_slots = ServiceAvailability.objects.filter(
+        service__artist=artist, available_date=selected_date
+    ).values_list("available_time", flat=True)
+
+    # ✅ Convert to a list of time strings
+    booked_times = [time.strftime("%H:%M") for time in booked_slots]
+    artist_defined_times = [time.strftime("%H:%M") for time in available_slots]
+
+    # ✅ Show only available slots that are not booked
+    final_slots = [time for time in artist_defined_times if time not in booked_times]
+
+    return JsonResponse({"available_times": final_slots})
+
+
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from .models import ServiceAvailability, User
+
+def get_available_dates(request, artist_id):
+    """ ✅ Fetch only available dates for the artist """
+    artist = get_object_or_404(User, id=artist_id, is_artist=True)
+
+    # ✅ Get unique available dates
+    available_dates = ServiceAvailability.objects.filter(
+        service__artist=artist
+    ).values_list("available_date", flat=True).distinct()
+
+    # ✅ Convert dates to string format (YYYY-MM-DD) for JavaScript
+    available_dates = [date.strftime("%Y-%m-%d") for date in available_dates]
+
+    return JsonResponse({"available_dates": available_dates})
+
+
+
+
+def get_available_times(request, artist_id):
+    """ ✅ Fetch only available times for the selected date """
+    selected_date = request.GET.get("date")
+    artist = get_object_or_404(User, id=artist_id, is_artist=True)
+
+    if not selected_date:
+        return JsonResponse({"error": "Invalid date selected"}, status=400)
+
+    # ✅ Get available time slots for this date
+    available_slots = ServiceAvailability.objects.filter(
+        service__artist=artist, available_date=selected_date
+    ).values_list("available_time", flat=True)
+
+    # ✅ Convert time to string format (HH:MM)
+    available_times = [time.strftime("%H:%M") for time in available_slots]
+
+    return JsonResponse({"available_times": available_times})
+
+
+
 
 from django.shortcuts import render
 from .models import User
@@ -518,63 +625,197 @@ from django.contrib import messages
 from .models import Booking, Service
 from django.http import JsonResponse
 
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
-from django.db import IntegrityError
-from django.http import JsonResponse
-from .models import Booking, Service
-from django.utils.dateparse import parse_date
+# from django.shortcuts import render, get_object_or_404, redirect
+# from django.contrib import messages
+# from django.db import IntegrityError
+# from django.http import JsonResponse
+# from .models import Booking, Service
+# from django.utils.dateparse import parse_date
 
+# def book_artist(request, artist_id):
+#     artist = get_object_or_404(User, id=artist_id, is_artist=True)
+#     user = request.user
+#     services = Service.objects.filter(artist=artist)
+
+#     if request.method == "POST":
+#         date = request.POST.get("date")
+#         time = request.POST.get("time")
+#         service_id = request.POST.get("service")
+#         payment_method = request.POST.get("payment_method")
+
+#         # ✅ Validate required fields
+#         if not date or not time or not service_id or not payment_method:
+#             messages.error(request, "All fields are required. Please fill out the form completely.")
+#             return redirect('book_artist', artist_id=artist.id)
+
+#         selected_service = get_object_or_404(Service, id=service_id)
+
+#         # ✅ Check if the artist is already booked at this date & time
+#         if Booking.objects.filter(artist=artist, date=date, time=time).exists():
+#             messages.error(request, "This date and time slot is already booked. Please select another.")
+#             return redirect('book_artist', artist_id=artist.id)
+
+#         try:
+#             # ✅ Save booking
+#             booking = Booking.objects.create(
+#                 artist=artist,
+#                 client=user,
+#                 date=date,
+#                 time=time,
+#                 service=selected_service,
+#                 payment_method=payment_method
+#             )
+#             messages.success(request, f"Booking confirmed with {artist.first_name} for {selected_service.service_name} using {payment_method}!")
+
+#             # # ✅ Handle Khalti Payment
+#             # if payment_method == "khalti":
+#             #     return JsonResponse({"status": "redirect", "url": "/khalti-payment-url"})  # Replace with Khalti URL
+
+#             # return redirect("artist_chat")
+#             if payment_method == "khalti":
+#                 total_amount = int(selected_service.price) * 100  # Convert to paisa
+
+#             return JsonResponse({
+#             "status": "redirect",
+#             "url": f"/khalti-request/?amount={total_amount}&service_id={selected_service.id}&artist_id={artist.id}"
+#     })
+
+
+#         except IntegrityError:
+#             messages.error(request, "This time slot is not available. Please select a different time.")
+#             return redirect('book_artist', artist_id=artist.id)
+
+#     return render(request, 'accounts/book_artist.html', {
+#         'artist': artist,
+#         'user': user,
+#         'services': services
+#     })
+
+
+
+
+
+# from django.shortcuts import render, get_object_or_404, redirect
+# from django.contrib.auth.decorators import login_required
+# from django.contrib import messages
+# from django.http import JsonResponse
+# from .models import Booking, Service
+
+# @login_required
+# def book_artist(request, artist_id):
+#     artist = get_object_or_404(User, id=artist_id, is_artist=True)
+#     user = request.user
+#     services = Service.objects.filter(artist=artist)
+
+#     if request.method == "POST":
+#         date = request.POST.get("date")
+#         time = request.POST.get("time")
+#         service_id = request.POST.get("service")
+#         payment_method = request.POST.get("payment_method")
+
+#         # ✅ Validate required fields
+#         if not date or not time or not service_id or not payment_method:
+#             return JsonResponse({"status": "error", "message": "All fields are required."})
+
+#         selected_service = get_object_or_404(Service, id=service_id)
+
+#         # ✅ Check if the artist is already booked at this date & time
+#         if Booking.objects.filter(artist=artist, date=date, time=time).exists():
+#             return JsonResponse({"status": "error", "message": "This date and time slot is already booked."})
+
+#         # ✅ Save booking to the database
+#         booking = Booking.objects.create(
+#             artist=artist,
+#             client=user,
+#             date=date,
+#             time=time,
+#             service=selected_service,
+#             payment_method=payment_method
+#         )
+
+#         # ✅ Handle Khalti Payment
+#         if payment_method == "khalti":
+#             total_amount = int(selected_service.price) * 100  # Convert to paisa
+#             return JsonResponse({
+#                 "status": "redirect",
+#                 "url": f"/khalti-request/?amount={total_amount}&service_id={selected_service.id}&artist_id={artist.id}"
+#             })
+
+#         return JsonResponse({"status": "success", "message": "Booking confirmed!"})
+
+#     return render(request, 'accounts/book_artist.html', {
+#         'artist': artist,
+#         'user': user,
+#         'services': services
+#     })
+
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.core.exceptions import ValidationError
+from datetime import date
+from .models import Booking, Service, User, ServiceAvailability
+
+@login_required
 def book_artist(request, artist_id):
     artist = get_object_or_404(User, id=artist_id, is_artist=True)
     user = request.user
     services = Service.objects.filter(artist=artist)
 
     if request.method == "POST":
-        date = request.POST.get("date")
-        time = request.POST.get("time")
+        date_selected = request.POST.get("date")
+        time_selected = request.POST.get("time")
         service_id = request.POST.get("service")
         payment_method = request.POST.get("payment_method")
 
         # ✅ Validate required fields
-        if not date or not time or not service_id or not payment_method:
-            messages.error(request, "All fields are required. Please fill out the form completely.")
-            return redirect('book_artist', artist_id=artist.id)
+        if not date_selected or not time_selected or not service_id or not payment_method:
+            return JsonResponse({"status": "error", "message": "All fields are required."})
 
-        selected_service = get_object_or_404(Service, id=service_id)
+        # ✅ Ensure selected date is not in the past
+        if date.fromisoformat(date_selected) < date.today():
+            return JsonResponse({"status": "error", "message": "You cannot book past dates."})
+
+        selected_service = get_object_or_404(Service, id=service_id, artist=artist)
+
+        # ✅ Ensure the selected time slot exists in ServiceAvailability
+        if not ServiceAvailability.objects.filter(
+            service=selected_service, available_date=date_selected, available_time=time_selected
+        ).exists():
+            return JsonResponse({"status": "error", "message": "The selected time slot is not available."})
 
         # ✅ Check if the artist is already booked at this date & time
-        if Booking.objects.filter(artist=artist, date=date, time=time).exists():
-            messages.error(request, "This date and time slot is already booked. Please select another.")
-            return redirect('book_artist', artist_id=artist.id)
+        if Booking.objects.filter(artist=artist, date=date_selected, time=time_selected).exists():
+            return JsonResponse({"status": "error", "message": "This time slot is already booked. Choose another."})
 
-        try:
-            # ✅ Save booking
-            booking = Booking.objects.create(
-                artist=artist,
-                client=user,
-                date=date,
-                time=time,
-                service=selected_service,
-                payment_method=payment_method
-            )
-            messages.success(request, f"Booking confirmed with {artist.first_name} for {selected_service.service_name} using {payment_method}!")
+        # ✅ Save booking to the database
+        booking = Booking.objects.create(
+            artist=artist,
+            client=user,
+            date=date_selected,
+            time=time_selected,
+            service=selected_service,
+            payment_method=payment_method
+        )
 
-            # ✅ Handle Khalti Payment
-            if payment_method == "khalti":
-                return JsonResponse({"status": "redirect", "url": "/khalti-payment-url"})  # Replace with Khalti URL
+        # ✅ Handle Khalti Payment
+        if payment_method == "khalti":
+            total_amount = int(selected_service.price) * 100  # Convert to paisa
+            return JsonResponse({
+                "status": "redirect",
+                "url": f"/khalti-request/?amount={total_amount}&service_id={selected_service.id}&artist_id={artist.id}"
+            })
 
-            return redirect("artist_chat")
-
-        except IntegrityError:
-            messages.error(request, "This time slot is not available. Please select a different time.")
-            return redirect('book_artist', artist_id=artist.id)
+        return JsonResponse({"status": "success", "message": "Booking confirmed!"})
 
     return render(request, 'accounts/book_artist.html', {
         'artist': artist,
         'user': user,
         'services': services
     })
+
 
 
 
@@ -911,6 +1152,9 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import Work
+from django.conf import settings
+import requests
+
 from .forms import WorkUploadForm  # ✅ Ensure the form is imported
 
 @login_required(login_url='artist_login')
@@ -927,3 +1171,5 @@ def update_work(request, work_id):
         form = WorkUploadForm(instance=work)
 
     return render(request, "accounts/update_work.html", {"form": form, "work": work})
+
+

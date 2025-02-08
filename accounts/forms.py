@@ -95,34 +95,66 @@ class WorkUploadForm(forms.ModelForm):
         fields = ['title', 'description', 'image']
 
 
-### ✅ Service Form with Auto Duration Handling ###
+# ### ✅ Service Form with Auto Duration Handling ###
+# from django import forms
+# from .models import Service
+# from django.core.exceptions import ValidationError
+# from datetime import date
+
+# class ServiceForm(forms.ModelForm):
+#     class Meta:
+#         model = Service
+#         fields = ['service_name', 'price', 'available_date', 'duration', 'available_time', 'description']
+#         widgets = {
+#             'available_date': forms.DateInput(attrs={'type': 'date'}),
+#             'available_time': forms.TimeInput(attrs={'type': 'time'}),
+#         }
+
+#     def clean_duration(self):
+#         """ Ensure that duration is not empty """
+#         duration = self.cleaned_data.get('duration')
+#         if not duration:
+#             raise ValidationError("Duration cannot be empty.")
+#         return duration
+
+#     def clean_available_date(self):
+#         """ Ensure that the available date is not in the past """
+#         available_date = self.cleaned_data.get('available_date')
+#         if available_date and available_date < date.today():
+#             raise ValidationError("Available date cannot be in the past.")
+#         return available_date
 from django import forms
-from .models import Service
-from django.core.exceptions import ValidationError
+from .models import Service, ServiceAvailability
+from django.forms import inlineformset_factory
 from datetime import date
+from django.core.exceptions import ValidationError
 
 class ServiceForm(forms.ModelForm):
     class Meta:
         model = Service
-        fields = ['service_name', 'price', 'available_date', 'duration', 'available_time', 'description']
+        fields = ['service_name', 'price', 'duration', 'description']
+
+class ServiceAvailabilityForm(forms.ModelForm):
+    class Meta:
+        model = ServiceAvailability
+        fields = ['available_date', 'available_time']
         widgets = {
             'available_date': forms.DateInput(attrs={'type': 'date'}),
             'available_time': forms.TimeInput(attrs={'type': 'time'}),
         }
 
-    def clean_duration(self):
-        """ Ensure that duration is not empty """
-        duration = self.cleaned_data.get('duration')
-        if not duration:
-            raise ValidationError("Duration cannot be empty.")
-        return duration
-
     def clean_available_date(self):
-        """ Ensure that the available date is not in the past """
+        """ Ensure available date is not in the past """
         available_date = self.cleaned_data.get('available_date')
         if available_date and available_date < date.today():
             raise ValidationError("Available date cannot be in the past.")
         return available_date
+
+# ✅ Create Formset for Multiple Date & Time
+ServiceAvailabilityFormSet = inlineformset_factory(
+    Service, ServiceAvailability, form=ServiceAvailabilityForm,
+    extra=1, can_delete=True
+)
 
 
 from django import forms

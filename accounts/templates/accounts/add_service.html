@@ -6,19 +6,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Service</title>
     <link rel="stylesheet" href="{% static 'css/add_service.css' %}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
     <h1 class="text-center text-2xl font-bold mt-10">Add a New Service</h1>
 
-    <div class="container mx-auto p-6 bg-white shadow-md rounded-lg">
-        <form method="POST">
+    <div class="container mx-auto p-6 bg-white shadow-md rounded-lg max-w-lg">
+        <form method="POST" enctype="multipart/form-data" class="space-y-4">
             {% csrf_token %}
-            {{ form.as_p }}
+
+            <h3>Service Details</h3>
+            {{ service_form.as_p }}
+
+            <h3>Availability Slots</h3>
+            <div id="availability-formset">
+                {{ formset.management_form }}
+                {% for form in formset %}
+                    <div class="availability-entry">
+                        {{ form.as_p }}
+                        <button type="button" class="remove-slot">❌ Remove</button>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Add More Slots Button -->
+            <button type="button" id="add-slot" class="add-btn">➕ Add More Slots</button>
+
             <button type="submit" class="submit-btn">
                 Submit Service
             </button>
         </form>
-        
+
         <!-- Back to Services Button -->
         <div class="text-center mt-4">
             <a href="{% url 'services' %}" class="back-btn">
@@ -26,5 +44,32 @@
             </a>
         </div>
     </div>
+
+    <script>
+        $(document).ready(function () {
+            let formsetDiv = $("#availability-formset");
+            let totalForms = $("#id_availabilities-TOTAL_FORMS"); // Hidden input that keeps count
+            let formNum = parseInt(totalForms.val());  // Get the current count
+
+            $("#add-slot").click(function () {
+                let newForm = formsetDiv.find(".availability-entry:first").clone(true);
+                newForm.find("input").each(function () {
+                    let name = $(this).attr("name").replace("-0-", `-${formNum}-`);
+                    let id = $(this).attr("id").replace("-0-", `-${formNum}-`);
+                    $(this).attr({ name: name, id: id }).val("");  // Clear the fields
+                });
+
+                formsetDiv.append(newForm);
+                totalForms.val(formNum + 1);  // Update form count
+                formNum++;
+            });
+
+            $(document).on("click", ".remove-slot", function () {
+                $(this).closest(".availability-entry").remove();
+                formNum--;
+                totalForms.val(formNum);
+            });
+        });
+    </script>
 </body>
 </html>

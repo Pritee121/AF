@@ -20,3 +20,10 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+import requests
+headers = {"Authorization": "Key test_secret_key_XXXXXXXX"}
+payload = {"token": "test_token", "amount": 1000}
+response = requests.post("https://khalti.com/api/v2/payment/verify/", json=payload, headers=headers)
+print(response.json())
