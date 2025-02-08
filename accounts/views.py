@@ -17,58 +17,47 @@ from .forms import (
 )
 import random
 
-# # ✅ Artist Profile (Fully Fixed)
-# @login_required(login_url='artist_login')
-# def artist_profile(request):
-#     user = request.user
-
-#     if request.method == 'POST':
-#         form = ProfileUpdateForm(request.POST, request.FILES, instance=user)
-
-#         if form.is_valid():
-#             updated_user = form.save(commit=False)
-
-#             # ✅ Preserve password if not changed
-#             new_password = form.cleaned_data.get('password')
-#             if new_password:
-#                 updated_user.password = make_password(new_password)  # ✅ Hash new password
-#             else:
-#                 updated_user.password = user.password  # ✅ Keep old password
-
-#             updated_user.save()
-#             update_session_auth_hash(request, updated_user)  # ✅ Prevent logout after update
-
-#             return redirect('artist_profile')
-
-#     return render(request, 'accounts/artist_profile.html', {'form': ProfileUpdateForm(instance=user)})
 
 
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import update_session_auth_hash
+from django.contrib import messages
+from .forms import ProfileUpdateForm
+from .models import User
 
 @login_required(login_url='artist_login')
 def artist_profile(request):
-    if request.session.get('user_type') != 'artist':  # Ensure artist is logged in
+    if request.session.get('user_type') != 'artist':  # ✅ Ensure only artists can access
         return redirect('artist_login')
 
-    user = request.user  # Fetch logged-in artist data
+    user = request.user  # ✅ Get logged-in artist
 
     if request.method == 'POST':
         form = ProfileUpdateForm(request.POST, request.FILES, instance=user)
         if form.is_valid():
             updated_user = form.save(commit=False)
-            if not form.cleaned_data.get('password'):
-                updated_user.password = user.password
-            else:
-                updated_user.password = make_password(form.cleaned_data['password'])
-
+            
+            # ✅ Only update password if a new password is provided
+            new_password = form.cleaned_data.get('password')
+            if new_password:
+                updated_user.set_password(new_password)
+                update_session_auth_hash(request, updated_user)  # ✅ Keep user logged in
+            
             updated_user.save()
-            update_session_auth_hash(request, updated_user)
+            messages.success(request, "Profile updated successfully!")
             return redirect('artist_profile')
 
-    return render(request, 'accounts/artist_profile.html', {
-        'form': ProfileUpdateForm(instance=user),
-        'artist': user  # Pass artist-specific data
-    })
+        else:
+            messages.error(request, "Please correct the errors in the form.")
 
+    else:
+        form = ProfileUpdateForm(instance=user)
+
+    return render(request, 'accounts/artist_profile.html', {
+        'form': form,
+        'artist': user  # ✅ Pass artist-specific data
+    })
 
 
 
@@ -120,66 +109,7 @@ def verify_otp(request):
 
     return render(request, 'accounts/verify_otp.html', {'form': OTPForm()})
 
-# # ✅ User Login (Fully Fixed)
-# def login_page(request):
-#     if request.method == 'POST':
-#         form = LoginForm(request.POST)
-#         if form.is_valid():
-#             email = form.cleaned_data['email']
-#             password = form.cleaned_data['password']
-#             user = authenticate(request, email=email, password=password)
 
-#             if user is not None and not user.is_artist:
-#                 login(request, user)
-#                 return redirect('home')
-#             else:
-#                 form.add_error(None, 'Invalid email or password.')
-
-#     return render(request, 'accounts/login.html', {'form': LoginForm()})
-
-# def artist_login(request):
-#     if request.method == 'POST':
-#         form = LoginForm(request.POST)
-#         if form.is_valid():
-#             email = form.cleaned_data['email']
-#             password = form.cleaned_data['password']
-#             user = authenticate(request, email=email, password=password)  # ✅ Ensure correct authentication
-
-#             if user is None:
-#                 form.add_error(None, 'Invalid email or password.')
-#                 return render(request, "accounts/artist_login.html", {'form': form})
-
-#             if user.is_artist:
-#                 if not user.is_verified:
-#                     form.add_error(None, 'Account not verified. Please verify via OTP.')
-#                     return render(request, "accounts/artist_login.html", {'form': form})
-
-#                 login(request, user)  # ✅ Ensures user remains authenticated
-#                 return redirect('artist_dashboard')
-
-#             else:
-#                 form.add_error(None, 'Invalid email or password.')
-
-#     return render(request, "accounts/artist_login.html", {'form': LoginForm()})
-
-
-
-# def login_page(request):
-#     if request.method == 'POST':
-#         form = LoginForm(request.POST)
-#         if form.is_valid():
-#             email = form.cleaned_data['email']
-#             password = form.cleaned_data['password']
-#             user = authenticate(request, email=email, password=password)
-
-#             if user is not None and not user.is_artist:
-#                 login(request, user)
-#                 request.session['user_type'] = 'client'  # ✅ Track user type
-#                 return redirect('home')
-#             else:
-#                 form.add_error(None, 'Invalid email or password.')
-
-#     return render(request, 'accounts/login.html', {'form': LoginForm()})
 
 
 def login_page(request):
@@ -203,31 +133,6 @@ def login_page(request):
 
 
 
-# def artist_login(request):
-#     if request.method == 'POST':
-#         form = LoginForm(request.POST)
-#         if form.is_valid():
-#             email = form.cleaned_data['email']
-#             password = form.cleaned_data['password']
-#             user = authenticate(request, email=email, password=password)
-
-#             if user is None:
-#                 form.add_error(None, 'Invalid email or password.')
-#                 return render(request, "accounts/artist_login.html", {'form': form})
-
-#             if user.is_artist:
-#                 if not user.is_verified:
-#                     form.add_error(None, 'Account not verified. Please verify via OTP.')
-#                     return render(request, "accounts/artist_login.html", {'form': form})
-
-#                 login(request, user)
-#                 request.session['user_type'] = 'artist'  # ✅ Track artist login
-#                 return redirect('artist_dashboard')
-
-#             else:
-#                 form.add_error(None, 'Invalid email or password.')
-
-#     return render(request, "accounts/artist_login.html", {'form': LoginForm()})
 
 def artist_login(request):
     if request.method == 'POST':
@@ -257,30 +162,7 @@ def artist_login(request):
 
 
 
-# from django.shortcuts import render
-# from django.contrib.auth.decorators import login_required
-# from .models import User, Booking  # Import Booking model
 
-# @login_required(login_url='login')
-# def home_page(request):
-#     query = request.GET.get("search", "").strip()
-    
-#     if query:
-#         artists = User.objects.filter(city__icontains=query, is_artist=True)
-#         message = "No artists found in this city." if not artists.exists() else ""
-#     else:
-#         artists = User.objects.filter(is_artist=True)
-#         message = ""
-
-#     # ✅ Fetch all artist IDs where the user has a confirmed booking
-#     booked_artists = Booking.objects.filter(client=request.user, status="Confirmed").values_list('artist_id', flat=True)
-
-#     return render(request, "accounts/home.html", {
-#         "artists": artists,
-#         "query": query,
-#         "message": message,
-#         "booked_artists": list(booked_artists)  # Convert to list for easy use in template
-#     })
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
@@ -455,24 +337,7 @@ def services(request):
 
 
 
-# from django.shortcuts import render, redirect
-# from django.contrib.auth.decorators import login_required
-# from .models import Service
-# from .forms import ServiceForm  # ✅ Ensure you have a form for adding a service
 
-# @login_required
-# def add_service(request):
-#     if request.method == "POST":
-#         form = ServiceForm(request.POST)
-#         if form.is_valid():
-#             service = form.save(commit=False)
-#             service.artist = request.user  # ✅ Ensure the logged-in artist is assigned
-#             service.save()
-#             return redirect("services")  # ✅ Redirect to services page after adding
-#     else:
-#         form = ServiceForm()
-
-#     return render(request, "accounts/add_service.html", {"form": form})
 from django.shortcuts import render, redirect
 from .models import Service
 from .forms import ServiceForm, ServiceAvailabilityFormSet
@@ -625,129 +490,7 @@ from django.contrib import messages
 from .models import Booking, Service
 from django.http import JsonResponse
 
-# from django.shortcuts import render, get_object_or_404, redirect
-# from django.contrib import messages
-# from django.db import IntegrityError
-# from django.http import JsonResponse
-# from .models import Booking, Service
-# from django.utils.dateparse import parse_date
 
-# def book_artist(request, artist_id):
-#     artist = get_object_or_404(User, id=artist_id, is_artist=True)
-#     user = request.user
-#     services = Service.objects.filter(artist=artist)
-
-#     if request.method == "POST":
-#         date = request.POST.get("date")
-#         time = request.POST.get("time")
-#         service_id = request.POST.get("service")
-#         payment_method = request.POST.get("payment_method")
-
-#         # ✅ Validate required fields
-#         if not date or not time or not service_id or not payment_method:
-#             messages.error(request, "All fields are required. Please fill out the form completely.")
-#             return redirect('book_artist', artist_id=artist.id)
-
-#         selected_service = get_object_or_404(Service, id=service_id)
-
-#         # ✅ Check if the artist is already booked at this date & time
-#         if Booking.objects.filter(artist=artist, date=date, time=time).exists():
-#             messages.error(request, "This date and time slot is already booked. Please select another.")
-#             return redirect('book_artist', artist_id=artist.id)
-
-#         try:
-#             # ✅ Save booking
-#             booking = Booking.objects.create(
-#                 artist=artist,
-#                 client=user,
-#                 date=date,
-#                 time=time,
-#                 service=selected_service,
-#                 payment_method=payment_method
-#             )
-#             messages.success(request, f"Booking confirmed with {artist.first_name} for {selected_service.service_name} using {payment_method}!")
-
-#             # # ✅ Handle Khalti Payment
-#             # if payment_method == "khalti":
-#             #     return JsonResponse({"status": "redirect", "url": "/khalti-payment-url"})  # Replace with Khalti URL
-
-#             # return redirect("artist_chat")
-#             if payment_method == "khalti":
-#                 total_amount = int(selected_service.price) * 100  # Convert to paisa
-
-#             return JsonResponse({
-#             "status": "redirect",
-#             "url": f"/khalti-request/?amount={total_amount}&service_id={selected_service.id}&artist_id={artist.id}"
-#     })
-
-
-#         except IntegrityError:
-#             messages.error(request, "This time slot is not available. Please select a different time.")
-#             return redirect('book_artist', artist_id=artist.id)
-
-#     return render(request, 'accounts/book_artist.html', {
-#         'artist': artist,
-#         'user': user,
-#         'services': services
-#     })
-
-
-
-
-
-# from django.shortcuts import render, get_object_or_404, redirect
-# from django.contrib.auth.decorators import login_required
-# from django.contrib import messages
-# from django.http import JsonResponse
-# from .models import Booking, Service
-
-# @login_required
-# def book_artist(request, artist_id):
-#     artist = get_object_or_404(User, id=artist_id, is_artist=True)
-#     user = request.user
-#     services = Service.objects.filter(artist=artist)
-
-#     if request.method == "POST":
-#         date = request.POST.get("date")
-#         time = request.POST.get("time")
-#         service_id = request.POST.get("service")
-#         payment_method = request.POST.get("payment_method")
-
-#         # ✅ Validate required fields
-#         if not date or not time or not service_id or not payment_method:
-#             return JsonResponse({"status": "error", "message": "All fields are required."})
-
-#         selected_service = get_object_or_404(Service, id=service_id)
-
-#         # ✅ Check if the artist is already booked at this date & time
-#         if Booking.objects.filter(artist=artist, date=date, time=time).exists():
-#             return JsonResponse({"status": "error", "message": "This date and time slot is already booked."})
-
-#         # ✅ Save booking to the database
-#         booking = Booking.objects.create(
-#             artist=artist,
-#             client=user,
-#             date=date,
-#             time=time,
-#             service=selected_service,
-#             payment_method=payment_method
-#         )
-
-#         # ✅ Handle Khalti Payment
-#         if payment_method == "khalti":
-#             total_amount = int(selected_service.price) * 100  # Convert to paisa
-#             return JsonResponse({
-#                 "status": "redirect",
-#                 "url": f"/khalti-request/?amount={total_amount}&service_id={selected_service.id}&artist_id={artist.id}"
-#             })
-
-#         return JsonResponse({"status": "success", "message": "Booking confirmed!"})
-
-#     return render(request, 'accounts/book_artist.html', {
-#         'artist': artist,
-#         'user': user,
-#         'services': services
-#     })
 
 
 

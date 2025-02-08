@@ -50,27 +50,60 @@ class ProfileUpdateForm(forms.ModelForm):
 
 
 
+# from django import forms
+# from .models import User
+
+# class ArtistRegisterForm(forms.ModelForm):
+#     password = forms.CharField(widget=forms.PasswordInput())
+#     confirm_password = forms.CharField(widget=forms.PasswordInput())
+
+#     class Meta:
+#         model = User
+#         fields = ['first_name', 'last_name', 'email', 'phone', 'city', 'works_at', 'experience_years', 'training_certificate']
+
+#     def clean(self):
+#         cleaned_data = super().clean()
+#         password = cleaned_data.get("password")
+#         confirm_password = cleaned_data.get("confirm_password")
+
+#         if password and confirm_password and password != confirm_password:
+#             self.add_error('confirm_password', "Passwords do not match!")
+
+#         return cleaned_data
 from django import forms
 from .models import User
+from django.core.exceptions import ValidationError
 
 class ArtistRegisterForm(forms.ModelForm):
-    password = forms.CharField(widget=forms.PasswordInput())
-    confirm_password = forms.CharField(widget=forms.PasswordInput())
+    password = forms.CharField(widget=forms.PasswordInput(), label="Password", min_length=6)
+    confirm_password = forms.CharField(widget=forms.PasswordInput(), label="Confirm Password")
+    profile_image = forms.ImageField(required=False, label="Upload Profile Image")
 
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'phone', 'password', 
-                  'city', 'works_at', 'experience_years', 'training_certificate']
+        fields = ['first_name', 'last_name', 'email', 'phone', 'city',
+                  'works_at', 'experience_years', 'training_certificate', 'profile_image']
 
-    def clean(self):
-        cleaned_data = super().clean()
-        password = cleaned_data.get("password")
-        confirm_password = cleaned_data.get("confirm_password")
+    def clean_confirm_password(self):
+        """ ✅ Ensure passwords match """
+        password = self.cleaned_data.get("password")
+        confirm_password = self.cleaned_data.get("confirm_password")
 
         if password and confirm_password and password != confirm_password:
-            self.add_error('confirm_password', "Passwords do not match!")
+            raise ValidationError("Passwords do not match!")
+        
+        return confirm_password  # ✅ Ensure correct indentation
 
-        return cleaned_data
+    def clean_profile_image(self):
+        """ ✅ Validate profile image format """
+        image = self.cleaned_data.get("profile_image")
+
+        if image:
+            allowed_formats = ["image/jpeg", "image/png", "image/jpg"]
+            if image.content_type not in allowed_formats:
+                raise ValidationError("Only JPEG and PNG images are allowed.")
+        
+        return image  # ✅ Ensure correct indentation
 
 
 

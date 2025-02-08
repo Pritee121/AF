@@ -91,7 +91,7 @@ WSGI_APPLICATION = 'AF.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'ArtistFinderDetails22.sqlite3',
+        'NAME': BASE_DIR / 'ArtistFinderDetails222.sqlite3',
     }
 }
 

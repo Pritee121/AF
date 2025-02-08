@@ -12,11 +12,17 @@
     <div class="container">
         <!-- Sidebar: Artist Details -->
         <aside class="sidebar">
-           
-
             <h2>{{ user.first_name }} {{ user.last_name }}</h2>
             <p><strong>Email:</strong> {{ user.email }}</p>
             <p><strong>Phone:</strong> {{ user.phone }}</p>
+
+            <!-- ✅ Display the artist's profile image or a default image -->
+            {% if user.artist_profile_image %}
+                <img src="{{ user.artist_profile_image.url }}" alt="Artist Profile Image" class="profile-image">
+            {% else %}
+                <img src="{% static 'images/default_profile.png' %}" alt="Default Profile Image" class="profile-image">
+            {% endif %}
+
             <p><strong>City:</strong> {{ user.city|default:"Not Provided" }}</p>
             <p><strong>Works At:</strong> {{ user.works_at|default:"Freelance Artist" }}</p>
             <p><strong>Experience:</strong> {{ user.experience_years|default:"0" }}+ years</p>
@@ -50,6 +56,10 @@
 
                 <label>Training Certificate:</label>
                 <input type="file" name="training_certificate">
+
+                <!-- ✅ Allow artist to upload a new profile image -->
+                <label>Update Profile Image:</label>
+                <input type="file" name="artist_profile_image">
 
                 <button type="submit" class="update-btn">Save Changes</button>
             </form>
