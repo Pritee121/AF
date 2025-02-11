@@ -7,6 +7,99 @@
     <title>Artist Dashboard</title>
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        /* General Button Styles */
+        
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(90deg, #D8648C, #b34d74);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 16px;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.btn i {
+    margin-right: 8px;
+}
+
+/* Hover Effect */
+.btn:hover {
+    background: linear-gradient(90deg, #b34d74, #D8648C);
+    transform: scale(1.05);
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Update Button */
+.update-btn {
+    background: #4CAF50;
+    color: white;
+    padding: 10px 15px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-block;
+    transition: 0.3s ease-in-out;
+}
+
+.update-btn:hover {
+    background: #45a049;
+    transform: scale(1.05);
+}
+
+/* Delete Button */
+.delete-btn {
+    background: #D8648C;
+    color: white;
+    padding: 10px 15px;
+    font-size: 14px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s ease-in-out;
+}
+
+.delete-btn:hover {
+    background: #b34d74;
+    transform: scale(1.05);
+}
+
+/* Small Button */
+.btn-small {
+    padding: 8px 12px;
+    font-size: 14px;
+    border-radius: 5px;
+}
+
+/* Large Button */
+.btn-large {
+    padding: 15px 25px;
+    font-size: 18px;
+    border-radius: 10px;
+}
+
+/* Disabled Button */
+.btn:disabled,
+.btn[disabled] {
+    background: #ccc;
+    color: #666;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+    </style>
 </head>
 <body>
     <!-- Header -->
@@ -20,6 +113,7 @@
             <a href="{% url 'add_work' %}" class="nav-item">Add Work</a>
             <a href="{% url 'services' %}" class="nav-item">Services</a>
             <a href="{% url 'bookings' %}" class="nav-item">Bookings</a>
+            <a href="{% url 'certificates' %}" class="nav-item">Certificates</a>
             <a href="{% url 'availability_status' %}" class="nav-item">Availability Status</a>
             <a href="{% url 'artist_logout' %}" class="nav-item logout">Logout</a>
         </nav>

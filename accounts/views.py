@@ -472,6 +472,23 @@ def artist_detail(request, artist_id):
 
 
 
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import User
+
+@login_required
+def certificates_page(request):
+    user = request.user  # Get logged-in user
+
+    if request.method == "POST":
+        if "training_certificate" in request.FILES:
+            user.training_certificate = request.FILES["training_certificate"]
+            user.save()
+            messages.success(request, "Certificate uploaded successfully!")
+            return redirect("certificates")
+
+    return render(request, "accounts/certificates.html", {"user": user})
 
 
 
@@ -479,6 +496,35 @@ def artist_detail(request, artist_id):
 
 
 
+
+
+
+# from django.shortcuts import get_object_or_404
+# from django.http import HttpResponse
+# from django.utils.timezone import now
+# from accounts.models import Booking, User, Service
+
+# def khalti_request(request, amount, artist_id, user_id, service_id):
+#     user = get_object_or_404(User, id=user_id)
+#     artist = get_object_or_404(User, id=artist_id, is_artist=True)
+#     service = get_object_or_404(Service, id=service_id)
+
+#     # ✅ Create a booking WITHOUT 'amount' (service price is already in the Service model)
+#     booking = Booking.objects.create(
+#         client=user,
+#         artist=artist,
+#         service=service,
+#         date=now(),  # ✅ Ensure a valid date is passed
+#         time=now().time(),  # ✅ Set the time dynamically
+#         payment_method="khalti",  # ✅ Assuming Khalti payment
+#         payment_status="Pending",
+#         status="Pending",
+#         transaction_id=None  # ✅ Transaction will be added after payment
+#     )
+
+#     booking.save()
+
+#     return HttpResponse(f"Booking successful for service: {service.service_name} at Rs. {service.price}")
 
 
 
@@ -914,5 +960,7 @@ def update_work(request, work_id):
         form = WorkUploadForm(instance=work)
 
     return render(request, "accounts/update_work.html", {"form": form, "work": work})
+
+
 
 

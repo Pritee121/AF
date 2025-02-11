@@ -50,26 +50,6 @@ class ProfileUpdateForm(forms.ModelForm):
 
 
 
-# from django import forms
-# from .models import User
-
-# class ArtistRegisterForm(forms.ModelForm):
-#     password = forms.CharField(widget=forms.PasswordInput())
-#     confirm_password = forms.CharField(widget=forms.PasswordInput())
-
-#     class Meta:
-#         model = User
-#         fields = ['first_name', 'last_name', 'email', 'phone', 'city', 'works_at', 'experience_years', 'training_certificate']
-
-#     def clean(self):
-#         cleaned_data = super().clean()
-#         password = cleaned_data.get("password")
-#         confirm_password = cleaned_data.get("confirm_password")
-
-#         if password and confirm_password and password != confirm_password:
-#             self.add_error('confirm_password', "Passwords do not match!")
-
-#         return cleaned_data
 from django import forms
 from .models import User
 from django.core.exceptions import ValidationError
@@ -128,34 +108,7 @@ class WorkUploadForm(forms.ModelForm):
         fields = ['title', 'description', 'image']
 
 
-# ### ✅ Service Form with Auto Duration Handling ###
-# from django import forms
-# from .models import Service
-# from django.core.exceptions import ValidationError
-# from datetime import date
 
-# class ServiceForm(forms.ModelForm):
-#     class Meta:
-#         model = Service
-#         fields = ['service_name', 'price', 'available_date', 'duration', 'available_time', 'description']
-#         widgets = {
-#             'available_date': forms.DateInput(attrs={'type': 'date'}),
-#             'available_time': forms.TimeInput(attrs={'type': 'time'}),
-#         }
-
-#     def clean_duration(self):
-#         """ Ensure that duration is not empty """
-#         duration = self.cleaned_data.get('duration')
-#         if not duration:
-#             raise ValidationError("Duration cannot be empty.")
-#         return duration
-
-#     def clean_available_date(self):
-#         """ Ensure that the available date is not in the past """
-#         available_date = self.cleaned_data.get('available_date')
-#         if available_date and available_date < date.today():
-#             raise ValidationError("Available date cannot be in the past.")
-#         return available_date
 from django import forms
 from .models import Service, ServiceAvailability
 from django.forms import inlineformset_factory

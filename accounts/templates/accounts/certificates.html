@@ -1,0 +1,42 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificates</title>
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+</head>
+<body>
+
+    <div class="container">
+        <h2>Upload Your Certificates</h2>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label for="files">Upload Certificates:</label>
+            <input type="file" name="files" multiple required>  <!-- ✅ Multiple files allowed -->
+            <button type="submit">Upload</button>
+        </form>
+        
+        
+        <h2>Your Certificates</h2>
+        {% if certificates %}
+            <div class="certificates-grid">
+                {% for certificate in certificates %}
+                    <div class="certificate-card">
+                        <p>Uploaded: {{ certificate.uploaded_at|date:"Y-m-d" }}</p>
+                        <a href="{{ certificate.file.url }}" target="_blank">View Certificate</a>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="no-certificates">No certificates uploaded yet.</p>
+        {% endif %}
+        
+        
+        
+    </div>
+
+</body>
+</html>

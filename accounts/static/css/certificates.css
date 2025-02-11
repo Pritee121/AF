@@ -1,0 +1,102 @@
+/* ✅ General Page Styling */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* ✅ Container for Certificates */
+.container {
+    background: white;
+    padding: 20px;
+    max-width: 500px;
+    width: 90%;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+/* ✅ Heading */
+h2 {
+    color: #333;
+    margin-bottom: 15px;
+}
+
+/* ✅ Certificate Upload Section */
+p {
+    font-size: 16px;
+    color: #555;
+}
+
+a {
+    display: inline-block;
+    background: #4CAF50;
+    color: white;
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    margin-top: 10px;
+    transition: 0.3s ease-in-out;
+}
+
+a:hover {
+    background: #45a049;
+}
+
+/* ✅ File Upload Form */
+form {
+    margin-top: 20px;
+    text-align: center;
+}
+
+label {
+    font-size: 14px;
+    font-weight: bold;
+    color: #444;
+    display: block;
+    margin-bottom: 8px;
+}
+
+input[type="file"] {
+    display: block;
+    margin: 0 auto 10px auto;
+    padding: 5px;
+}
+
+button {
+    background: #007bff;
+    color: white;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.3s ease-in-out;
+}
+
+button:hover {
+    background: #0056b3;
+}
+
+/* ✅ Back Button */
+.back-button {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 8px 14px;
+    background: #ff4b5c;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.3s ease-in-out;
+}
+
+.back-button:hover {
+    background: #c0392b;
+}

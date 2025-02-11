@@ -4,6 +4,7 @@
 
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
+from django.utils.timezone import now
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -127,10 +128,13 @@ class Booking(models.Model):
     artist = models.ForeignKey(User, on_delete=models.CASCADE, related_name="bookings")
     client = models.ForeignKey(User, on_delete=models.CASCADE, related_name="client_bookings")
     service = models.ForeignKey(Service, on_delete=models.CASCADE, null=True, blank=True)
-    date = models.DateField()
+    # date = models.DateField()
+    date = models.DateTimeField(default=now, blank=True, null=True)
+
     time = models.TimeField()
     payment_method = models.CharField(max_length=10, choices=PAYMENT_CHOICES, default="cod")
     payment_status = models.CharField(max_length=20, default="Pending")
+    # transaction_id = models.CharField(max_length=100, null=True, blank=True) 
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="Pending")
     created_at = models.DateTimeField(auto_now_add=True)
 

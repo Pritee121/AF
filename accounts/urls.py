@@ -79,6 +79,7 @@ from .views import get_available_slots
 from .views import get_available_dates, get_available_times
 
 
+
 urlpatterns = [
     # User Authentication
     path('', views.register_page, name='register'),
@@ -157,6 +158,11 @@ urlpatterns = [
 #     path("khalti-verify/", khalti_verify, name="khalti_verify"),
 path("get-available-dates/<int:artist_id>/", get_available_dates, name="get_available_dates"),
     path("get-available-times/<int:artist_id>/", get_available_times, name="get_available_times"),
+     path("certificates/", views.certificates_page, name="certificates"),  # ✅ Make sure the name is 'certificates'
+     
+
+     
+     
 ]
 
 # ✅ Serve media files during development only

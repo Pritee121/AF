@@ -91,7 +91,7 @@ WSGI_APPLICATION = 'AF.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'ArtistFinderDetails222.sqlite3',
+        'NAME': BASE_DIR / 'ArtistFinderDetails07.sqlite3',
     }
 }
 
@@ -253,10 +253,8 @@ JAZZMIN_SETTINGS = {
 
 
 
-# settings.py
-KHALTI_SECRET_KEY = "YOUR_KHALTI_SECRET_KEY"
-KHALTI_PUBLIC_KEY = "YOUR_KHALTI_PUBLIC_KEY"
-KHALTI_VERIFY_URL = "https://khalti.com/api/v2/payment/verify/"
-KHALTI_INITIATE_URL = "https://khalti.com/api/v2/payment/initiate/"
+
+
+
 
 

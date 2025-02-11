@@ -17,8 +17,8 @@
             <p><strong>Phone:</strong> {{ user.phone }}</p>
 
             <!-- ✅ Display the artist's profile image or a default image -->
-            {% if user.artist_profile_image %}
-                <img src="{{ user.artist_profile_image.url }}" alt="Artist Profile Image" class="profile-image">
+            {% if user.profile_image %}
+                <img src="{{ user.profile_image.url }}" alt="Artist Profile Image" class="profile-image">
             {% else %}
                 <img src="{% static 'images/default_profile.png' %}" alt="Default Profile Image" class="profile-image">
             {% endif %}
@@ -26,6 +26,20 @@
             <p><strong>City:</strong> {{ user.city|default:"Not Provided" }}</p>
             <p><strong>Works At:</strong> {{ user.works_at|default:"Freelance Artist" }}</p>
             <p><strong>Experience:</strong> {{ user.experience_years|default:"0" }}+ years</p>
+
+            <!-- ✅ Display Existing Certificates -->
+            <h3>Uploaded Certificates</h3>
+            {% if user.certificates.all %}
+                <ul>
+                    {% for certificate in user.certificates.all %}
+                        <li>
+                            <a href="{{ certificate.file.url }}" target="_blank">View Certificate {{ forloop.counter }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No certificates uploaded.</p>
+            {% endif %}
         </aside>
 
         <!-- Main Profile Section: Editable Form -->
@@ -54,12 +68,13 @@
                 <label>Experience (Years):</label>
                 <input type="number" name="experience_years" value="{{ form.experience_years.value }}">
 
-                <label>Training Certificate:</label>
-                <input type="file" name="training_certificate">
-
                 <!-- ✅ Allow artist to upload a new profile image -->
                 <label>Update Profile Image:</label>
-                <input type="file" name="artist_profile_image">
+                <input type="file" name="profile_image">
+
+                <!-- ✅ New Section for Certificate Upload -->
+                <label>Upload New Certificates:</label>
+                <input type="file" name="certificates" multiple accept="application/pdf,image/*">  
 
                 <button type="submit" class="update-btn">Save Changes</button>
             </form>
