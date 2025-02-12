@@ -385,46 +385,85 @@ def get_available_slots(request, artist_id):
     return JsonResponse({"available_times": final_slots})
 
 
+# from django.http import JsonResponse
+# from django.shortcuts import get_object_or_404
+# from .models import ServiceAvailability, User
+
+# def get_available_dates(request, artist_id):
+#     """ ✅ Fetch only available dates for the artist """
+#     artist = get_object_or_404(User, id=artist_id, is_artist=True)
+
+#     # ✅ Get unique available dates
+#     available_dates = ServiceAvailability.objects.filter(
+#         service__artist=artist
+#     ).values_list("available_date", flat=True).distinct()
+
+#     # ✅ Convert dates to string format (YYYY-MM-DD) for JavaScript
+#     available_dates = [date.strftime("%Y-%m-%d") for date in available_dates]
+
+#     return JsonResponse({"available_dates": available_dates})
+
+
+
+
+# def get_available_times(request, artist_id):
+#     """ ✅ Fetch only available times for the selected date """
+#     selected_date = request.GET.get("date")
+#     artist = get_object_or_404(User, id=artist_id, is_artist=True)
+
+#     if not selected_date:
+#         return JsonResponse({"error": "Invalid date selected"}, status=400)
+
+#     # ✅ Get available time slots for this date
+#     available_slots = ServiceAvailability.objects.filter(
+#         service__artist=artist, available_date=selected_date
+#     ).values_list("available_time", flat=True)
+
+#     # ✅ Convert time to string format (HH:MM)
+#     available_times = [time.strftime("%H:%M") for time in available_slots]
+
+#     return JsonResponse({"available_times": available_times})
+
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
-from .models import ServiceAvailability, User
+from .models import ServiceAvailability, Service
 
 def get_available_dates(request, artist_id):
-    """ ✅ Fetch only available dates for the artist """
-    artist = get_object_or_404(User, id=artist_id, is_artist=True)
+    """ ✅ Fetch only available dates for the selected service """
+    service_id = request.GET.get("service_id")  # ✅ Get selected service ID
 
-    # ✅ Get unique available dates
-    available_dates = ServiceAvailability.objects.filter(
-        service__artist=artist
-    ).values_list("available_date", flat=True).distinct()
+    if not service_id:
+        return JsonResponse({"error": "Service ID is required"}, status=400)
+
+    service = get_object_or_404(Service, id=service_id, artist_id=artist_id)  # ✅ Ensure the service belongs to the artist
+
+    # ✅ Get unique available dates for the selected service
+    available_dates = ServiceAvailability.objects.filter(service=service).values_list("available_date", flat=True).distinct()
 
     # ✅ Convert dates to string format (YYYY-MM-DD) for JavaScript
     available_dates = [date.strftime("%Y-%m-%d") for date in available_dates]
 
     return JsonResponse({"available_dates": available_dates})
 
-
-
-
 def get_available_times(request, artist_id):
-    """ ✅ Fetch only available times for the selected date """
+    """ ✅ Fetch only available times for the selected date and service """
     selected_date = request.GET.get("date")
-    artist = get_object_or_404(User, id=artist_id, is_artist=True)
+    service_id = request.GET.get("service_id")  # ✅ Get selected service ID
 
-    if not selected_date:
-        return JsonResponse({"error": "Invalid date selected"}, status=400)
+    if not selected_date or not service_id:
+        return JsonResponse({"error": "Service ID and date are required"}, status=400)
 
-    # ✅ Get available time slots for this date
+    service = get_object_or_404(Service, id=service_id, artist_id=artist_id)
+
+    # ✅ Get available time slots for this service & date
     available_slots = ServiceAvailability.objects.filter(
-        service__artist=artist, available_date=selected_date
+        service=service, available_date=selected_date
     ).values_list("available_time", flat=True)
 
     # ✅ Convert time to string format (HH:MM)
     available_times = [time.strftime("%H:%M") for time in available_slots]
 
     return JsonResponse({"available_times": available_times})
-
-
 
 
 from django.shortcuts import render

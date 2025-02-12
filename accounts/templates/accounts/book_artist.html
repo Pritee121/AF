@@ -45,7 +45,7 @@
 
             <!-- ✅ Service Dropdown -->
             <label for="service">Select Service:</label>
-            <select id="service" name="service" required onchange="updateDuration()">
+            <select id="service" name="service" required>
                 <option value="" disabled selected>Choose a service</option>
                 {% for service in services %}
                     <option value="{{ service.id }}" data-duration="{{ service.duration }}">
@@ -62,11 +62,11 @@
 
             <!-- ✅ Select Date -->
             <label for="date">Select Date:</label>
-            <input type="text" id="date" name="date" required placeholder="Choose a date">
+            <input type="text" id="date" name="date" required placeholder="Choose a date" disabled>
 
             <!-- ✅ Select Time -->
             <label for="time">Select Time:</label>
-            <select id="time" name="time" required>
+            <select id="time" name="time" required disabled>
                 <option value="" disabled selected>Select time</option>
             </select>
 
@@ -82,109 +82,220 @@
     </div>
 
     <!-- ✅ JavaScript -->
+    <!-- <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let dateInput = document.getElementById("date");
+            let serviceSelect = document.getElementById("service");
+            let timeInput = document.getElementById("time");
+
+            function fetchAvailableDates(serviceId) {
+                fetch(`/get-available-dates/{{ artist.id }}/?service_id=${serviceId}`)  // ✅ Fetch dates for selected service
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.available_dates.length === 0) {
+                            Swal.fire({
+                                icon: "info",
+                                title: "No Available Dates",
+                                text: "This service has no available slots. Please check later.",
+                                confirmButtonText: "OK"
+                            });
+                            dateInput.disabled = true;
+                            dateInput.value = "";
+                            timeInput.innerHTML = "<option value='' disabled selected>Choose a time</option>";
+                            timeInput.disabled = true;
+                        } else {
+                            dateInput.disabled = false;
+
+                            // ✅ Initialize Flatpickr with restricted dates
+                            flatpickr(dateInput, {
+                                dateFormat: "Y-m-d",
+                                enable: data.available_dates,  // ✅ Restrict to available dates
+                                disableMobile: true,
+                                onChange: function (selectedDates, dateStr) {
+                                    fetchAvailableTimes(serviceId, dateStr);
+                                }
+                            });
+                        }
+                    })
+                    .catch(error => console.error("Error fetching available dates:", error));
+            }
+
+            function fetchAvailableTimes(serviceId, date) {
+                fetch(`/get-available-times/{{ artist.id }}/?service_id=${serviceId}&date=${date}`)  // ✅ Fetch times for selected service
+                    .then(response => response.json())
+                    .then(data => {
+                        timeInput.innerHTML = "<option value='' disabled selected>Choose a time</option>";
+
+                        if (data.available_times.length === 0) {
+                            Swal.fire({
+                                icon: "info",
+                                title: "No Available Slots",
+                                text: "No slots available for this date. Please choose another date.",
+                                confirmButtonText: "OK"
+                            });
+                            timeInput.disabled = true;
+                        } else {
+                            timeInput.disabled = false;
+                            data.available_times.forEach(time => {
+                                let option = document.createElement("option");
+                                option.value = time;
+                                option.textContent = time;
+                                timeInput.appendChild(option);
+                            });
+                        }
+                    })
+                    .catch(error => console.error("Error fetching available times:", error));
+            }
+
+            // ✅ When a service is selected, fetch available dates
+            serviceSelect.addEventListener("change", function () {
+                let selectedServiceId = this.value;
+                if (selectedServiceId) {
+                    fetchAvailableDates(selectedServiceId);
+                    dateInput.value = "";
+                    dateInput.disabled = true;
+                    timeInput.innerHTML = "<option value='' disabled selected>Choose a time</option>";
+                    timeInput.disabled = true;
+                }
+            });
+
+            // ✅ Ensure duration updates when service changes
+            serviceSelect.addEventListener("change", function () {
+                let selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
+                document.getElementById("duration").value = selectedOption.getAttribute("data-duration") || "";
+            });
+
+            // ✅ Initialize Flatpickr to ensure it's working
+            flatpickr(dateInput, { dateFormat: "Y-m-d" });
+        });
+    </script> -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             let dateInput = document.getElementById("date");
+            let serviceSelect = document.getElementById("service");
             let timeInput = document.getElementById("time");
-
-            // ✅ Fetch only available dates for the artist
-            fetch(`/get-available-dates/{{ artist.id }}/`)
+            let bookingForm = document.getElementById("booking-form");
+    
+            function fetchAvailableDates(serviceId) {
+                fetch(`/get-available-dates/{{ artist.id }}/?service_id=${serviceId}`)  
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.available_dates.length === 0) {
+                            Swal.fire({
+                                icon: "info",
+                                title: "No Available Dates",
+                                text: "This service has no available slots. Please check later.",
+                                confirmButtonText: "OK"
+                            });
+                            dateInput.disabled = true;
+                            dateInput.value = "";
+                            timeInput.innerHTML = "<option value='' disabled selected>Choose a time</option>";
+                            timeInput.disabled = true;
+                        } else {
+                            dateInput.disabled = false;
+    
+                            // ✅ Initialize Flatpickr with restricted dates
+                            flatpickr(dateInput, {
+                                dateFormat: "Y-m-d",
+                                enable: data.available_dates,  
+                                disableMobile: true,
+                                onChange: function (selectedDates, dateStr) {
+                                    fetchAvailableTimes(serviceId, dateStr);
+                                }
+                            });
+                        }
+                    })
+                    .catch(error => console.error("Error fetching available dates:", error));
+            }
+    
+            function fetchAvailableTimes(serviceId, date) {
+                fetch(`/get-available-times/{{ artist.id }}/?service_id=${serviceId}&date=${date}`)  
+                    .then(response => response.json())
+                    .then(data => {
+                        timeInput.innerHTML = "<option value='' disabled selected>Choose a time</option>";
+    
+                        if (data.available_times.length === 0) {
+                            Swal.fire({
+                                icon: "info",
+                                title: "No Available Slots",
+                                text: "No slots available for this date. Please choose another date.",
+                                confirmButtonText: "OK"
+                            });
+                            timeInput.disabled = true;
+                        } else {
+                            timeInput.disabled = false;
+                            data.available_times.forEach(time => {
+                                let option = document.createElement("option");
+                                option.value = time;
+                                option.textContent = time;
+                                timeInput.appendChild(option);
+                            });
+                        }
+                    })
+                    .catch(error => console.error("Error fetching available times:", error));
+            }
+    
+            // ✅ When a service is selected, fetch available dates
+            serviceSelect.addEventListener("change", function () {
+                let selectedServiceId = this.value;
+                if (selectedServiceId) {
+                    fetchAvailableDates(selectedServiceId);
+                    dateInput.value = "";
+                    dateInput.disabled = true;
+                    timeInput.innerHTML = "<option value='' disabled selected>Choose a time</option>";
+                    timeInput.disabled = true;
+                }
+            });
+    
+            // ✅ Ensure duration updates when service changes
+            serviceSelect.addEventListener("change", function () {
+                let selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
+                document.getElementById("duration").value = selectedOption.getAttribute("data-duration") || "";
+            });
+    
+            // ✅ Handle Form Submission & Show Confirmation Popup
+            bookingForm.addEventListener("submit", function (event) {
+                event.preventDefault();  // ✅ Prevent default form submission
+    
+                let formData = new FormData(this);
+    
+                fetch(window.location.href, {
+                    method: "POST",
+                    body: formData,
+                    headers: {
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    }
+                })
                 .then(response => response.json())
                 .then(data => {
-                    if (data.available_dates.length === 0) {
+                    if (data.status === "error") {
                         Swal.fire({
-                            icon: "info",
-                            title: "No Available Dates",
-                            text: "This artist has no available slots. Please check later.",
-                            confirmButtonText: "OK"
+                            icon: "error",
+                            title: "Oops...",
+                            text: data.message
                         });
-                        dateInput.disabled = true;  // Disable if no dates are available
                     } else {
-                        // ✅ Use Flatpickr to restrict to available dates
-                        flatpickr(dateInput, {
-                            dateFormat: "Y-m-d",
-                            enable: data.available_dates,  // ✅ Only allow available dates
-                            disableMobile: true
-                        });
-
-                        // ✅ Fetch available time slots dynamically when date is selected
-                        dateInput.addEventListener("change", function () {
-                            let selectedDate = this.value;
-                            timeInput.innerHTML = "<option value='' disabled selected>Choose a time</option>"; // Reset time options
-
-                            fetch(`/get-available-times/{{ artist.id }}/?date=${selectedDate}`)
-                                .then(response => response.json())
-                                .then(data => {
-                                    if (data.available_times.length === 0) {
-                                        Swal.fire({
-                                            icon: "info",
-                                            title: "No Available Slots",
-                                            text: "No slots available for this date. Please choose another date.",
-                                            confirmButtonText: "OK"
-                                        });
-                                    } else {
-                                        data.available_times.forEach(time => {
-                                            let option = document.createElement("option");
-                                            option.value = time;
-                                            option.textContent = time;
-                                            timeInput.appendChild(option);
-                                        });
-                                    }
-                                })
-                                .catch(error => console.error("Error fetching available slots:", error));
+                        // ✅ Show Confirmation Message & Redirect to Home Page
+                        Swal.fire({
+                            title: "Booking Confirmed!",
+                            text: "Your booking has been listed. You will get a confirmation message soon.",
+                            icon: "success",
+                            confirmButtonText: "OK"
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = "{% url 'home' %}";  // ✅ Redirect to home page
+                            }
                         });
                     }
                 })
-                .catch(error => console.error("Error fetching available dates:", error));
-        });
-
-        // ✅ Update Duration when Service is Selected
-        function updateDuration() {
-            let serviceSelect = document.getElementById("service");
-            let durationInput = document.getElementById("duration");
-            let selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
-            let duration = selectedOption.getAttribute("data-duration") || "";
-            durationInput.value = duration;
-        }
-
-        // ✅ AJAX form submission with SweetAlert2 pop-up
-        document.getElementById("booking-form").addEventListener("submit", function(event) {
-            event.preventDefault();  // ✅ Prevent page refresh
-
-            let formData = new FormData(this);
-            fetch(window.location.href, {
-                method: "POST",
-                body: formData,
-                headers: {
-                    "X-CSRFToken": "{{ csrf_token }}"
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === "error") {
-                    Swal.fire({
-                        icon: "error",
-                        title: "Oops...",
-                        text: data.message
-                    });
-                } else if (data.status === "redirect") {
-                    window.location.href = data.url;  // ✅ Redirect for payment
-                } else {
-                    // ✅ Show SweetAlert2 confirmation dialog
-                    Swal.fire({
-                        title: "Booking Confirmed!",
-                        text: "Your booking has been confirmed. You will receive a notification soon.",
-                        icon: "success",
-                        confirmButtonText: "Go to Home"
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            window.location.href = "/home";  // ✅ Redirect to Bookings page
-                        }
-                    });
-                }
-            })
-            .catch(error => console.error("Error:", error));
+                .catch(error => console.error("Error:", error));
+            });
+    
+            // ✅ Initialize Flatpickr to ensure it's working
+            flatpickr(dateInput, { dateFormat: "Y-m-d" });
         });
     </script>
+    
+    
 </body>
 </html>
