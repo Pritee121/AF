@@ -1,7 +1,7 @@
-/* General Styles */
+/* General Page Styling */
 body {
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #f9f9f9, #ececec);
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
     margin: 0;
     padding: 0;
     display: flex;
@@ -10,134 +10,72 @@ body {
     height: 100vh;
 }
 
-/* Main Container (Smaller Size) */
+/* Profile Container */
 .container {
-    display: flex;
-    width: 600px; /* Reduced from 800px */
-    background: white;
+    background-color: #fff;
+    padding: 20px;
     border-radius: 10px;
-    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.12);
-    overflow: hidden;
-}
-
-/* Sidebar - User Profile */
-.sidebar {
-    width: 40%;
-    background: #d8648c;
-    color: white;
-    padding: 15px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    width: 400px;
     text-align: center;
 }
 
+/* Profile Image */
 .profile-image {
-    width: 70px;  /* Reduced size */
-    height: 70px;
-    border-radius: 50%;
-    border: 2px solid white;
-    object-fit: cover;
-    margin-bottom: 10px;
-}
-
-.sidebar h2 {
-    font-size: 16px;
-    margin-bottom: 4px;
-}
-
-.sidebar p {
-    font-size: 12px;
-    margin: 2px 0;
-    opacity: 0.85;
-}
-
-/* Profile Editing Form */
-.profile-container {
-    width: 60%;
-    padding: 15px;
-}
-
-.profile-container form {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 15px;
 }
 
-/* Labels */
-.profile-container label {
-    font-weight: 600;
-    font-size: 12px;
-    color: #444;
+.profile-image img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;  /* ✅ Makes image circular */
+    border: 3px solid #007bff;
+    object-fit: cover;  /* ✅ Ensures image fits properly */
+    display: block;  /* ✅ Ensures it's not a background */
 }
 
-/* Input Fields */
-.profile-container input {
-    padding: 6px;
-    width: 100%;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 12px;
+/* Profile Details */
+.profile-details {
+    text-align: left;
+    margin-top: 10px;
 }
 
-.profile-container input:focus {
-    border-color: #d8648c;
-    outline: none;
+.profile-details p {
+    font-size: 16px;
+    margin: 5px 0;
+    color: #333;
 }
 
-/* File Upload */
-.profile-container input[type="file"] {
-    padding: 5px;
-    border: none;
+/* Training Certificate Link */
+.profile-details a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
 }
 
-/* Save Button */
-.update-btn {
-    background: #d8648c;
-    color: white;
-    padding: 8px;
-    border: none;
-    border-radius: 6px;
-    font-size: 12px;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.update-btn:hover {
-    background: #b44c70;
+.profile-details a:hover {
+    text-decoration: underline;
 }
 
 /* Back Button */
-.back-button {
+.back-home {
+    margin-top: 20px;
+}
+
+.back-btn {
     display: inline-block;
-    margin-top: 8px;
-    padding: 6px 12px;
-    background: #777;
-    color: white;
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 5px;
     text-decoration: none;
-    border-radius: 6px;
-    font-size: 12px;
+    font-weight: bold;
+    transition: background 0.3s ease;
 }
 
-.back-button:hover {
-    background: #555;
-}
-
-/* Responsive Design */
-@media (max-width: 600px) {
-    .container {
-        flex-direction: column;
-        width: 90%;
-    }
-
-    .sidebar, .profile-container {
-        width: 100%;
-        text-align: center;
-    }
-
-    .profile-image {
-        width: 60px;
-        height: 60px;
-    }
-
-    .update-btn, .back-button {
-        width: 100%;
-    }
+.back-btn:hover {
+    background-color: #0056b3;
 }

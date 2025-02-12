@@ -98,6 +98,20 @@
     box-shadow: none;
     transform: none;
 }
+.profile-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-img {
+    width: 40px;  /* Adjust the size as needed */
+    height: 40px;
+    border-radius: 50%; /* Make it circular */
+    object-fit: cover; /* Ensure it fills the area properly */
+    border: 2px solid #fff; /* Optional: Add a border */
+}
+
 
     </style>
 </head>
@@ -109,7 +123,15 @@
         </div>
         <nav class="navbar">
             <a href="{% url 'artist_dashboard' %}" class="nav-item active">Dashboard</a>
-            <a href="{% url 'artist_profile' %}" class="nav-item">Profile</a>
+            <a href="{% url 'artist_profile' %}" class="nav-item profile-link">
+                {% if user.profile_image %}
+                    <img src="{{ user.profile_image.url }}" alt="Profile Image" class="profile-img">
+                {% else %}
+                    <img src="{% static 'images/default_profile.png' %}" alt="Default Profile Image" class="profile-img">
+                {% endif %}
+            </a>
+            
+            
             <a href="{% url 'add_work' %}" class="nav-item">Add Work</a>
             <a href="{% url 'services' %}" class="nav-item">Services</a>
             <a href="{% url 'bookings' %}" class="nav-item">Bookings</a>

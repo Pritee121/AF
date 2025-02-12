@@ -87,15 +87,6 @@ class ArtistRegisterForm(forms.ModelForm):
 
 
 
-from django import forms
-from .models import User
-
-class ProfileUpdateForm(forms.ModelForm):
-    password = forms.CharField(widget=forms.PasswordInput(), required=False)
-
-    class Meta:
-        model = User
-        fields = ['first_name', 'last_name', 'email', 'phone', 'city', 'works_at', 'experience_years', 'profile_image', 'password', 'training_certificate']
 
 
 

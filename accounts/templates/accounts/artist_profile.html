@@ -5,82 +5,214 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Artist Profile</title>
-    <link rel="stylesheet" href="{% static 'css/artist_profile.css' %}">
+    <style>
+        /* General Page Styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* Profile Container */
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            text-align: center;
+        }
+
+        /* Profile Image */
+        .profile-image {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .profile-image img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 3px solid #007bff;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Profile Details */
+        .profile-details {
+            text-align: left;
+            margin-top: 10px;
+        }
+
+        .profile-details p {
+            font-size: 16px;
+            margin: 5px 0;
+            color: #333;
+        }
+
+        /* Training Certificate Link */
+        .profile-details a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .profile-details a:hover {
+            text-decoration: underline;
+        }
+
+        /* Buttons */
+        .buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .btn {
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+        }
+
+        .back-btn {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        .back-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .edit-btn {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .edit-btn:hover {
+            background-color: #218838;
+        }
+
+        /* Hidden Form */
+        .edit-form {
+            display: none;
+        }
+
+        .edit-form input,
+        .edit-form select {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .edit-form label {
+            font-weight: bold;
+        }
+
+        .save-btn {
+            background-color: #28a745;
+            color: #fff;
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            border: none;
+            margin-top: 10px;
+        }
+
+        .save-btn:hover {
+            background-color: #218838;
+        }
+    </style>
 </head>
 <body>
-    
     <div class="container">
-        <!-- Sidebar: Artist Details -->
-        <aside class="sidebar">
-            <h2>{{ user.first_name }} {{ user.last_name }}</h2>
-            <p><strong>Email:</strong> {{ user.email }}</p>
-            <p><strong>Phone:</strong> {{ user.phone }}</p>
+        <h2>Artist Profile</h2>
 
-            <!-- ✅ Display the artist's profile image or a default image -->
+        <!-- Profile Image -->
+        <div class="profile-image">
             {% if user.profile_image %}
-                <img src="{{ user.profile_image.url }}" alt="Artist Profile Image" class="profile-image">
+                <img src="{{ user.profile_image.url }}" alt="Profile Image">
             {% else %}
-                <img src="{% static 'images/default_profile.png' %}" alt="Default Profile Image" class="profile-image">
+                <img src="{% static 'images/default_profile.png' %}" alt="Default Profile Image">
             {% endif %}
+        </div>
 
-            <p><strong>City:</strong> {{ user.city|default:"Not Provided" }}</p>
+        <!-- Profile Details (Read Mode) -->
+        <div id="profile-view" class="profile-details">
+            <p><strong>First Name:</strong> {{ user.first_name }}</p>
+            <p><strong>Last Name:</strong> {{ user.last_name }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Phone Number:</strong> {{ user.phone }}</p>
+            <p><strong>City:</strong> {{ user.city }}</p>
             <p><strong>Works At:</strong> {{ user.works_at|default:"Freelance Artist" }}</p>
-            <p><strong>Experience:</strong> {{ user.experience_years|default:"0" }}+ years</p>
+            <p><strong>Experience Years:</strong> {{ user.experience_years }}+ years</p>
 
-            <!-- ✅ Display Existing Certificates -->
-            <h3>Uploaded Certificates</h3>
-            {% if user.certificates.all %}
-                <ul>
-                    {% for certificate in user.certificates.all %}
-                        <li>
-                            <a href="{{ certificate.file.url }}" target="_blank">View Certificate {{ forloop.counter }}</a>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p>No certificates uploaded.</p>
-            {% endif %}
-        </aside>
+            <!-- Training Certificate -->
+            <p><strong>Training Certificate:</strong>
+                {% if user.training_certificate %}
+                    <a href="{{ user.training_certificate.url }}" target="_blank">View Certificate</a>
+                {% else %}
+                    Not Uploaded
+                {% endif %}
+            </p>
+        </div>
 
-        <!-- Main Profile Section: Editable Form -->
-        <main class="profile-container">
-            <form method="POST" enctype="multipart/form-data">
-                {% csrf_token %}
+        <!-- Editable Form (Hidden by Default) -->
+        <form id="edit-form" class="edit-form" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <label>First Name:</label>
+            <input type="text" name="first_name" value="{{ user.first_name }}" required>
 
-                <label>First Name:</label>
-                <input type="text" name="first_name" value="{{ form.first_name.value }}" required>
+            <label>Last Name:</label>
+            <input type="text" name="last_name" value="{{ user.last_name }}" required>
 
-                <label>Last Name:</label>
-                <input type="text" name="last_name" value="{{ form.last_name.value }}" required>
+            <label>Email:</label>
+            <input type="email" name="email" value="{{ user.email }}" required>
 
-                <label>Email:</label>
-                <input type="email" name="email" value="{{ form.email.value }}" required>
+            <label>Phone Number:</label>
+            <input type="text" name="phone" value="{{ user.phone }}" required>
 
-                <label>Phone:</label>
-                <input type="text" name="phone" value="{{ form.phone.value }}" required>
+            <label>City:</label>
+            <input type="text" name="city" value="{{ user.city }}">
 
-                <label>City:</label>
-                <input type="text" name="city" value="{{ form.city.value }}">
+            <label>Works At:</label>
+            <input type="text" name="works_at" value="{{ user.works_at }}">
 
-                <label>Works At:</label>
-                <input type="text" name="works_at" value="{{ form.works_at.value }}">
+            <label>Experience Years:</label>
+            <input type="number" name="experience_years" value="{{ user.experience_years }}">
 
-                <label>Experience (Years):</label>
-                <input type="number" name="experience_years" value="{{ form.experience_years.value }}">
+            <label>Update Profile Image:</label>
+            <input type="file" name="profile_image">
 
-                <!-- ✅ Allow artist to upload a new profile image -->
-                <label>Update Profile Image:</label>
-                <input type="file" name="profile_image">
+            <button type="submit" class="save-btn">Save Changes</button>
+        </form>
 
-                <!-- ✅ New Section for Certificate Upload -->
-                <label>Upload New Certificates:</label>
-                <input type="file" name="certificates" multiple accept="application/pdf,image/*">  
-
-                <button type="submit" class="update-btn">Save Changes</button>
-            </form>
-
-            <a href="{% url 'artist_dashboard' %}" class="back-button">← Back to Dashboard</a>
-        </main>
+        <!-- Buttons -->
+        <div class="buttons">
+            <button class="edit-btn" onclick="toggleEdit()">Edit Profile</button>
+            <a href="{% url 'artist_dashboard' %}" class="btn back-btn">← Back to Home</a>
+        </div>
     </div>
+
+    <!-- JavaScript to Toggle Between View and Edit Mode -->
+    <script>
+        function toggleEdit() {
+            document.getElementById("profile-view").style.display = "none";
+            document.getElementById("edit-form").style.display = "block";
+        }
+    </script>
 </body>
 </html>

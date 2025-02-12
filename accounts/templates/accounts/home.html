@@ -83,11 +83,11 @@
             <a href="{% url 'login' %}" class="nav-link">Logout</a>
 
             <div class="user-profile">
-                <a href="{% url 'user_profile' %}">
+                <a href="{% url 'user_profile' %}">  <!-- Correct Django URL template syntax -->
                     <img src="{{ user.profile_image.url }}" alt="User" class="user-image">
-
                 </a>
             </div>
+            
         </nav>
     </header>
     

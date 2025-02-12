@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <link rel="stylesheet" href="{% static 'css/user_profile.css' %}">
+</head>
+<body>
+    <div class="container">
+        <div class="profile-header">
+            <h1>User Profile</h1>
+        </div>
+        
+        <div class="profile-content">
+            <!-- Profile Image -->
+            <div class="profile-image">
+                {% if user.profile_image %}
+                    <img src="{{ user.profile_image.url }}" alt="Profile Image">
+                {% else %}
+                    <img src="{% static 'images/default_profile.png' %}" alt="Default Profile Image">
+                {% endif %}
+            </div>
+
+            <!-- Edit Profile Form -->
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <label>First Name:</label>
+                <input type="text" name="first_name" value="{{ user.first_name }}" required>
+
+                <label>Last Name:</label>
+                <input type="text" name="last_name" value="{{ user.last_name }}" required>
+
+                <label>Email:</label>
+                <input type="email" name="email" value="{{ user.email }}" required>
+
+                <label>Phone Number:</label>
+                <input type="text" name="phone" value="{{ user.phone }}" required>
+
+                <label>Update Profile Image:</label>
+                <input type="file" name="profile_image">
+
+                <button type="submit" class="save-btn">Save Changes</button>
+            </form>
+
+            <!-- Back to Home Button -->
+            <div class="back-home">
+                <a href="{% url 'home' %}" class="back-btn">← Back to Home</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

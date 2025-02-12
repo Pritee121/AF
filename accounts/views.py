@@ -19,45 +19,45 @@ import random
 
 
 
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth import update_session_auth_hash
-from django.contrib import messages
-from .forms import ProfileUpdateForm
-from .models import User
+# from django.shortcuts import render, redirect
+# from django.contrib.auth.decorators import login_required
+# from django.contrib.auth import update_session_auth_hash
+# from django.contrib import messages
+# from .forms import ProfileUpdateForm
+# from .models import User
 
-@login_required(login_url='artist_login')
-def artist_profile(request):
-    if request.session.get('user_type') != 'artist':  # ✅ Ensure only artists can access
-        return redirect('artist_login')
+# @login_required(login_url='artist_login')
+# def artist_profile(request):
+#     if request.session.get('user_type') != 'artist':  # ✅ Ensure only artists can access
+#         return redirect('artist_login')
 
-    user = request.user  # ✅ Get logged-in artist
+#     user = request.user  # ✅ Get logged-in artist
 
-    if request.method == 'POST':
-        form = ProfileUpdateForm(request.POST, request.FILES, instance=user)
-        if form.is_valid():
-            updated_user = form.save(commit=False)
+#     if request.method == 'POST':
+#         form = ProfileUpdateForm(request.POST, request.FILES, instance=user)
+#         if form.is_valid():
+#             updated_user = form.save(commit=False)
             
-            # ✅ Only update password if a new password is provided
-            new_password = form.cleaned_data.get('password')
-            if new_password:
-                updated_user.set_password(new_password)
-                update_session_auth_hash(request, updated_user)  # ✅ Keep user logged in
+#             # ✅ Only update password if a new password is provided
+#             new_password = form.cleaned_data.get('password')
+#             if new_password:
+#                 updated_user.set_password(new_password)
+#                 update_session_auth_hash(request, updated_user)  # ✅ Keep user logged in
             
-            updated_user.save()
-            messages.success(request, "Profile updated successfully!")
-            return redirect('artist_profile')
+#             updated_user.save()
+#             messages.success(request, "Profile updated successfully!")
+#             return redirect('artist_profile')
 
-        else:
-            messages.error(request, "Please correct the errors in the form.")
+#         else:
+#             messages.error(request, "Please correct the errors in the form.")
 
-    else:
-        form = ProfileUpdateForm(instance=user)
+#     else:
+#         form = ProfileUpdateForm(instance=user)
 
-    return render(request, 'accounts/artist_profile.html', {
-        'form': form,
-        'artist': user  # ✅ Pass artist-specific data
-    })
+#     return render(request, 'accounts/artist_profile.html', {
+#         'form': form,
+#         'artist': user  # ✅ Pass artist-specific data
+#     })
 
 
 
@@ -227,26 +227,7 @@ def cancel_booking(request, booking_id):
 
 
 
-# ✅ User Profile (Fully Fixed)
-@login_required(login_url='login')
-def user_profile(request):
-    user = request.user
-    if request.method == 'POST':
-        form = ProfileUpdateForm(request.POST, request.FILES, instance=user)
-        if form.is_valid():
-            updated_user = form.save(commit=False)
 
-            # ✅ Preserve password if not updated
-            if not form.cleaned_data.get('password'):
-                updated_user.password = user.password
-            else:
-                updated_user.password = make_password(form.cleaned_data['password'])
-
-            updated_user.save()
-            update_session_auth_hash(request, updated_user)
-            return redirect('user_profile')
-
-    return render(request, 'accounts/profile.html', {'form': ProfileUpdateForm(instance=user)})
 
 # ✅ Artist Registration (Fully Fixed)
 def register_artists(request):
@@ -964,3 +945,54 @@ def update_work(request, work_id):
 
 
 
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import User
+
+@login_required
+def user_profile(request):
+    user = request.user
+
+    if request.method == 'POST':
+        user.first_name = request.POST.get('first_name')
+        user.last_name = request.POST.get('last_name')
+        user.email = request.POST.get('email')
+        user.phone = request.POST.get('phone')
+
+        if 'profile_image' in request.FILES:
+            user.profile_image = request.FILES['profile_image']
+
+        user.save()
+        messages.success(request, "Profile updated successfully!")
+        return redirect('user_profile')  # Redirect back to profile page
+
+    return render(request, 'accounts/user_profile.html', {'user': user})
+
+
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import User
+
+@login_required(login_url='artist_login')
+def artist_profile(request):
+    if request.method == 'POST':
+        user = request.user
+        user.first_name = request.POST.get('first_name')
+        user.last_name = request.POST.get('last_name')
+        user.email = request.POST.get('email')
+        user.phone = request.POST.get('phone')
+        user.city = request.POST.get('city')
+        user.works_at = request.POST.get('works_at')
+        user.experience_years = request.POST.get('experience_years')
+
+        if 'profile_image' in request.FILES:
+            user.profile_image = request.FILES['profile_image']
+
+        user.save()
+        messages.success(request, "Profile updated successfully!")
+        return redirect('artist_profile')
+
+    return render(request, 'accounts/artist_profile.html')
