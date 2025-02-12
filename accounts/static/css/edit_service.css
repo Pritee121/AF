@@ -1,0 +1,141 @@
+/* ✅ General Styles */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f9f9f9;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+/* ✅ Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #D8648C;
+    padding: 15px 20px;
+}
+
+.logo img {
+    height: 50px;
+}
+
+.navbar .back-btn {
+    background-color: white;
+    color: #D8648C;
+    padding: 10px 15px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.navbar .back-btn:hover {
+    background-color: #ffb3c6;
+}
+
+/* ✅ Main Container */
+.container {
+    width: 60%;
+    margin: 40px auto;
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* ✅ Titles */
+.title {
+    text-align: center;
+    font-size: 28px;
+    color: #D8648C;
+    margin-bottom: 20px;
+}
+
+.section-title {
+    font-size: 20px;
+    color: #D8648C;
+    border-bottom: 2px solid #D8648C;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+}
+
+/* ✅ Form Styles */
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+/* ✅ Availability Slots */
+.availability-block {
+    background: #f2f2f2;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 5px;
+}
+
+.availability-block label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.availability-block input {
+    width: 95%;
+}
+
+/* ✅ Buttons */
+.add-slot-btn {
+    background-color: white;
+    color: #D8648C;
+    border: 2px solid #D8648C;
+    padding: 10px 15px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    display: block;
+    margin: 20px auto;
+    transition: 0.3s;
+}
+
+.add-slot-btn:hover {
+    background-color: #D8648C;
+    color: white;
+}
+
+.submit-btn {
+    background-color: #D8648C;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    font-size: 18px;
+    cursor: pointer;
+    border-radius: 5px;
+    width: 100%;
+    margin-top: 20px;
+    transition: 0.3s;
+}
+
+.submit-btn:hover {
+    background-color: #b94e77;
+}
+
+/* ✅ Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        width: 90%;
+    }
+}

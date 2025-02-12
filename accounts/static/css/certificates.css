@@ -1,7 +1,8 @@
-/* ✅ General Page Styling */
+/* ✅ General Styling */
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
+    font-family: 'Poppins', sans-serif;
+    background-color: #f9f0f7;
+    color: #333;
     margin: 0;
     padding: 0;
     display: flex;
@@ -10,93 +11,121 @@ body {
     height: 100vh;
 }
 
-/* ✅ Container for Certificates */
+/* ✅ Main Container */
 .container {
-    background: white;
-    padding: 20px;
-    max-width: 500px;
-    width: 90%;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background-color: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    width: 420px;
     text-align: center;
+    border-top: 6px solid #D8648C;
 }
 
-/* ✅ Heading */
-h2 {
-    color: #333;
-    margin-bottom: 15px;
-}
-
-/* ✅ Certificate Upload Section */
-p {
-    font-size: 16px;
-    color: #555;
-}
-
-a {
-    display: inline-block;
-    background: #4CAF50;
-    color: white;
-    text-decoration: none;
-    padding: 8px 12px;
-    border-radius: 5px;
-    margin-top: 10px;
-    transition: 0.3s ease-in-out;
-}
-
-a:hover {
-    background: #45a049;
-}
-
-/* ✅ File Upload Form */
+/* ✅ Upload Form */
 form {
-    margin-top: 20px;
-    text-align: center;
-}
-
-label {
-    font-size: 14px;
-    font-weight: bold;
-    color: #444;
-    display: block;
-    margin-bottom: 8px;
+    margin-top: 10px;
 }
 
 input[type="file"] {
-    display: block;
-    margin: 0 auto 10px auto;
-    padding: 5px;
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    margin-bottom: 10px;
 }
 
 button {
-    background: #007bff;
+    background-color: #D8648C;
     color: white;
-    padding: 8px 14px;
     border: none;
-    border-radius: 5px;
+    padding: 10px 15px;
+    border-radius: 6px;
     cursor: pointer;
-    font-size: 14px;
-    transition: 0.3s ease-in-out;
+    font-weight: bold;
+    transition: 0.3s;
 }
 
 button:hover {
-    background: #0056b3;
+    background-color: #B94C74;
 }
 
-/* ✅ Back Button */
-.back-button {
-    display: inline-block;
+/* ✅ Certificate Card */
+.certificate-card {
+    background-color: #fff;
+    padding: 15px;
     margin-top: 15px;
-    padding: 8px 14px;
-    background: #ff4b5c;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: 0.3s ease-in-out;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.back-button:hover {
-    background: #c0392b;
+.view-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.view-btn:hover {
+    background-color: #218838;
+}
+
+/* ✅ Back Buttons */
+.back-container {
+    margin-top: 20px;
+}
+
+.back-btn {
+    display: inline-block;
+    background-color: #D8648C;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.back-btn:hover {
+    background-color: #B94C74;
+}
+
+/* ✅ Modal Styling */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 10% auto;
+    padding: 20px;
+    width: 60%;
+    border-radius: 10px;
+    position: relative;
+}
+
+.modal-content iframe {
+    width: 100%;
+    height: 500px;
+    border-radius: 10px;
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 24px;
+    cursor: pointer;
 }

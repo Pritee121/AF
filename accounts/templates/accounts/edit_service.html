@@ -5,8 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Service</title>
-    <link rel="stylesheet" href="{% static 'css/add_service.css' %}">
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>  <!-- ✅ Add Flatpickr -->
+    
+    <link rel="stylesheet" href="{% static 'css/edit_service.css' %}">
+    
+    <!-- ✅ Flatpickr for Date & Time Picker -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 </head>
 <body>
 
@@ -15,29 +19,35 @@
             <img src="{% static 'images/logo.png' %}" alt="Artist Finder Logo">
         </div>
         <nav class="navbar">
-            <a href="{% url 'services' %}" class="nav-item">⬅ Back to Services</a>
+            <a href="{% url 'services' %}" class="back-btn">⬅ Back to Services</a>
         </nav>
     </header>
 
     <div class="container">
-        <h1 class="text-center">Edit Service</h1>
+        <h1 class="title">Edit Service</h1>
 
         <form method="POST">
             {% csrf_token %}
-            <h3>Service Details</h3>
-            {{ service_form.as_p }}
 
-            <h3>Update Availability</h3>
+            <h3 class="section-title">Service Details</h3>
+            <div class="form-group">
+                {{ service_form.as_p }}
+            </div>
+
+            <h3 class="section-title">Update Availability</h3>
             <div id="availability-container">
                 {{ availability_formset.management_form }}
+
                 {% for form in availability_formset %}
-                    <div class="availability-block">
-                        {{ form.as_p }}
-                    </div>
+                    {% if form.instance.id %}  <!-- ✅ Only display existing slots -->
+                        <div class="availability-block">
+                            {{ form.as_p }}
+                        </div>
+                    {% endif %}
                 {% endfor %}
             </div>
 
-            <!-- ✅ Add button for dynamically adding more slots -->
+            <!-- ✅ Add New Slot Button -->
             <button type="button" class="add-slot-btn" onclick="addNewSlot()">➕ Add New Slot</button>
 
             <button type="submit" class="submit-btn">Update Service</button>
@@ -52,15 +62,21 @@
 
         function addNewSlot() {
             let container = document.getElementById("availability-container");
+            let totalForms = document.getElementById("id_form-TOTAL_FORMS");
+            let newSlotIndex = parseInt(totalForms.value);  // ✅ Get current count of slots
+            
             let newSlot = document.createElement("div");
             newSlot.classList.add("availability-block");
             newSlot.innerHTML = `
                 <label>Date:</label>
-                <input type="text" name="form-${document.querySelectorAll('.availability-block').length}-available_date" class="datepicker" required>
+                <input type="text" name="form-${newSlotIndex}-available_date" class="datepicker" required>
                 <label>Time:</label>
-                <input type="text" name="form-${document.querySelectorAll('.availability-block').length}-available_time" class="timepicker" required>
+                <input type="text" name="form-${newSlotIndex}-available_time" class="timepicker" required>
             `;
+
             container.appendChild(newSlot);
+            totalForms.value = newSlotIndex + 1;  // ✅ Increment the total forms count
+
             flatpickr(".datepicker", { dateFormat: "Y-m-d" });
             flatpickr(".timepicker", { enableTime: true, noCalendar: true, dateFormat: "H:i" });
         }

@@ -1,15 +1,66 @@
-<div class="artist-container">
-    {% for artist in artists %}
-    <div class="artist-card">
-        <h3>{{ artist.first_name }}</h3>  <!-- ✅ Show artist name -->
-        <p>Email: {{ artist.email }}</p>  <!-- ✅ Show artist email (optional) -->
-
-        <button onclick="bookArtist('{{ artist.id }}')">Book Now</button>
-        <button onclick="chatWithArtist('{{ artist.id }}')">Chat Now</button>
-        <button onclick="window.location.href='{% url 'artist_detail' artist.id %}'">Explore Artist</button>
-
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artist Directory</title>
+    <link rel="stylesheet" href="{% static 'css/artist_directory.css' %}">
+</head>
+<body>
+    <div class="back-to-home">
+        <button onclick="window.location.href='{% url 'home' %}'">Back to Home</button>
     </div>
-    {% empty %}
-    <p>No artists registered yet.</p>
-    {% endfor %}
-</div>
+    
+    <div class="artist-container">
+        
+        {% for artist in artists %}
+        <div class="artist-card">
+            <div class="artist-image">
+                {% if artist.profile_image %}
+                    <img src="{{ artist.profile_image.url }}" alt="{{ artist.first_name }} {{ artist.last_name }}">
+                {% else %}
+                    <img src="{% static 'images/default_profile.png' %}" alt="Default Profile Image">
+                {% endif %}
+            </div>
+            <div class="artist-info">
+                <h3>{{ artist.first_name }} {{ artist.last_name }}</h3>
+                <p>Email: {{ artist.email }}</p>
+
+                <!-- Display Services and Prices -->
+                {% if artist.services.exists %}
+                    <h4>Services Offered:</h4>
+                    <ul>
+                        {% for service in artist.services.all %}
+                            <li>{{ service.service_name }} - ${{ service.price }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No services listed.</p>
+                {% endif %}
+
+                <div class="button-group">
+                    <button onclick="bookArtist('{{ artist.id }}')">Book Now</button>
+                    <button onclick="chatWithArtist('{{ artist.id }}')">Chat Now</button>
+                    <button onclick="window.location.href='{% url 'artist_detail' artist.id %}'">Explore Artist</button>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p>No artists registered yet.</p>
+        {% endfor %}
+    </div>
+
+    <script>
+        function bookArtist(artistId) {
+            // Implement booking functionality here
+            alert('Booking functionality for artist ID ' + artistId);
+        }
+
+        function chatWithArtist(artistId) {
+            // Implement chat functionality here
+            alert('Chat functionality for artist ID ' + artistId);
+        }
+    </script>
+</body>
+</html>

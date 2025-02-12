@@ -251,30 +251,133 @@ def home_page(request):
 
 #     return JsonResponse({"success": False, "message": "Cannot cancel this booking."}, status=400)
 
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.http import JsonResponse
+from .models import Booking, ServiceAvailability
+
 @login_required
 def cancel_booking(request, booking_id):
     """ ✅ Cancel a booking and make the time slot available again """
     booking = get_object_or_404(Booking, id=booking_id, client=request.user)
 
     if booking.status in ["Pending", "Confirmed"]:
-        # ✅ Mark the time slot as available again
-        ServiceAvailability.objects.filter(
+        # ✅ Find the slot for this booking
+        slot = ServiceAvailability.objects.filter(
             service=booking.service,
             available_date=booking.date,
             available_time=booking.time
-        ).update(is_booked=False)  # ✅ Update slot to available
+        ).first()
+
+        if slot:
+            slot.is_booked = False  # ✅ Mark as available
+            slot.save()  # ✅ Save changes to database
 
         booking.status = "Cancelled"
         booking.save()
 
+        messages.success(request, "Your booking has been canceled. The slot is now available.")
+
         return JsonResponse({
             "success": True,
-            "message": "Booking canceled successfully! The slot is now available.",
+            "message": "Booking canceled and slot is now available.",
             "service_id": booking.service.id,
-            "date": booking.date.strftime("%Y-%m-%d")  # ✅ Send formatted date
+            "date": booking.date.strftime("%Y-%m-%d")  # ✅ Send date as string
         })
 
     return JsonResponse({"success": False, "message": "Cannot cancel this booking."}, status=400)
+
+# from django.shortcuts import render, get_object_or_404, redirect
+# from django.contrib.auth.decorators import login_required
+# from django.forms import modelformset_factory
+# from .models import Service, ServiceAvailability
+# from .forms import ServiceForm, ServiceAvailabilityForm
+
+# @login_required
+# def edit_service(request, service_id):
+#     service = get_object_or_404(Service, id=service_id, artist=request.user)
+
+#     ServiceAvailabilityFormSet = modelformset_factory(
+#         ServiceAvailability, 
+#         form=ServiceAvailabilityForm, 
+#         extra=1,  
+#         can_delete=True  
+#     )
+
+#     if request.method == "POST":
+#         service_form = ServiceForm(request.POST, instance=service)
+#         availability_formset = ServiceAvailabilityFormSet(request.POST, queryset=ServiceAvailability.objects.filter(service=service))
+
+#         if service_form.is_valid() and availability_formset.is_valid():
+#             service = service_form.save()
+
+#             for form in availability_formset:
+#                 if form.cleaned_data and not form.cleaned_data.get("DELETE", False):
+#                     availability = form.save(commit=False)
+#                     availability.service = service
+#                     if availability.id is None:  # ✅ Save only new entries
+#                         availability.save()
+
+#             for form in availability_formset.deleted_forms:
+#                 if form.instance.id is not None:  # ✅ Ensure instance exists before deleting
+#                     form.instance.delete()
+
+#             return redirect("services")
+
+#     else:
+#         service_form = ServiceForm(instance=service)
+#         availability_formset = ServiceAvailabilityFormSet(queryset=ServiceAvailability.objects.filter(service=service))
+
+#     return render(request, "accounts/edit_service.html", {
+#         "service_form": service_form,
+#         "availability_formset": availability_formset,
+#     })
+from django.shortcuts import render, get_object_or_404, redirect
+from django.forms import modelformset_factory
+from .models import Service, ServiceAvailability
+from .forms import ServiceForm, ServiceAvailabilityForm
+
+def edit_service(request, service_id):
+    service = get_object_or_404(Service, id=service_id)
+
+    # ✅ Allow adding extra slots but don't show them by default
+    ServiceAvailabilityFormSet = modelformset_factory(
+        ServiceAvailability, 
+        form=ServiceAvailabilityForm, 
+        extra=0,  # ✅ Prevents empty default forms
+        can_delete=True
+    )
+
+    if request.method == "POST":
+        service_form = ServiceForm(request.POST, instance=service)
+        formset = ServiceAvailabilityFormSet(request.POST)
+
+        if service_form.is_valid() and formset.is_valid():
+            service_form.save()
+
+            # ✅ Save valid availability slots
+            instances = formset.save(commit=False)
+            for instance in instances:
+                instance.service = service  # ✅ Assign the service before saving
+                instance.save()
+
+            # ✅ Delete removed slots
+            for obj in formset.deleted_objects:
+                obj.delete()
+
+            return redirect("services")  # ✅ Redirect after updating
+
+    else:
+        service_form = ServiceForm(instance=service)
+
+        # ✅ Only fetch existing availability slots
+        formset = ServiceAvailabilityFormSet(queryset=ServiceAvailability.objects.filter(service=service))
+
+    return render(request, "accounts/edit_service.html", {
+        "service_form": service_form,
+        "availability_formset": formset,
+    })
 
 # ✅ Artist Registration (Fully Fixed)
 def register_artists(request):
@@ -559,12 +662,16 @@ def get_available_times(request, artist_id):
 
     return JsonResponse({"available_times": available_times})
 
+
+
 from django.shortcuts import render
 from .models import User
 
 def artist_list(request):
-    artists = User.objects.filter(is_artist=True)  # ✅ Get all registered artists
+    artists = User.objects.filter(is_artist=True).prefetch_related('services')
     return render(request, 'accounts/artist_list.html', {'artists': artists})
+
+
 
 
 
@@ -585,25 +692,39 @@ def artist_detail(request, artist_id):
 
 
 
+# from django.shortcuts import render, redirect
+# from django.contrib.auth.decorators import login_required
+# from django.contrib import messages
+# from .models import User
+
+# @login_required
+# def certificates_page(request):
+#     user = request.user  # Get logged-in user
+
+#     if request.method == "POST":
+#         if "training_certificate" in request.FILES:
+#             user.training_certificate = request.FILES["training_certificate"]
+#             user.save()
+#             messages.success(request, "Certificate uploaded successfully!")
+#             return redirect("certificates")
+
+#     return render(request, "accounts/certificates.html", {"user": user})
+
+
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from .models import User
+from django.core.files.storage import FileSystemStorage
 
 @login_required
 def certificates_page(request):
-    user = request.user  # Get logged-in user
+    user = request.user  # Get the logged-in user
 
-    if request.method == "POST":
-        if "training_certificate" in request.FILES:
-            user.training_certificate = request.FILES["training_certificate"]
-            user.save()
-            messages.success(request, "Certificate uploaded successfully!")
-            return redirect("certificates")
+    if request.method == "POST" and request.FILES.get("training_certificate"):
+        user.training_certificate = request.FILES["training_certificate"]
+        user.save()
+        return redirect("certificates")
 
     return render(request, "accounts/certificates.html", {"user": user})
-
-
 
 
 
@@ -1013,51 +1134,6 @@ def delete_service(request, service_id):
 #         form = ServiceForm(instance=service)
 
 #     return render(request, "accounts/edit_service.html", {"form": form, "service": service})
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
-from django.forms import modelformset_factory
-from .models import Service, ServiceAvailability
-from .forms import ServiceForm, ServiceAvailabilityForm
-
-@login_required
-def edit_service(request, service_id):
-    service = get_object_or_404(Service, id=service_id, artist=request.user)
-
-    ServiceAvailabilityFormSet = modelformset_factory(
-        ServiceAvailability, 
-        form=ServiceAvailabilityForm, 
-        extra=1,  
-        can_delete=True  
-    )
-
-    if request.method == "POST":
-        service_form = ServiceForm(request.POST, instance=service)
-        availability_formset = ServiceAvailabilityFormSet(request.POST, queryset=ServiceAvailability.objects.filter(service=service))
-
-        if service_form.is_valid() and availability_formset.is_valid():
-            service = service_form.save()
-
-            for form in availability_formset:
-                if form.cleaned_data and not form.cleaned_data.get("DELETE", False):
-                    availability = form.save(commit=False)
-                    availability.service = service
-                    if availability.id is None:  # ✅ Save only new entries
-                        availability.save()
-
-            for form in availability_formset.deleted_forms:
-                if form.instance.id is not None:  # ✅ Ensure instance exists before deleting
-                    form.instance.delete()
-
-            return redirect("services")
-
-    else:
-        service_form = ServiceForm(instance=service)
-        availability_formset = ServiceAvailabilityFormSet(queryset=ServiceAvailability.objects.filter(service=service))
-
-    return render(request, "accounts/edit_service.html", {
-        "service_form": service_form,
-        "availability_formset": availability_formset,
-    })
 
 
 from django.shortcuts import render

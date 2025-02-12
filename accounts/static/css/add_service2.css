@@ -1,0 +1,191 @@
+/* ✅ Makeup-Themed Styling */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #fff5f8;
+    color: #4A4A4A;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+/* ✅ Main Container */
+.container {
+    background: white;
+    max-width: 500px;
+    margin: 40px auto;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0px 4px 15px rgba(216, 100, 140, 0.2);
+    border-top: 5px solid #D8648C;
+}
+
+/* ✅ Form Title */
+h1 {
+    color: #D8648C;
+    font-size: 28px;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+/* ✅ Section Titles */
+h3 {
+    color: #D8648C;
+    font-size: 20px;
+    text-align: left;
+    margin-bottom: 10px;
+    font-weight: 500;
+    border-left: 5px solid #D8648C;
+    padding-left: 12px;
+}
+
+/* ✅ Form Elements */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    text-align: left;
+}
+
+/* ✅ Input Fields */
+input[type="text"],
+input[type="number"],
+input[type="file"],
+select {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #D8648C;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: all 0.3s ease-in-out;
+    background: #fffafc;
+}
+
+input:focus,
+select:focus {
+    border-color: #ff4f91;
+    outline: none;
+    box-shadow: 0px 0px 6px rgba(216, 100, 140, 0.5);
+}
+
+/* ✅ Flatpickr Custom Calendar */
+.flatpickr-calendar {
+    border: 2px solid #D8648C !important;
+    box-shadow: 0px 4px 10px rgba(216, 100, 140, 0.2);
+    border-radius: 8px;
+    background: #fffafc;
+}
+
+/* ✅ Date Input Field */
+.datepicker, .timepicker {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #D8648C;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    background: #fffafc;
+}
+
+/* ✅ Availability Slots */
+.availability-entry {
+    background: #fff5f8;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-left: 4px solid #D8648C;
+}
+
+/* ✅ Remove Button */
+.remove-slot {
+    background: #ff4f91;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    align-self: flex-end;
+    transition: all 0.3s;
+}
+
+.remove-slot:hover {
+    background: #b93b6e;
+}
+
+/* ✅ Add More Slots Button */
+.add-btn {
+    background: #D8648C;
+    color: white;
+    border: none;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    width: 100%;
+    font-weight: 500;
+}
+
+.add-btn:hover {
+    background: #b93b6e;
+}
+
+/* ✅ Submit Button */
+.submit-btn {
+    background: #D8648C;
+    color: white;
+    border: none;
+    padding: 14px;
+    font-size: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    width: 100%;
+    font-weight: 600;
+}
+
+.submit-btn:hover {
+    background: #b93b6e;
+}
+
+/* ✅ Back Button */
+.back-btn {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 12px 18px;
+    background: white;
+    border: 2px solid #D8648C;
+    color: #D8648C;
+    border-radius: 8px;
+    font-size: 16px;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.back-btn:hover {
+    background: #D8648C;
+    color: white;
+}
+
+/* ✅ Mobile Responsive */
+@media (max-width: 600px) {
+    .container {
+        max-width: 90%;
+        padding: 20px;
+    }
+
+    h1 {
+        font-size: 24px;
+    }
+
+    .add-btn,
+    .submit-btn,
+    .back-btn {
+        font-size: 14px;
+        padding: 10px;
+    }
+}

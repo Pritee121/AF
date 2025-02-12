@@ -5,37 +5,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Certificates</title>
-    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/certificates.css' %}">
 </head>
 <body>
 
     <div class="container">
-        <h2>Upload Your Certificates</h2>
+        <h2>Upload Your Training Certificate</h2>
 
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            <label for="files">Upload Certificates:</label>
-            <input type="file" name="files" multiple required>  <!-- ✅ Multiple files allowed -->
+            <label for="certificate">Upload Certificate:</label>
+            <input type="file" name="training_certificate" required>
             <button type="submit">Upload</button>
         </form>
         
-        
-        <h2>Your Certificates</h2>
-        {% if certificates %}
-            <div class="certificates-grid">
-                {% for certificate in certificates %}
-                    <div class="certificate-card">
-                        <p>Uploaded: {{ certificate.uploaded_at|date:"Y-m-d" }}</p>
-                        <a href="{{ certificate.file.url }}" target="_blank">View Certificate</a>
-                    </div>
-                {% endfor %}
+        <h2>Your Training Certificate</h2>
+        {% if user.training_certificate %}
+            <div class="certificate-card">
+                <p>📅 Uploaded: {{ user.training_certificate.uploaded_at|date:"F d, Y" }}</p>
+                <a href="{{ user.training_certificate.url }}" target="_blank" class="view-btn">View Certificate</a>
             </div>
         {% else %}
-            <p class="no-certificates">No certificates uploaded yet.</p>
+            <p class="no-certificates">No training certificate uploaded yet.</p>
         {% endif %}
-        
-        
-        
+
+        <!-- ✅ Back to Dashboard Button -->
+        <div class="back-container">
+            <a href="{% url 'artist_dashboard' %}" class="back-btn">⬅ Back to Dashboard</a>
+        </div>
     </div>
 
 </body>
