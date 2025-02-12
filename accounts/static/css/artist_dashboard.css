@@ -1,15 +1,3 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Artist Dashboard</title>
-    <link rel="stylesheet" href="{% static 'css/artist_dashboard.css' %}">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- <style>
-        /* General Button Styles */
-        
 /* 🌍 General Reset */
 * {
     margin: 0;
@@ -286,98 +274,71 @@ h1 {
 }
 
 
-    </style> -->
-</head>
-<body>
-    <!-- Header -->
-    <header class="header">
-        <div class="logo">
-            <img src="{% static 'imagess/logo.png' %}" alt="Artist Finder Logo">
-        </div>
-        <nav class="navbar">
-            <a href="{% url 'artist_dashboard' %}" class="nav-item active">Dashboard</a>
-            
-            
-            
-            
-            <a href="{% url 'services' %}" class="nav-item">Services</a>
-            <a href="{% url 'bookings' %}" class="nav-item">Bookings</a>
-            <a href="{% url 'certificates' %}" class="nav-item">Certificates</a>
-            <a href="{% url 'availability_status' %}" class="nav-item">Availability Status</a>
-            <a href="{% url 'artist_profile' %}" class="nav-item profile-link">
-                {% if user.profile_image %}
-                    <img src="{{ user.profile_image.url }}" alt="Profile Image" class="profile-img">
-                {% else %}
-                    <img src="{% static 'images/default_profile.png' %}" alt="Default Profile Image" class="profile-img">
-                {% endif %}
-            </a>
-            <a href="{% url 'artist_logout' %}" class="nav-item logout">Logout</a>
-        </nav>
-    </header>
+.btn {
+    background: #D8648C;
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 10px 18px;
+    border-radius: 8px;
+    display: inline-block;
+    transition: background 0.3s ease-in-out, transform 0.2s;
+}
 
-    <!-- Main Container -->
-    <div class="container">
-        <h1>Welcome, {{ user.first_name }}</h1>
+.btn i {
+    margin-right: 5px;
+}
 
-        <div class="dashboard-actions">
-            <a href="{% url 'add_work' %}" class="btn">
-                <i class="fas fa-plus"></i> Add Work
-            </a>
-        </div>
+.btn:hover {
+    background: #b34d74;
+    transform: scale(1.05);
+}
 
-        <h2>Your Works</h2>
-        {% if works %}
-        <div class="works-grid">
-            {% for work in works %}
-                <div class="card">
-                    <img src="{{ work.image.url }}" alt="{{ work.title }}">
-                    <div class="card-content">
-                        <h3>{{ work.title }}</h3>
-                        <p>{{ work.description }}</p>
 
-                        <!-- ✅ Update Button -->
-                        <a href="{% url 'update_work' work.id %}" class="update-btn">✏️ Edit</a>
+/* ✏️ Update Button */
+.update-btn {
+    background: #28a745;
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: background 0.3s ease-in-out;
+    display: inline-block;
+}
 
-                        <!-- ✅ Delete Button with SweetAlert Confirmation -->
-                        <form id="delete-form-{{ work.id }}" action="{% url 'delete_work' work.id %}" method="POST">
-                            {% csrf_token %}
-                            <button type="button" class="delete-btn" onclick="confirmDelete('{{ work.id }}')">
-                                ❌ Delete
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-        {% else %}
-            <p class="no-works">No works uploaded yet.</p>
-        {% endif %}
-    </div>
+.update-btn:hover {
+    background: #218838;
+}
 
-    <!-- Footer -->
-    <footer class="footer">
-        <p>Artist Finder &copy; All rights reserved</p>
-    </footer>
+/* ❌ Delete Button */
+.delete-btn {
+    background: #dc3545;
+    color: white;
+    font-size: 14px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+}
 
-    <!-- ✅ SweetAlert Delete Confirmation Script -->
-    <script>
-        function confirmDelete(workId) {
-            Swal.fire({
-                title: "Are you sure?",
-                text: "You won't be able to undo this action!",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#D8648C",
-                cancelButtonColor: "#6c757d",
-                confirmButtonText: "Yes, delete it!",
-                cancelButtonText: "Cancel"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    document.getElementById(`delete-form-${workId}`).submit();
-                }
-            });
-        }
-    </script>
+.delete-btn:hover {
+    background: #c82333;
+}
 
-</body>
-</html>
+/* ❌ No Works Message */
+.no-works {
+    font-size: 18px;
+    color: #777;
+    margin-top: 20px;
+}
+
+/* 📱 Responsive Design */
+@media (max-width: 768px) {
+    
+    .btn {
+        padding: 8px 15px;
+    }
+}

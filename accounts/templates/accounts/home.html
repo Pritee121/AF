@@ -65,19 +65,19 @@
             <img src="{% static 'imagess/logo.png' %}" alt="Artist Finder Logo">
         </div>
         <nav class="navbar">
-            <a href="#" class="nav-link" style="background-color: #648CD8;">Home</a>
+            <a href="#" class="nav-link" style="background-color: #D8648C;">Home</a>
             <a href="{% url 'booking_history' %}" class="nav-link">Booking History</a>
 
             <a href="{% url 'aboutus' %}" class="nav-link">About Us</a>
 
-            <a href="{% url 'contactus' %}" class="nav-link active">Contact Us</a>
+            <a href="{% url 'contactus' %}" class="nav-link">Contact Us</a>
 
       
 
 
 
 
-            <a href="{% url 'artist_list' %}">View All Artists</a>
+            <a href="{% url 'artist_list' %}"  class="nav-link">View All Artists</a>
 
             <!-- ✅ Correct logout URL -->
             <a href="{% url 'login' %}" class="nav-link">Logout</a>

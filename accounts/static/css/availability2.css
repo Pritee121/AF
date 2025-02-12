@@ -1,0 +1,122 @@
+/* 🌍 Reset & General Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* 📌 Body Styling */
+body {
+    background: #f9f9f9;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 20px;
+}
+
+/* 📢 Header Styling */
+header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+header h1 {
+    font-size: 28px;
+    font-weight: bold;
+    color: #D8648C;
+    margin-bottom: 10px;
+}
+
+/* 🔙 Back Button */
+.back-btn {
+    display: inline-block;
+    background: #D8648C;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background 0.3s ease-in-out;
+}
+
+.back-btn:hover {
+    background: #b34d74;
+}
+
+/* 📌 Availability Container */
+.availability-container {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+    width: 400px;
+    text-align: center;
+    border-top: 5px solid #D8648C;
+}
+
+/* 🏷️ Current Status */
+.status {
+    font-size: 20px;
+    font-weight: bold;
+    padding: 12px;
+    border-radius: 8px;
+    margin: 15px 0;
+}
+
+/* ✅ Available Status */
+.status.available {
+    background: #e5f9e7;
+    color: #2d8b57;
+    border: 2px solid #2d8b57;
+}
+
+/* ❌ Not Available Status */
+.status.not-available {
+    background: #fdeaea;
+    color: #c0392b;
+    border: 2px solid #c0392b;
+}
+
+/* 🎨 Toggle Button */
+.toggle-btn {
+    background: #D8648C;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 12px 20px;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out, transform 0.2s;
+    border: none;
+    display: block;
+    width: 100%;
+    margin-top: 15px;
+}
+
+/* 🚀 Button Hover Effects */
+.toggle-btn:hover {
+    background: #b34d74;
+    transform: scale(1.05);
+}
+
+/* 📱 Responsive Design */
+@media (max-width: 480px) {
+    .availability-container {
+        width: 90%;
+        padding: 25px;
+    }
+
+    header h1 {
+        font-size: 24px;
+    }
+
+    .toggle-btn {
+        font-size: 14px;
+        padding: 10px;
+    }
+}
