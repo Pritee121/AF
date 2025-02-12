@@ -1015,7 +1015,6 @@ def delete_service(request, service_id):
 #     return render(request, "accounts/edit_service.html", {"form": form, "service": service})
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-from django.contrib import messages
 from django.forms import modelformset_factory
 from .models import Service, ServiceAvailability
 from .forms import ServiceForm, ServiceAvailabilityForm
@@ -1023,31 +1022,41 @@ from .forms import ServiceForm, ServiceAvailabilityForm
 @login_required
 def edit_service(request, service_id):
     service = get_object_or_404(Service, id=service_id, artist=request.user)
-    
-    # ✅ Create a Formset for updating availability
-    AvailabilityFormSet = modelformset_factory(ServiceAvailability, form=ServiceAvailabilityForm, extra=0, can_delete=True)
+
+    ServiceAvailabilityFormSet = modelformset_factory(
+        ServiceAvailability, 
+        form=ServiceAvailabilityForm, 
+        extra=1,  
+        can_delete=True  
+    )
 
     if request.method == "POST":
         service_form = ServiceForm(request.POST, instance=service)
-        availability_formset = AvailabilityFormSet(request.POST, queryset=ServiceAvailability.objects.filter(service=service))
+        availability_formset = ServiceAvailabilityFormSet(request.POST, queryset=ServiceAvailability.objects.filter(service=service))
 
         if service_form.is_valid() and availability_formset.is_valid():
-            service_form.save()  # ✅ Save service updates
-            
-            # ✅ Save availability updates
-            availability_formset.save()
-            
-            messages.success(request, "Service and availability updated successfully!")
-            return redirect("services")  # ✅ Redirect to the services page
+            service = service_form.save()
+
+            for form in availability_formset:
+                if form.cleaned_data and not form.cleaned_data.get("DELETE", False):
+                    availability = form.save(commit=False)
+                    availability.service = service
+                    if availability.id is None:  # ✅ Save only new entries
+                        availability.save()
+
+            for form in availability_formset.deleted_forms:
+                if form.instance.id is not None:  # ✅ Ensure instance exists before deleting
+                    form.instance.delete()
+
+            return redirect("services")
 
     else:
         service_form = ServiceForm(instance=service)
-        availability_formset = AvailabilityFormSet(queryset=ServiceAvailability.objects.filter(service=service))
+        availability_formset = ServiceAvailabilityFormSet(queryset=ServiceAvailability.objects.filter(service=service))
 
     return render(request, "accounts/edit_service.html", {
         "service_form": service_form,
         "availability_formset": availability_formset,
-        "service": service
     })
 
 

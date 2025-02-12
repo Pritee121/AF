@@ -37,6 +37,9 @@
                 {% endfor %}
             </div>
 
+            <!-- ✅ Add button for dynamically adding more slots -->
+            <button type="button" class="add-slot-btn" onclick="addNewSlot()">➕ Add New Slot</button>
+
             <button type="submit" class="submit-btn">Update Service</button>
         </form>
     </div>
@@ -46,6 +49,21 @@
             flatpickr(".datepicker", { dateFormat: "Y-m-d" });
             flatpickr(".timepicker", { enableTime: true, noCalendar: true, dateFormat: "H:i" });
         });
+
+        function addNewSlot() {
+            let container = document.getElementById("availability-container");
+            let newSlot = document.createElement("div");
+            newSlot.classList.add("availability-block");
+            newSlot.innerHTML = `
+                <label>Date:</label>
+                <input type="text" name="form-${document.querySelectorAll('.availability-block').length}-available_date" class="datepicker" required>
+                <label>Time:</label>
+                <input type="text" name="form-${document.querySelectorAll('.availability-block').length}-available_time" class="timepicker" required>
+            `;
+            container.appendChild(newSlot);
+            flatpickr(".datepicker", { dateFormat: "Y-m-d" });
+            flatpickr(".timepicker", { enableTime: true, noCalendar: true, dateFormat: "H:i" });
+        }
     </script>
 
 </body>
