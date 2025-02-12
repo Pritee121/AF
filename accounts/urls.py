@@ -112,7 +112,7 @@ urlpatterns = [
     path("service/<int:service_id>/delete/", delete_service, name="delete_service"),
     path("services/edit/<int:service_id>/", edit_service, name="edit_service"),  
     path("availability/", availability_status, name="availability_status"),  # ✅ New URL
-    path("cancel-booking/<int:booking_id>/", cancel_booking, name="cancel_booking"),
+    path("cancel-booking/<int:booking_id>/",cancel_booking, name="cancel_booking"),
     path("availability/toggle/", toggle_availability, name="toggle_availability"),
      # ✅ Password Reset URLs
     path('artist/password_reset/', 
@@ -143,7 +143,7 @@ urlpatterns = [
     path("get-available-slots/<int:artist_id>/", get_available_slots, name="get_available_slots"),
           path('update-work/<int:work_id>/', update_work, name='update_work'),
     path("get-available-dates/<int:artist_id>/", get_available_dates, name="get_available_dates"),
-    path("get-available-times/<int:artist_id>/", get_available_times, name="get_available_times"),
+    path("get-available-times/<int:artist_id>/", views.get_available_times, name="get_available_times"),
     path("certificates/", views.certificates_page, name="certificates"),  # ✅ Make sure the name is 'certificates'
     path('user/profile/', user_profile, name='user_profile'),
     path('artist/profile/', artist_profile, name='artist_profile'),

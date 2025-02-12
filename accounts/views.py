@@ -206,28 +206,75 @@ def home_page(request):
         "sort_by": sort_by,
     })
 
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from .models import Booking
+# from django.shortcuts import render, redirect, get_object_or_404
+# from django.contrib.auth.decorators import login_required
+# from django.contrib import messages
+# from .models import Booking
+
+# @login_required
+# def cancel_booking(request, booking_id):
+#     booking = get_object_or_404(Booking, id=booking_id, client=request.user)
+
+#     if booking.status in ["Confirmed", "Pending"]:  # ✅ Allow cancelling both statuses
+#         booking.status = "Cancelled"
+#         booking.save()
+#         messages.success(request, "Your booking has been successfully cancelled.")
+
+#     return redirect("booking_history")  # ✅ Redirect user to their booking history
+
+
+# from django.shortcuts import render, get_object_or_404, redirect
+# from django.contrib.auth.decorators import login_required
+# from django.contrib import messages
+# from django.http import JsonResponse
+# from .models import Booking, ServiceAvailability
+
+# @login_required
+# def cancel_booking(request, booking_id):
+#     """ Cancel a booking and make the time slot available again """
+#     booking = get_object_or_404(Booking, id=booking_id, client=request.user)
+
+#     if booking.status in ["Pending", "Confirmed"]:
+#         # ✅ Mark the time slot as available again
+#         ServiceAvailability.objects.filter(
+#             service=booking.service,
+#             available_date=booking.date,
+#             available_time=booking.time
+#         ).update(is_booked=False)  # Mark the slot as available
+
+#         booking.status = "Cancelled"
+#         booking.save()
+#         messages.success(request, "Your booking has been canceled. The slot is now available.")
+
+#         # ✅ Return JSON response for AJAX update
+#         return JsonResponse({"success": True, "message": "Booking canceled and slot is now available."})
+
+#     return JsonResponse({"success": False, "message": "Cannot cancel this booking."}, status=400)
 
 @login_required
 def cancel_booking(request, booking_id):
+    """ ✅ Cancel a booking and make the time slot available again """
     booking = get_object_or_404(Booking, id=booking_id, client=request.user)
 
-    if booking.status in ["Confirmed", "Pending"]:  # ✅ Allow cancelling both statuses
+    if booking.status in ["Pending", "Confirmed"]:
+        # ✅ Mark the time slot as available again
+        ServiceAvailability.objects.filter(
+            service=booking.service,
+            available_date=booking.date,
+            available_time=booking.time
+        ).update(is_booked=False)  # ✅ Update slot to available
+
         booking.status = "Cancelled"
         booking.save()
-        messages.success(request, "Your booking has been successfully cancelled.")
 
-    return redirect("booking_history")  # ✅ Redirect user to their booking history
+        return JsonResponse({
+            "success": True,
+            "message": "Booking canceled successfully! The slot is now available.",
+            "service_id": booking.service.id,
+            "date": booking.date.strftime("%Y-%m-%d")  # ✅ Send formatted date
+        })
 
-
-
-
-
-
-
+    return JsonResponse({"success": False, "message": "Cannot cancel this booking."}, status=400)
 
 # ✅ Artist Registration (Fully Fixed)
 def register_artists(request):
@@ -445,6 +492,53 @@ def get_available_dates(request, artist_id):
 
     return JsonResponse({"available_dates": available_dates})
 
+# def get_available_times(request, artist_id):
+#     """ ✅ Fetch only available times for the selected date and service """
+#     selected_date = request.GET.get("date")
+#     service_id = request.GET.get("service_id")  # ✅ Get selected service ID
+
+#     if not selected_date or not service_id:
+#         return JsonResponse({"error": "Service ID and date are required"}, status=400)
+
+#     service = get_object_or_404(Service, id=service_id, artist_id=artist_id)
+
+#     # ✅ Get available time slots for this service & date
+#     available_slots = ServiceAvailability.objects.filter(
+#         service=service, available_date=selected_date
+#     ).values_list("available_time", flat=True)
+
+#     # ✅ Convert time to string format (HH:MM)
+#     available_times = [time.strftime("%H:%M") for time in available_slots]
+
+#     return JsonResponse({"available_times": available_times})
+
+# from django.http import JsonResponse
+# from django.shortcuts import get_object_or_404
+# from .models import ServiceAvailability, Service
+
+# def get_available_times(request, artist_id):
+#     """ ✅ Fetch only available times for the selected date and service """
+#     selected_date = request.GET.get("date")
+#     service_id = request.GET.get("service_id")  # ✅ Get selected service ID
+
+#     if not selected_date or not service_id:
+#         return JsonResponse({"error": "Service ID and date are required"}, status=400)
+
+#     service = get_object_or_404(Service, id=service_id, artist_id=artist_id)
+
+#     # ✅ Get available time slots that are NOT booked
+#     available_slots = ServiceAvailability.objects.filter(
+#         service=service, available_date=selected_date, is_booked=False
+#     ).values_list("available_time", flat=True)
+
+#     # ✅ Convert time to string format (HH:MM)
+#     available_times = [time.strftime("%H:%M") for time in available_slots]
+
+#     return JsonResponse({"available_times": available_times})
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from .models import ServiceAvailability, Service
+
 def get_available_times(request, artist_id):
     """ ✅ Fetch only available times for the selected date and service """
     selected_date = request.GET.get("date")
@@ -455,16 +549,15 @@ def get_available_times(request, artist_id):
 
     service = get_object_or_404(Service, id=service_id, artist_id=artist_id)
 
-    # ✅ Get available time slots for this service & date
+    # ✅ Get only available time slots (not booked)
     available_slots = ServiceAvailability.objects.filter(
-        service=service, available_date=selected_date
+        service=service, available_date=selected_date, is_booked=False
     ).values_list("available_time", flat=True)
 
     # ✅ Convert time to string format (HH:MM)
     available_times = [time.strftime("%H:%M") for time in available_slots]
 
     return JsonResponse({"available_times": available_times})
-
 
 from django.shortcuts import render
 from .models import User
@@ -902,24 +995,60 @@ def delete_service(request, service_id):
 
 
 
+# from django.shortcuts import render, get_object_or_404, redirect
+# from django.contrib.auth.decorators import login_required
+# from .models import Service
+# from .forms import ServiceForm
+
+# @login_required
+# def edit_service(request, service_id):
+#     service = get_object_or_404(Service, id=service_id, artist=request.user)
+
+#     if request.method == "POST":
+#         form = ServiceForm(request.POST, instance=service)
+#         if form.is_valid():
+#             form.save()
+#             return redirect("services")  # ✅ Redirect back to services page
+#     else:
+#         form = ServiceForm(instance=service)
+
+#     return render(request, "accounts/edit_service.html", {"form": form, "service": service})
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-from .models import Service
-from .forms import ServiceForm
+from django.contrib import messages
+from django.forms import modelformset_factory
+from .models import Service, ServiceAvailability
+from .forms import ServiceForm, ServiceAvailabilityForm
 
 @login_required
 def edit_service(request, service_id):
     service = get_object_or_404(Service, id=service_id, artist=request.user)
+    
+    # ✅ Create a Formset for updating availability
+    AvailabilityFormSet = modelformset_factory(ServiceAvailability, form=ServiceAvailabilityForm, extra=0, can_delete=True)
 
     if request.method == "POST":
-        form = ServiceForm(request.POST, instance=service)
-        if form.is_valid():
-            form.save()
-            return redirect("services")  # ✅ Redirect back to services page
-    else:
-        form = ServiceForm(instance=service)
+        service_form = ServiceForm(request.POST, instance=service)
+        availability_formset = AvailabilityFormSet(request.POST, queryset=ServiceAvailability.objects.filter(service=service))
 
-    return render(request, "accounts/edit_service.html", {"form": form, "service": service})
+        if service_form.is_valid() and availability_formset.is_valid():
+            service_form.save()  # ✅ Save service updates
+            
+            # ✅ Save availability updates
+            availability_formset.save()
+            
+            messages.success(request, "Service and availability updated successfully!")
+            return redirect("services")  # ✅ Redirect to the services page
+
+    else:
+        service_form = ServiceForm(instance=service)
+        availability_formset = AvailabilityFormSet(queryset=ServiceAvailability.objects.filter(service=service))
+
+    return render(request, "accounts/edit_service.html", {
+        "service_form": service_form,
+        "availability_formset": availability_formset,
+        "service": service
+    })
 
 
 from django.shortcuts import render
@@ -1035,3 +1164,6 @@ def artist_profile(request):
         return redirect('artist_profile')
 
     return render(request, 'accounts/artist_profile.html')
+
+
+

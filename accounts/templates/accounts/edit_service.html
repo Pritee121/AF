@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Service</title>
     <link rel="stylesheet" href="{% static 'css/add_service.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>  <!-- ✅ Add Flatpickr -->
 </head>
 <body>
 
@@ -23,10 +24,29 @@
 
         <form method="POST">
             {% csrf_token %}
-            {{ form.as_p }}
+            <h3>Service Details</h3>
+            {{ service_form.as_p }}
+
+            <h3>Update Availability</h3>
+            <div id="availability-container">
+                {{ availability_formset.management_form }}
+                {% for form in availability_formset %}
+                    <div class="availability-block">
+                        {{ form.as_p }}
+                    </div>
+                {% endfor %}
+            </div>
+
             <button type="submit" class="submit-btn">Update Service</button>
         </form>
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            flatpickr(".datepicker", { dateFormat: "Y-m-d" });
+            flatpickr(".timepicker", { enableTime: true, noCalendar: true, dateFormat: "H:i" });
+        });
+    </script>
 
 </body>
 </html>

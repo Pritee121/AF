@@ -52,16 +52,15 @@
                     <p class="description">Duration: {{ service.duration }}</p>
                     <p class="description">{{ service.description }}</p>
 
-                    <!-- ✅ Display Multiple Availability Slots -->
                     <p class="availability">
                         <strong>Available Slots:</strong>
-                        {% for slot in service.availabilities.all %}
+                        {% for slot in service.serviceavailability_set.all %}  <!-- ✅ FIX: Use correct related name -->
                             <br> 📅 {{ slot.available_date }} ⏰ {{ slot.available_time }}
                         {% empty %}
                             <br> No availability set yet.
                         {% endfor %}
                     </p>
-
+                    
                    <!-- ✅ Show Reviews for Each Service -->
                     <div class="reviews-section">
                         <h4>Customer Reviews:</h4>

@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book {{ artist.first_name }} {{ artist.last_name }}</title>
 
-    <!-- ✅ Flatpickr for date restriction -->
+    <!-- ✅ Flatpickr for date selection -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
@@ -82,102 +82,15 @@
     </div>
 
     <!-- ✅ JavaScript -->
-    <!-- <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            let dateInput = document.getElementById("date");
-            let serviceSelect = document.getElementById("service");
-            let timeInput = document.getElementById("time");
-
-            function fetchAvailableDates(serviceId) {
-                fetch(`/get-available-dates/{{ artist.id }}/?service_id=${serviceId}`)  // ✅ Fetch dates for selected service
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.available_dates.length === 0) {
-                            Swal.fire({
-                                icon: "info",
-                                title: "No Available Dates",
-                                text: "This service has no available slots. Please check later.",
-                                confirmButtonText: "OK"
-                            });
-                            dateInput.disabled = true;
-                            dateInput.value = "";
-                            timeInput.innerHTML = "<option value='' disabled selected>Choose a time</option>";
-                            timeInput.disabled = true;
-                        } else {
-                            dateInput.disabled = false;
-
-                            // ✅ Initialize Flatpickr with restricted dates
-                            flatpickr(dateInput, {
-                                dateFormat: "Y-m-d",
-                                enable: data.available_dates,  // ✅ Restrict to available dates
-                                disableMobile: true,
-                                onChange: function (selectedDates, dateStr) {
-                                    fetchAvailableTimes(serviceId, dateStr);
-                                }
-                            });
-                        }
-                    })
-                    .catch(error => console.error("Error fetching available dates:", error));
-            }
-
-            function fetchAvailableTimes(serviceId, date) {
-                fetch(`/get-available-times/{{ artist.id }}/?service_id=${serviceId}&date=${date}`)  // ✅ Fetch times for selected service
-                    .then(response => response.json())
-                    .then(data => {
-                        timeInput.innerHTML = "<option value='' disabled selected>Choose a time</option>";
-
-                        if (data.available_times.length === 0) {
-                            Swal.fire({
-                                icon: "info",
-                                title: "No Available Slots",
-                                text: "No slots available for this date. Please choose another date.",
-                                confirmButtonText: "OK"
-                            });
-                            timeInput.disabled = true;
-                        } else {
-                            timeInput.disabled = false;
-                            data.available_times.forEach(time => {
-                                let option = document.createElement("option");
-                                option.value = time;
-                                option.textContent = time;
-                                timeInput.appendChild(option);
-                            });
-                        }
-                    })
-                    .catch(error => console.error("Error fetching available times:", error));
-            }
-
-            // ✅ When a service is selected, fetch available dates
-            serviceSelect.addEventListener("change", function () {
-                let selectedServiceId = this.value;
-                if (selectedServiceId) {
-                    fetchAvailableDates(selectedServiceId);
-                    dateInput.value = "";
-                    dateInput.disabled = true;
-                    timeInput.innerHTML = "<option value='' disabled selected>Choose a time</option>";
-                    timeInput.disabled = true;
-                }
-            });
-
-            // ✅ Ensure duration updates when service changes
-            serviceSelect.addEventListener("change", function () {
-                let selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
-                document.getElementById("duration").value = selectedOption.getAttribute("data-duration") || "";
-            });
-
-            // ✅ Initialize Flatpickr to ensure it's working
-            flatpickr(dateInput, { dateFormat: "Y-m-d" });
-        });
-    </script> -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             let dateInput = document.getElementById("date");
             let serviceSelect = document.getElementById("service");
             let timeInput = document.getElementById("time");
             let bookingForm = document.getElementById("booking-form");
-    
+
             function fetchAvailableDates(serviceId) {
-                fetch(`/get-available-dates/{{ artist.id }}/?service_id=${serviceId}`)  
+                fetch(`/get-available-dates/{{ artist.id }}/?service_id=${serviceId}`)
                     .then(response => response.json())
                     .then(data => {
                         if (data.available_dates.length === 0) {
@@ -193,11 +106,11 @@
                             timeInput.disabled = true;
                         } else {
                             dateInput.disabled = false;
-    
+
                             // ✅ Initialize Flatpickr with restricted dates
                             flatpickr(dateInput, {
                                 dateFormat: "Y-m-d",
-                                enable: data.available_dates,  
+                                enable: data.available_dates,
                                 disableMobile: true,
                                 onChange: function (selectedDates, dateStr) {
                                     fetchAvailableTimes(serviceId, dateStr);
@@ -207,13 +120,13 @@
                     })
                     .catch(error => console.error("Error fetching available dates:", error));
             }
-    
+
             function fetchAvailableTimes(serviceId, date) {
-                fetch(`/get-available-times/{{ artist.id }}/?service_id=${serviceId}&date=${date}`)  
+                fetch(`/get-available-times/{{ artist.id }}/?service_id=${serviceId}&date=${date}`)
                     .then(response => response.json())
                     .then(data => {
                         timeInput.innerHTML = "<option value='' disabled selected>Choose a time</option>";
-    
+
                         if (data.available_times.length === 0) {
                             Swal.fire({
                                 icon: "info",
@@ -234,7 +147,7 @@
                     })
                     .catch(error => console.error("Error fetching available times:", error));
             }
-    
+
             // ✅ When a service is selected, fetch available dates
             serviceSelect.addEventListener("change", function () {
                 let selectedServiceId = this.value;
@@ -246,19 +159,19 @@
                     timeInput.disabled = true;
                 }
             });
-    
+
             // ✅ Ensure duration updates when service changes
             serviceSelect.addEventListener("change", function () {
                 let selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
                 document.getElementById("duration").value = selectedOption.getAttribute("data-duration") || "";
             });
-    
+
             // ✅ Handle Form Submission & Show Confirmation Popup
             bookingForm.addEventListener("submit", function (event) {
                 event.preventDefault();  // ✅ Prevent default form submission
-    
+
                 let formData = new FormData(this);
-    
+
                 fetch(window.location.href, {
                     method: "POST",
                     body: formData,
@@ -290,12 +203,10 @@
                 })
                 .catch(error => console.error("Error:", error));
             });
-    
+
             // ✅ Initialize Flatpickr to ensure it's working
             flatpickr(dateInput, { dateFormat: "Y-m-d" });
         });
     </script>
-    
-    
 </body>
 </html>

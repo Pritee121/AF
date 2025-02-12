@@ -61,7 +61,7 @@
             </thead>
             <tbody>
                 {% for booking in user_bookings %}
-                <tr>
+                <tr id="booking-row-{{ booking.id }}">
                     <td>{{ booking.artist.first_name }} {{ booking.artist.last_name }}</td>
                     <td>{{ booking.service.service_name }}</td>
                     <td>{{ booking.date }}</td>
@@ -70,14 +70,14 @@
                     <td>{{ booking.payment_method|title }}</td>
                     <td>Rs. {{ booking.service.price }}</td>
                     <td id="status-{{ booking.id }}">{{ booking.status }}</td>
-
-                    <!-- ✅ Cancel Booking Button for "Pending" or "Confirmed" Status -->
+            
+                    <!-- ✅ Cancel Booking Button -->
                     <td>
                         {% if booking.status == "Pending" or booking.status == "Confirmed" %}
-                            <form id="cancel-booking-{{ booking.id }}" action="{% url 'cancel_booking' booking.id %}" method="POST">
-                                {% csrf_token %}
-                                <button type="button" class="cancel-btn" onclick="confirmCancel('{{ booking.id }}')">❌ Cancel</button>
-                            </form>
+                            <button type="button" class="cancel-btn"
+                                onclick="confirmCancel('{{ booking.id }}', '{{ booking.service.id }}', '{{ booking.date }}')">
+                                ❌ Cancel
+                            </button>
                         {% else %}
                             <span class="cancelled-text">N/A</span>
                         {% endif %}
@@ -85,6 +85,7 @@
                 </tr>
                 {% endfor %}
             </tbody>
+            
         </table>
         {% else %}
             <p class="no-bookings">🙁 No bookings found.</p>
@@ -93,40 +94,102 @@
 
     <!-- ✅ SweetAlert2 Script for Confirmation -->
     <script>
-        function confirmCancel(bookingId) {
-            Swal.fire({
-                title: "Cancel Booking?",
-                text: "Are you sure you want to cancel this booking?",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#D8648C",
-                cancelButtonColor: "#6c757d",
-                confirmButtonText: "Yes, cancel it!",
-                cancelButtonText: "No, keep it"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    document.getElementById(`cancel-booking-${bookingId}`).submit();
+//         function confirmCancel(bookingId) {
+//             Swal.fire({
+//                 title: "Cancel Booking?",
+//                 text: "Are you sure you want to cancel this booking?",
+//                 icon: "warning",
+//                 showCancelButton: true,
+//                 confirmButtonColor: "#D8648C",
+//                 cancelButtonColor: "#6c757d",
+//                 confirmButtonText: "Yes, cancel it!",
+//                 cancelButtonText: "No, keep it"
+//             }).then((result) => {
+//                 if (result.isConfirmed) {
+//                     document.getElementById(`cancel-booking-${bookingId}`).submit();
+//                 }
+//             });
+//         }function handleCODBooking(userId, serviceId) {
+//     fetch("/cod_booking/", {
+//         method: "POST",
+//         body: JSON.stringify({
+//             user_id: userId,
+//             service_id: serviceId
+//         }),
+//         headers: { "Content-Type": "application/json" }
+//     })
+//     .then(response => response.json())
+//     .then(data => {
+//         if (data.success) {
+//             alert("Booking successful! Payment is pending.");
+//             window.location.href = "/dashboard";  // ✅ Redirect to Dashboard
+//         } else {
+//             alert("Booking failed! Please try again.");
+//         }
+//     });
+// }
+function confirmCancel(bookingId, serviceId, date) {
+    Swal.fire({
+        title: "Cancel Booking?",
+        text: "Are you sure you want to cancel this booking?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#D8648C",
+        cancelButtonColor: "#6c757d",
+        confirmButtonText: "Yes, cancel it!",
+        cancelButtonText: "No, keep it"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/cancel-booking/${bookingId}/`, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}",
+                    "Content-Type": "application/json"
                 }
-            });
-        }function handleCODBooking(userId, serviceId) {
-    fetch("/cod_booking/", {
-        method: "POST",
-        body: JSON.stringify({
-            user_id: userId,
-            service_id: serviceId
-        }),
-        headers: { "Content-Type": "application/json" }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert("Booking successful! Payment is pending.");
-            window.location.href = "/dashboard";  // ✅ Redirect to Dashboard
-        } else {
-            alert("Booking failed! Please try again.");
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire("Cancelled!", data.message, "success");
+
+                    // ✅ Remove booking from table
+                    document.getElementById(`booking-row-${bookingId}`).remove();
+
+                    // ✅ Refresh available slots dynamically
+                    refreshAvailableSlots(serviceId, date);
+                } else {
+                    Swal.fire("Error!", data.message, "error");
+                }
+            })
+            .catch(error => console.error("Error:", error));
         }
     });
 }
+
+// ✅ Refresh available slots dynamically
+function refreshAvailableSlots(serviceId, date) {
+    let timeDropdown = document.getElementById("time");
+    fetch(`/get-available-times/{{ artist.id }}/?service_id=${serviceId}&date=${date}`)
+    .then(response => response.json())
+    .then(data => {
+        timeDropdown.innerHTML = "<option value='' disabled selected>Choose a time</option>";
+        if (data.available_times.length === 0) {
+            Swal.fire("No Available Slots", "No slots available for this date. Please choose another date.", "info");
+            timeDropdown.disabled = true;
+        } else {
+            timeDropdown.disabled = false;
+            data.available_times.forEach(time => {
+                let option = document.createElement("option");
+                option.value = time;
+                option.textContent = time;
+                timeDropdown.appendChild(option);
+            });
+        }
+    })
+    .catch(error => console.error("Error fetching available slots:", error));
+}
+
+
 
     </script>
 
