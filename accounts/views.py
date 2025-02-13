@@ -156,10 +156,52 @@ def artist_login(request):
 
 
 
+# from django.shortcuts import render
+# from django.contrib.auth.decorators import login_required
+# from django.core.paginator import Paginator
+# from django.db.models import Avg
+# from .models import User, Booking
+
+# @login_required(login_url='login')
+# def home_page(request):
+#     query = request.GET.get("search", "").strip()
+#     sort_by = request.GET.get("sort_by", "rating")  # Default sorting by rating
+
+#     # ✅ Filter artists based on search query (city)
+#     artists = User.objects.filter(is_artist=True)
+#     if query:
+#         artists = artists.filter(city__icontains=query)
+
+#     # ✅ Annotate artists with their average rating (FIXED FIELD NAME)
+#     artists = artists.annotate(avg_rating=Avg('artist_reviews__rating'))  # Use correct related name
+
+#     # ✅ Sorting logic
+#     if sort_by == "rating":
+#         artists = artists.order_by('-avg_rating')  # Highest rating first
+#     elif sort_by == "name":
+#         artists = artists.order_by('first_name', 'last_name')  # Alphabetical
+#     elif sort_by == "experience":
+#         artists = artists.order_by('-experience_years')  # Most experienced first
+
+#     # ✅ Pagination (10 artists per page)
+#     paginator = Paginator(artists, 10)  
+#     page_number = request.GET.get("page")
+#     page_obj = paginator.get_page(page_number)
+
+#     # ✅ Fetch all artist IDs where the user has a confirmed booking
+#     booked_artists = Booking.objects.filter(client=request.user, status="Confirmed").values_list('artist_id', flat=True)
+
+#     return render(request, "accounts/home.html", {
+#         "artists": page_obj,  # Paginated artists
+#         "query": query,
+#         "message": "No artists found in this city." if not artists.exists() else "",
+#         "booked_artists": list(booked_artists),  # Convert to list
+#         "sort_by": sort_by,
+#     })
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db.models import Avg
+from django.db.models import Avg, Count
 from .models import User, Booking
 
 @login_required(login_url='login')
@@ -172,8 +214,8 @@ def home_page(request):
     if query:
         artists = artists.filter(city__icontains=query)
 
-    # ✅ Annotate artists with their average rating (FIXED FIELD NAME)
-    artists = artists.annotate(avg_rating=Avg('artist_reviews__rating'))  # Use correct related name
+    # ✅ Annotate artists with their average rating
+    artists = artists.annotate(avg_rating=Avg('artist_reviews__rating'))
 
     # ✅ Sorting logic
     if sort_by == "rating":
@@ -191,11 +233,24 @@ def home_page(request):
     # ✅ Fetch all artist IDs where the user has a confirmed booking
     booked_artists = Booking.objects.filter(client=request.user, status="Confirmed").values_list('artist_id', flat=True)
 
+    # ✅ AI-BASED RECOMMENDATION LOGIC
+    # ✅ Find other users who booked the same artists as this user
+    similar_users = Booking.objects.filter(artist_id__in=booked_artists).values_list("client_id", flat=True).distinct()
+
+    # ✅ Find new artists booked by similar users but NOT booked by the current user
+    recommended_artists = User.objects.filter(
+        is_artist=True, 
+        bookings__client_id__in=similar_users
+    ).exclude(id__in=booked_artists).annotate(
+        booking_count=Count("bookings")
+    ).order_by("-booking_count")[:5]  # ✅ Top 5 recommended artists
+
     return render(request, "accounts/home.html", {
         "artists": page_obj,  # Paginated artists
+        "recommended_artists": recommended_artists,  # ✅ Pass recommended artists
         "query": query,
         "message": "No artists found in this city." if not artists.exists() else "",
-        "booked_artists": list(booked_artists),  # Convert to list
+        "booked_artists": list(booked_artists),
         "sort_by": sort_by,
     })
 
@@ -244,6 +299,42 @@ def home_page(request):
 
 #     return JsonResponse({"success": False, "message": "Cannot cancel this booking."}, status=400)
 
+# from django.shortcuts import get_object_or_404, redirect
+# from django.contrib.auth.decorators import login_required
+# from django.contrib import messages
+# from django.http import JsonResponse
+# from .models import Booking, ServiceAvailability
+
+# @login_required
+# def cancel_booking(request, booking_id):
+#     """ ✅ Cancel a booking and make the time slot available again """
+#     booking = get_object_or_404(Booking, id=booking_id, client=request.user)
+
+#     if booking.status in ["Pending", "Confirmed"]:
+#         # ✅ Find the slot for this booking
+#         slot = ServiceAvailability.objects.filter(
+#             service=booking.service,
+#             available_date=booking.date,
+#             available_time=booking.time
+#         ).first()
+
+#         if slot:
+#             slot.is_booked = False  # ✅ Mark as available
+#             slot.save()  # ✅ Save changes to database
+
+#         booking.status = "Cancelled"
+#         booking.save()
+
+#         messages.success(request, "Your booking has been canceled. The slot is now available.")
+
+#         return JsonResponse({
+#             "success": True,
+#             "message": "Booking canceled and slot is now available.",
+#             "service_id": booking.service.id,
+#             "date": booking.date.strftime("%Y-%m-%d")  # ✅ Send date as string
+#         })
+
+#     return JsonResponse({"success": False, "message": "Cannot cancel this booking."}, status=400)
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -256,7 +347,7 @@ def cancel_booking(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id, client=request.user)
 
     if booking.status in ["Pending", "Confirmed"]:
-        # ✅ Find the slot for this booking
+        # ✅ Find the corresponding service slot
         slot = ServiceAvailability.objects.filter(
             service=booking.service,
             available_date=booking.date,
@@ -264,22 +355,28 @@ def cancel_booking(request, booking_id):
         ).first()
 
         if slot:
-            slot.is_booked = False  # ✅ Mark as available
-            slot.save()  # ✅ Save changes to database
+            slot.is_booked = False  # ✅ Mark the slot as available again
+            slot.save()
+            print(f"✅ Slot {booking.time} on {booking.date} is now available again.")  # Debugging
 
+        # ✅ Update booking status
         booking.status = "Cancelled"
         booking.save()
+        print(f"✅ Booking {booking.id} successfully cancelled.")  # Debugging
 
         messages.success(request, "Your booking has been canceled. The slot is now available.")
 
         return JsonResponse({
             "success": True,
             "message": "Booking canceled and slot is now available.",
+            "booking_id": booking.id,
             "service_id": booking.service.id,
-            "date": booking.date.strftime("%Y-%m-%d")  # ✅ Send date as string
+            "date": booking.date.strftime("%Y-%m-%d")
         })
 
     return JsonResponse({"success": False, "message": "Cannot cancel this booking."}, status=400)
+
+
 
 # from django.shortcuts import render, get_object_or_404, redirect
 # from django.contrib.auth.decorators import login_required
@@ -833,6 +930,72 @@ from .models import Booking, Service, User, ServiceAvailability
 #     })
 
 
+# @login_required
+# def book_artist(request, artist_id):
+#     artist = get_object_or_404(User, id=artist_id, is_artist=True)
+#     user = request.user
+#     services = Service.objects.filter(artist=artist)
+
+#     if request.method == "POST":
+#         date_selected = request.POST.get("date")
+#         time_selected = request.POST.get("time")
+#         service_id = request.POST.get("service")
+#         payment_method = request.POST.get("payment_method")
+#         latitude = request.POST.get("latitude")  # ✅ Get latitude
+#         longitude = request.POST.get("longitude")  # ✅ Get longitude
+
+#         # ✅ Validate required fields
+#         if not date_selected or not time_selected or not service_id or not payment_method:
+#             return JsonResponse({"status": "error", "message": "All fields are required."})
+
+#         # ✅ Ensure selected date is not in the past
+#         if date.fromisoformat(date_selected) < date.today():
+#             return JsonResponse({"status": "error", "message": "You cannot book past dates."})
+
+#         selected_service = get_object_or_404(Service, id=service_id, artist=artist)
+
+#         # ✅ Ensure the selected time slot exists in ServiceAvailability
+#         if not ServiceAvailability.objects.filter(
+#             service=selected_service, available_date=date_selected, available_time=time_selected
+#         ).exists():
+#             return JsonResponse({"status": "error", "message": "The selected time slot is not available."})
+
+#         # ✅ Check if the artist is already booked at this date & time
+#         if Booking.objects.filter(artist=artist, date=date_selected, time=time_selected).exists():
+#             return JsonResponse({"status": "error", "message": "This time slot is already booked. Choose another."})
+
+#         # ✅ Save booking with latitude & longitude
+#         booking = Booking.objects.create(
+#             artist=artist,
+#             client=user,
+#             date=date_selected,
+#             time=time_selected,
+#             service=selected_service,
+#             payment_method=payment_method,
+#             latitude=latitude,  # ✅ Save latitude
+#             longitude=longitude,  # ✅ Save longitude
+#         )
+
+#         messages.success(request, "Your booking has been successfully listed. You will receive a confirmation message soon.")
+#         return redirect("accounts/home.html")  # Redirect to a success page
+
+#     return render(request, 'accounts/book_artist.html', {
+#         'artist': artist,
+#         'user': user,
+#         'services': services
+#     })
+import logging
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.contrib import messages
+from django.core.mail import send_mail
+from datetime import date
+from .models import Booking, Service, User, ServiceAvailability
+
+# Initialize logger
+logger = logging.getLogger(__name__)
+
 @login_required
 def book_artist(request, artist_id):
     artist = get_object_or_404(User, id=artist_id, is_artist=True)
@@ -844,8 +1007,10 @@ def book_artist(request, artist_id):
         time_selected = request.POST.get("time")
         service_id = request.POST.get("service")
         payment_method = request.POST.get("payment_method")
-        latitude = request.POST.get("latitude")  # ✅ Get latitude
-        longitude = request.POST.get("longitude")  # ✅ Get longitude
+        latitude = request.POST.get("latitude")
+        longitude = request.POST.get("longitude")
+
+        logger.info(f"Received booking request from {user.email} for {artist.first_name}")
 
         # ✅ Validate required fields
         if not date_selected or not time_selected or not service_id or not payment_method:
@@ -875,12 +1040,30 @@ def book_artist(request, artist_id):
             time=time_selected,
             service=selected_service,
             payment_method=payment_method,
-            latitude=latitude,  # ✅ Save latitude
-            longitude=longitude,  # ✅ Save longitude
+            latitude=latitude,
+            longitude=longitude,
+            status="Pending"  # ✅ Default to pending until confirmed
         )
 
-        messages.success(request, "Your booking has been successfully listed. You will receive a confirmation message soon.")
-        return redirect("accounts/home.html")  # Redirect to a success page
+        logger.info(f"Booking created successfully: {booking.id}")
+
+        # ✅ Send confirmation email
+        try:
+            send_mail(
+                "Booking Confirmation - Artist Finder",
+                f"Dear {user.first_name},\n\nYour booking for {selected_service.service_name} with {artist.first_name} {artist.last_name} on {date_selected} at {time_selected} has been received.\n\nYou will get a confirmation mail soon!\n\nThank you for using Artist Finder!",
+                "no-reply@artistfinder.com",
+                [user.email],
+                fail_silently=False,
+            )
+            logger.info("Confirmation email sent successfully!")
+        except Exception as e:
+            logger.error(f"Failed to send email: {e}")
+
+        return JsonResponse({
+            "status": "success",
+            "message": "Your booking has been listed. You will receive a confirmation message soon.",
+        })
 
     return render(request, 'accounts/book_artist.html', {
         'artist': artist,

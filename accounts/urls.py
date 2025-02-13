@@ -93,7 +93,7 @@ urlpatterns = [
     path('artist-login/', views.artist_login, name='artist_login'),
     path('artist-dashboard/', views.artist_dashboard, name='artist_dashboard'),
     path('artist-logout/', views.artist_logout, name='artist_logout'),
-    path("booking-history/", booking_history, name="booking_history"),
+    path("booking-history/", views.booking_history, name="booking_history"),
     # Work Management
     path('add-work/', views.add_work, name='add_work'),
     # Service Management

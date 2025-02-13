@@ -273,6 +273,66 @@ td[id^="status-"].Cancelled {
 //         }
 //     });
 // }
+// function confirmCancel(bookingId, serviceId, date) {
+//     Swal.fire({
+//         title: "Cancel Booking?",
+//         text: "Are you sure you want to cancel this booking?",
+//         icon: "warning",
+//         showCancelButton: true,
+//         confirmButtonColor: "#D8648C",
+//         cancelButtonColor: "#6c757d",
+//         confirmButtonText: "Yes, cancel it!",
+//         cancelButtonText: "No, keep it"
+//     }).then((result) => {
+//         if (result.isConfirmed) {
+//             fetch(`/cancel-booking/${bookingId}/`, {
+//                 method: "POST",
+//                 headers: {
+//                     "X-CSRFToken": "{{ csrf_token }}",
+//                     "Content-Type": "application/json"
+//                 }
+//             })
+//             .then(response => response.json())
+//             .then(data => {
+//                 if (data.success) {
+//                     Swal.fire("Cancelled!", data.message, "success");
+
+//                     // ✅ Remove booking from table
+//                     document.getElementById(`booking-row-${bookingId}`).remove();
+
+//                     // ✅ Refresh available slots dynamically
+//                     refreshAvailableSlots(serviceId, date);
+//                 } else {
+//                     Swal.fire("Error!", data.message, "error");
+//                 }
+//             })
+//             .catch(error => console.error("Error:", error));
+//         }
+//     });
+// }
+
+// // ✅ Refresh available slots dynamically
+// function refreshAvailableSlots(serviceId, date) {
+//     let timeDropdown = document.getElementById("time");
+//     fetch(`/get-available-times/{{ artist.id }}/?service_id=${serviceId}&date=${date}`)
+//     .then(response => response.json())
+//     .then(data => {
+//         timeDropdown.innerHTML = "<option value='' disabled selected>Choose a time</option>";
+//         if (data.available_times.length === 0) {
+//             Swal.fire("No Available Slots", "No slots available for this date. Please choose another date.", "info");
+//             timeDropdown.disabled = true;
+//         } else {
+//             timeDropdown.disabled = false;
+//             data.available_times.forEach(time => {
+//                 let option = document.createElement("option");
+//                 option.value = time;
+//                 option.textContent = time;
+//                 timeDropdown.appendChild(option);
+//             });
+//         }
+//     })
+//     .catch(error => console.error("Error fetching available slots:", error));
+// }
 function confirmCancel(bookingId, serviceId, date) {
     Swal.fire({
         title: "Cancel Booking?",
@@ -297,8 +357,16 @@ function confirmCancel(bookingId, serviceId, date) {
                 if (data.success) {
                     Swal.fire("Cancelled!", data.message, "success");
 
-                    // ✅ Remove booking from table
-                    document.getElementById(`booking-row-${bookingId}`).remove();
+                    // ✅ Remove the booking row from the table
+                    let row = document.getElementById(`booking-row-${bookingId}`);
+                    if (row) {
+                        row.remove();  // ✅ Permanently remove row from DOM
+                    }
+
+                    // ✅ Check if there are any bookings left, if not, show message
+                    if (document.querySelectorAll("tbody tr").length === 0) {
+                        document.querySelector(".no-bookings").style.display = "block";
+                    }
 
                     // ✅ Refresh available slots dynamically
                     refreshAvailableSlots(serviceId, date);
@@ -311,9 +379,10 @@ function confirmCancel(bookingId, serviceId, date) {
     });
 }
 
-// ✅ Refresh available slots dynamically
+// ✅ Refresh Available Slots in Booking Form
 function refreshAvailableSlots(serviceId, date) {
     let timeDropdown = document.getElementById("time");
+
     fetch(`/get-available-times/{{ artist.id }}/?service_id=${serviceId}&date=${date}`)
     .then(response => response.json())
     .then(data => {
@@ -333,6 +402,7 @@ function refreshAvailableSlots(serviceId, date) {
     })
     .catch(error => console.error("Error fetching available slots:", error));
 }
+
 
 
 

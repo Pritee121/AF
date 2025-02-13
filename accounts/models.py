@@ -286,7 +286,8 @@ class ServiceAvailability(models.Model):
         unique_together = ('service', 'available_date', 'available_time')  # Prevent duplicate entries
 
     def __str__(self):
-        return f"{self.service.service_name} - {self.available_date} at {self.available_time} - {'Booked' if self.is_booked else 'Available'}"
+        return f"{self.service} - {self.available_date} {self.available_time} - {'Booked' if self.is_booked else 'Available'}"
+
 
     def mark_as_booked(self):
         """ ✅ Mark the slot as booked when a new booking is created """
