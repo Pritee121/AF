@@ -179,9 +179,72 @@ class Service(models.Model):
 #     def __str__(self):
 #         return f"{self.client.first_name} booked {self.artist.first_name} for {self.service.service_name} on {self.date} using {self.payment_method}"
 
-from django.core.exceptions import ValidationError
+# from django.core.exceptions import ValidationError
+# from django.db import models
+# from django.utils.timezone import now
+
+# class Booking(models.Model):
+#     PAYMENT_CHOICES = [
+#         ("khalti", "Khalti"),
+#         ("cod", "Cash on Delivery"),
+#     ]
+#     STATUS_CHOICES = [
+#         ("Pending", "Pending"),
+#         ("Confirmed", "Confirmed"),
+#         ("Cancelled", "Cancelled"),
+#     ]
+    
+#     artist = models.ForeignKey(User, on_delete=models.CASCADE, related_name="bookings")
+#     client = models.ForeignKey(User, on_delete=models.CASCADE, related_name="client_bookings")
+#     service = models.ForeignKey(Service, on_delete=models.CASCADE, null=True, blank=True)
+#     date = models.DateField()
+#     time = models.TimeField()
+#     payment_method = models.CharField(max_length=10, choices=PAYMENT_CHOICES, default="cod")
+#     payment_status = models.CharField(max_length=20, default="Pending")
+#     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="Pending")
+#     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)  # Store latitude
+#     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)  # Store longitude
+#     created_at = models.DateTimeField(auto_now_add=True)
+    
+#     class Meta:
+#         unique_together = ('artist', 'date', 'time')  # ✅ Prevent duplicate bookings
+
+#     def clean(self):
+#         """ ✅ Ensure artist is available at the selected time if the booking is not cancelled """
+#         if self.status != "Cancelled":
+#             existing_booking = Booking.objects.filter(
+#                 artist=self.artist, date=self.date, time=self.time
+#             ).exclude(id=self.id)  # Exclude the current instance during updates
+
+#             if existing_booking.exists():
+#                 raise ValidationError(f"{self.artist.first_name} is already booked at this time.")
+
+#     def save(self, *args, **kwargs):
+#         self.clean()  # ✅ Ensure validation before saving
+#         super().save(*args, **kwargs)
+
+#         # ✅ When booking is created, mark the slot as booked
+#         if self.status in ["Pending", "Confirmed"]:
+#             ServiceAvailability.objects.filter(
+#                 service=self.service,
+#                 available_date=self.date,
+#                 available_time=self.time
+#             ).update(is_booked=True)
+
+#         # ✅ When booking is cancelled, make the slot available again
+#         elif self.status == "Cancelled":
+#             ServiceAvailability.objects.filter(
+#                 service=self.service,
+#                 available_date=self.date,
+#                 available_time=self.time
+#             ).update(is_booked=False)
+
+#     def __str__(self):
+#         return f"{self.client.first_name} booked {self.artist.first_name} for {self.service.service_name} on {self.date} using {self.payment_method}"
 from django.db import models
-from django.utils.timezone import now
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class Booking(models.Model):
     PAYMENT_CHOICES = [
@@ -196,46 +259,18 @@ class Booking(models.Model):
     
     artist = models.ForeignKey(User, on_delete=models.CASCADE, related_name="bookings")
     client = models.ForeignKey(User, on_delete=models.CASCADE, related_name="client_bookings")
-    service = models.ForeignKey(Service, on_delete=models.CASCADE, null=True, blank=True)
+    service = models.ForeignKey("Service", on_delete=models.CASCADE, null=True, blank=True)
     date = models.DateField()
     time = models.TimeField()
     payment_method = models.CharField(max_length=10, choices=PAYMENT_CHOICES, default="cod")
     payment_status = models.CharField(max_length=20, default="Pending")
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="Pending")
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)  # ✅ Allow 6 decimal places
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)  # ✅ Allow 6 decimal places
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ('artist', 'date', 'time')  # ✅ Prevent duplicate bookings
-
-    def clean(self):
-        """ ✅ Ensure artist is available at the selected time if the booking is not cancelled """
-        if self.status != "Cancelled":
-            existing_booking = Booking.objects.filter(
-                artist=self.artist, date=self.date, time=self.time
-            ).exclude(id=self.id)  # Exclude the current instance during updates
-
-            if existing_booking.exists():
-                raise ValidationError(f"{self.artist.first_name} is already booked at this time.")
-
-    def save(self, *args, **kwargs):
-        self.clean()  # ✅ Ensure validation before saving
-        super().save(*args, **kwargs)
-
-        # ✅ When booking is created, mark the slot as booked
-        if self.status in ["Pending", "Confirmed"]:
-            ServiceAvailability.objects.filter(
-                service=self.service,
-                available_date=self.date,
-                available_time=self.time
-            ).update(is_booked=True)
-
-        # ✅ When booking is cancelled, make the slot available again
-        elif self.status == "Cancelled":
-            ServiceAvailability.objects.filter(
-                service=self.service,
-                available_date=self.date,
-                available_time=self.time
-            ).update(is_booked=False)
 
     def __str__(self):
         return f"{self.client.first_name} booked {self.artist.first_name} for {self.service.service_name} on {self.date} using {self.payment_method}"

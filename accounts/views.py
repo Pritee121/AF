@@ -1,10 +1,3 @@
-
-
-
-
-
-
-
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash, authenticate, login, logout
 from django.shortcuts import render, redirect, get_object_or_404
@@ -781,6 +774,65 @@ from django.core.exceptions import ValidationError
 from datetime import date
 from .models import Booking, Service, User, ServiceAvailability
 
+# @login_required
+# def book_artist(request, artist_id):
+#     artist = get_object_or_404(User, id=artist_id, is_artist=True)
+#     user = request.user
+#     services = Service.objects.filter(artist=artist)
+
+#     if request.method == "POST":
+#         date_selected = request.POST.get("date")
+#         time_selected = request.POST.get("time")
+#         service_id = request.POST.get("service")
+#         payment_method = request.POST.get("payment_method")
+
+#         # ✅ Validate required fields
+#         if not date_selected or not time_selected or not service_id or not payment_method:
+#             return JsonResponse({"status": "error", "message": "All fields are required."})
+
+#         # ✅ Ensure selected date is not in the past
+#         if date.fromisoformat(date_selected) < date.today():
+#             return JsonResponse({"status": "error", "message": "You cannot book past dates."})
+
+#         selected_service = get_object_or_404(Service, id=service_id, artist=artist)
+
+#         # ✅ Ensure the selected time slot exists in ServiceAvailability
+#         if not ServiceAvailability.objects.filter(
+#             service=selected_service, available_date=date_selected, available_time=time_selected
+#         ).exists():
+#             return JsonResponse({"status": "error", "message": "The selected time slot is not available."})
+
+#         # ✅ Check if the artist is already booked at this date & time
+#         if Booking.objects.filter(artist=artist, date=date_selected, time=time_selected).exists():
+#             return JsonResponse({"status": "error", "message": "This time slot is already booked. Choose another."})
+
+#         # ✅ Save booking to the database
+#         booking = Booking.objects.create(
+#             artist=artist,
+#             client=user,
+#             date=date_selected,
+#             time=time_selected,
+#             service=selected_service,
+#             payment_method=payment_method
+#         )
+
+#         # ✅ Handle Khalti Payment
+#         if payment_method == "khalti":
+#             total_amount = int(selected_service.price) * 100  # Convert to paisa
+#             return JsonResponse({
+#                 "status": "redirect",
+#                 "url": f"/khalti-request/?amount={total_amount}&service_id={selected_service.id}&artist_id={artist.id}"
+#             })
+
+#         return JsonResponse({"status": "success", "message": "Booking confirmed!"})
+
+#     return render(request, 'accounts/book_artist.html', {
+#         'artist': artist,
+#         'user': user,
+#         'services': services
+#     })
+
+
 @login_required
 def book_artist(request, artist_id):
     artist = get_object_or_404(User, id=artist_id, is_artist=True)
@@ -792,6 +844,8 @@ def book_artist(request, artist_id):
         time_selected = request.POST.get("time")
         service_id = request.POST.get("service")
         payment_method = request.POST.get("payment_method")
+        latitude = request.POST.get("latitude")  # ✅ Get latitude
+        longitude = request.POST.get("longitude")  # ✅ Get longitude
 
         # ✅ Validate required fields
         if not date_selected or not time_selected or not service_id or not payment_method:
@@ -813,33 +867,26 @@ def book_artist(request, artist_id):
         if Booking.objects.filter(artist=artist, date=date_selected, time=time_selected).exists():
             return JsonResponse({"status": "error", "message": "This time slot is already booked. Choose another."})
 
-        # ✅ Save booking to the database
+        # ✅ Save booking with latitude & longitude
         booking = Booking.objects.create(
             artist=artist,
             client=user,
             date=date_selected,
             time=time_selected,
             service=selected_service,
-            payment_method=payment_method
+            payment_method=payment_method,
+            latitude=latitude,  # ✅ Save latitude
+            longitude=longitude,  # ✅ Save longitude
         )
 
-        # ✅ Handle Khalti Payment
-        if payment_method == "khalti":
-            total_amount = int(selected_service.price) * 100  # Convert to paisa
-            return JsonResponse({
-                "status": "redirect",
-                "url": f"/khalti-request/?amount={total_amount}&service_id={selected_service.id}&artist_id={artist.id}"
-            })
-
-        return JsonResponse({"status": "success", "message": "Booking confirmed!"})
+        messages.success(request, "Your booking has been successfully listed. You will receive a confirmation message soon.")
+        return redirect("accounts/home.html")  # Redirect to a success page
 
     return render(request, 'accounts/book_artist.html', {
         'artist': artist,
         'user': user,
         'services': services
     })
-
-
 
 
 from django.shortcuts import render
@@ -1251,4 +1298,4 @@ def artist_profile(request):
     return render(request, 'accounts/artist_profile.html')
 
 
-
+  

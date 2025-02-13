@@ -6,14 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book {{ artist.first_name }} {{ artist.last_name }}</title>
 
-    <!-- ✅ Flatpickr for date selection -->
+    <!-- ✅ Flatpickr for Date Selection -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
-    <!-- ✅ SweetAlert2 for better alerts -->
+    <!-- ✅ SweetAlert2 for Alerts -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <!-- ✅ Leaflet.js for Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
     <link rel="stylesheet" href="{% static 'css/book_artist.css' %}">
+    <style>#map { height: 300px; width: 100%; }</style>
 </head>
 <body>
     <header>
@@ -23,65 +28,45 @@
     <div class="booking-container">
         <h2>Book {{ artist.first_name }} {{ artist.last_name }}</h2>
 
-        <!-- ✅ Artist Details -->
-        <div class="artist-details">
-            <h3>Artist Details</h3>
-            <p><strong>Name:</strong> {{ artist.first_name }} {{ artist.last_name }}</p>
-            <p><strong>Email:</strong> {{ artist.email }}</p>
-            <p><strong>City:</strong> {{ artist.city }}</p>
-        </div>
-
-        <!-- ✅ User Details -->
-        <div class="user-details">
-            <h3>Your Details</h3>
-            <p><strong>Name:</strong> {{ user.first_name }} {{ user.last_name }}</p>
-            <p><strong>Email:</strong> {{ user.email }}</p>
-            <p><strong>Phone:</strong> {{ user.phone }}</p>
-        </div>
-
-        <!-- ✅ Booking Form -->
-        <form id="booking-form" method="POST">
+        <form id="booking-form" method="POST" action="{% url 'book_artist' artist.id %}">
             {% csrf_token %}
 
-            <!-- ✅ Service Dropdown -->
+            <!-- ✅ Service Selection -->
             <label for="service">Select Service:</label>
             <select id="service" name="service" required>
                 <option value="" disabled selected>Choose a service</option>
                 {% for service in services %}
-                    <option value="{{ service.id }}" data-duration="{{ service.duration }}">
-                        {{ service.service_name }} - Rs.{{ service.price }}
-                    </option>
-                {% empty %}
-                    <option disabled>No services available</option>
+                    <option value="{{ service.id }}">{{ service.service_name }} - Rs.{{ service.price }}</option>
                 {% endfor %}
             </select>
 
-            <!-- ✅ Duration (Auto-filled) -->
-            <label for="duration">Duration:</label>
-            <input type="text" id="duration" name="duration" readonly>
-
-            <!-- ✅ Select Date -->
+            <!-- ✅ Date Selection -->
             <label for="date">Select Date:</label>
             <input type="text" id="date" name="date" required placeholder="Choose a date" disabled>
 
-            <!-- ✅ Select Time -->
+            <!-- ✅ Time Selection -->
             <label for="time">Select Time:</label>
             <select id="time" name="time" required disabled>
                 <option value="" disabled selected>Select time</option>
             </select>
 
-            <!-- ✅ Payment Method -->
+            <!-- ✅ Location Selection -->
+            <label for="map">Select Location:</label>
+            <div id="map"></div>
+            <input type="hidden" id="latitude" name="latitude">
+            <input type="hidden" id="longitude" name="longitude">
+
+            <!-- ✅ Payment Selection -->
             <label for="payment_method">Select Payment Method:</label>
             <select id="payment_method" name="payment_method" required>
                 <option value="khalti">Khalti</option>
                 <option value="cod">Cash on Delivery (COD)</option>
             </select>
-
+            
             <button type="submit">Confirm Booking</button>
         </form>
     </div>
 
-    <!-- ✅ JavaScript -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             let dateInput = document.getElementById("date");
@@ -89,51 +74,35 @@
             let timeInput = document.getElementById("time");
             let bookingForm = document.getElementById("booking-form");
 
+            // ✅ Fetch Available Dates for Selected Service
             function fetchAvailableDates(serviceId) {
                 fetch(`/get-available-dates/{{ artist.id }}/?service_id=${serviceId}`)
                     .then(response => response.json())
                     .then(data => {
                         if (data.available_dates.length === 0) {
-                            Swal.fire({
-                                icon: "info",
-                                title: "No Available Dates",
-                                text: "This service has no available slots. Please check later.",
-                                confirmButtonText: "OK"
-                            });
+                            Swal.fire("No Available Dates", "Please choose another service.", "info");
                             dateInput.disabled = true;
-                            dateInput.value = "";
-                            timeInput.innerHTML = "<option value='' disabled selected>Choose a time</option>";
-                            timeInput.disabled = true;
                         } else {
                             dateInput.disabled = false;
-
-                            // ✅ Initialize Flatpickr with restricted dates
-                            flatpickr(dateInput, {
+                            flatpickr("#date", {
                                 dateFormat: "Y-m-d",
-                                enable: data.available_dates,
+                                enableTime: false,
                                 disableMobile: true,
-                                onChange: function (selectedDates, dateStr) {
-                                    fetchAvailableTimes(serviceId, dateStr);
-                                }
+                                enable: data.available_dates  // ✅ Show only available dates
                             });
                         }
                     })
                     .catch(error => console.error("Error fetching available dates:", error));
             }
 
+            // ✅ Fetch Available Times for Selected Date & Service
             function fetchAvailableTimes(serviceId, date) {
                 fetch(`/get-available-times/{{ artist.id }}/?service_id=${serviceId}&date=${date}`)
                     .then(response => response.json())
                     .then(data => {
                         timeInput.innerHTML = "<option value='' disabled selected>Choose a time</option>";
-
                         if (data.available_times.length === 0) {
-                            Swal.fire({
-                                icon: "info",
-                                title: "No Available Slots",
-                                text: "No slots available for this date. Please choose another date.",
-                                confirmButtonText: "OK"
-                            });
+                            Swal.fire("No Available Slots", "Please choose another date.", "info");
                             timeInput.disabled = true;
                         } else {
                             timeInput.disabled = false;
@@ -148,64 +117,86 @@
                     .catch(error => console.error("Error fetching available times:", error));
             }
 
-            // ✅ When a service is selected, fetch available dates
+            // ✅ Enable Date Picker After Service Selection
             serviceSelect.addEventListener("change", function () {
-                let selectedServiceId = this.value;
-                if (selectedServiceId) {
-                    fetchAvailableDates(selectedServiceId);
-                    dateInput.value = "";
+                if (serviceSelect.value) {
                     dateInput.disabled = true;
-                    timeInput.innerHTML = "<option value='' disabled selected>Choose a time</option>";
                     timeInput.disabled = true;
+                    timeInput.innerHTML = "<option value='' disabled selected>Select time</option>";
+                    fetchAvailableDates(serviceSelect.value); // ✅ Fetch only assigned dates
                 }
             });
 
-            // ✅ Ensure duration updates when service changes
-            serviceSelect.addEventListener("change", function () {
-                let selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
-                document.getElementById("duration").value = selectedOption.getAttribute("data-duration") || "";
+            // ✅ Fetch Available Times When Date is Selected
+            dateInput.addEventListener("change", function () {
+                let selectedServiceId = serviceSelect.value;
+                let selectedDate = dateInput.value;
+                if (selectedServiceId && selectedDate) {
+                    fetchAvailableTimes(selectedServiceId, selectedDate);
+                }
             });
 
-            // ✅ Handle Form Submission & Show Confirmation Popup
-            bookingForm.addEventListener("submit", function (event) {
+            // ✅ Leaflet.js for Location Selection
+            var map = L.map('map').setView([27.7172, 85.3240], 13); // Default to Kathmandu
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+
+            var marker = L.marker([27.7172, 85.3240], { draggable: true }).addTo(map);
+
+            // ✅ Get User's Current Location
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    var userLat = position.coords.latitude;
+                    var userLng = position.coords.longitude;
+                    var userLocation = new L.LatLng(userLat, userLng);
+                    map.setView(userLocation, 13);
+                    marker.setLatLng(userLocation);
+                    document.getElementById("latitude").value = userLat;
+                    document.getElementById("longitude").value = userLng;
+                });
+            }
+
+            // ✅ Update Lat & Lng on Marker Drag
+            marker.on('dragend', function(event) {
+                var position = marker.getLatLng();
+                document.getElementById("latitude").value = position.lat.toFixed(6);
+                document.getElementById("longitude").value = position.lng.toFixed(6);
+            });
+
+            // ✅ Handle Form Submission with AJAX
+            bookingForm.addEventListener("submit", function(event) {
                 event.preventDefault();  // ✅ Prevent default form submission
 
-                let formData = new FormData(this);
+                let formData = new FormData(bookingForm);
 
-                fetch(window.location.href, {
+                fetch(bookingForm.action, {
                     method: "POST",
-                    body: formData,
-                    headers: {
-                        "X-CSRFToken": "{{ csrf_token }}"
-                    }
+                    body: formData
                 })
                 .then(response => response.json())
                 .then(data => {
-                    if (data.status === "error") {
-                        Swal.fire({
-                            icon: "error",
-                            title: "Oops...",
-                            text: data.message
-                        });
-                    } else {
-                        // ✅ Show Confirmation Message & Redirect to Home Page
+                    if (data.status === "success") {
                         Swal.fire({
                             title: "Booking Confirmed!",
-                            text: "Your booking has been listed. You will get a confirmation message soon.",
+                            text: "Your booking has been listed. You will receive a confirmation message soon.",
                             icon: "success",
                             confirmButtonText: "OK"
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                window.location.href = "{% url 'home' %}";  // ✅ Redirect to home page
-                            }
+                        }).then(() => {
+                            window.location.href = "{% url 'home' %}";  // ✅ Redirect after confirmation
+                        });
+                    } else {
+                        Swal.fire({
+                            title: "Booking Failed",
+                            text: data.message || "Something went wrong. Please try again.",
+                            icon: "error",
+                            confirmButtonText: "OK"
                         });
                     }
                 })
                 .catch(error => console.error("Error:", error));
             });
 
-            // ✅ Initialize Flatpickr to ensure it's working
-            flatpickr(dateInput, { dateFormat: "Y-m-d" });
         });
     </script>
 </body>

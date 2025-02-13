@@ -134,13 +134,23 @@ ServiceAvailabilityFormSet = inlineformset_factory(
 )
 
 
+# from django import forms
+# from .models import Booking
+
+# class BookingForm(forms.ModelForm):
+#     class Meta:
+#         model = Booking
+#         fields = ['service', 'date', 'time', 'payment_method']
 from django import forms
 from .models import Booking
 
 class BookingForm(forms.ModelForm):
+    latitude = forms.FloatField(widget=forms.HiddenInput(), required=False)
+    longitude = forms.FloatField(widget=forms.HiddenInput(), required=False)
+
     class Meta:
         model = Booking
-        fields = ['service', 'date', 'time', 'payment_method']
+        fields = ['service', 'date', 'time', 'payment_method', 'latitude', 'longitude']
 
     def clean(self):
         cleaned_data = super().clean()
