@@ -1,78 +1,122 @@
-
-
-/* ✅ Contact Container */
-.contact-container {
-    width: 50%;
-    margin: 50px auto;
-    padding: 20px;
-    background-color: #fff;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
-    text-align: center;
-}
-
-.contact-container h1 {
-    font-size: 28px;
+/* ✅ General Styles */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f9f0f5; /* Light pink background */
     color: #333;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
 }
 
-.contact-container p {
-    font-size: 16px;
-    color: #555;
-    margin-bottom: 20px;
+/* ✅ Contact Container with Circle Style */
+.contact-container {
+    width: 60%;
+    max-width: 900px;
+    background: white;
+    border-radius: 50%;
+    padding: 50px;
+    text-align: center;
+    box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease-in-out;
+    position: relative;
 }
 
-/* ✅ Contact Form */
+.contact-container:hover {
+    transform: scale(1.05);
+}
+
+/* ✅ Heading Styling */
+.contact-container h1 {
+    font-size: 32px;
+    font-weight: 700;
+    color: #D8648C;
+    text-transform: uppercase;
+    position: relative;
+}
+
+/* ✅ Form Fields with Circular Design */
 form {
     display: flex;
     flex-direction: column;
     align-items: center;
+    margin-top: 20px;
 }
 
 label {
     width: 80%;
     text-align: left;
-    margin: 10px 0 5px;
     font-weight: bold;
+    margin-bottom: 5px;
+    color: #D8648C;
 }
 
+/* ✅ Rounded Input Fields */
 input, textarea {
     width: 80%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 16px;
-}
-
-textarea {
-    resize: none;
-}
-
-/* ✅ Submit Button */
-button {
-    width: 85%;
-    margin-top: 20px;
     padding: 12px;
-    background-color: #D8648C;
+    border: 2px solid #D8648C;
+    border-radius: 50px;
+    font-size: 16px;
+    text-align: center;
+    background: #fff;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+input:focus, textarea:focus {
+    transform: scale(1.1);
+    box-shadow: 0px 0px 10px rgba(216, 100, 140, 0.4);
+    outline: none;
+}
+
+/* ✅ Circular Send Button */
+button {
+    width: 60%;
+    margin-top: 20px;
+    padding: 15px;
+    background: #D8648C;
     color: #fff;
     border: none;
-    border-radius: 5px;
+    border-radius: 50%;
     font-size: 18px;
+    font-weight: bold;
     cursor: pointer;
+    transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out;
 }
 
 button:hover {
-    background-color: #D8648C;
+    background: #c6537a;
+    transform: scale(1.1);
+}
+
+/* ✅ Circular Hover Effect */
+.contact-container:hover {
+    animation: pulse 1.2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0px 0px 10px rgba(216, 100, 140, 0.4);
+    }
+    50% {
+        box-shadow: 0px 0px 20px rgba(216, 100, 140, 0.6);
+    }
+    100% {
+        box-shadow: 0px 0px 10px rgba(216, 100, 140, 0.4);
+    }
 }
 
 /* ✅ Responsive Design */
 @media (max-width: 768px) {
     .contact-container {
-        width: 90%;
-        padding: 15px;
+        width: 80%;
+        padding: 40px;
+        border-radius: 50%;
     }
 
     input, textarea, button {
-        width: 100%;
+        width: 90%;
     }
-} */
+}

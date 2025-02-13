@@ -1,22 +1,23 @@
-
-
 /* ✅ General Container Styling */
 .booking-history-container {
     width: 90%;
     max-width: 1200px;
     margin: 30px auto;
-    padding: 20px;
+    padding: 25px;
     background: #ffffff;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.12);
+    border-radius: 12px;
     text-align: center;
+    transition: all 0.3s ease-in-out;
 }
 
 /* ✅ Heading Styling */
 .booking-history-container h2 {
-    font-size: 26px;
+    font-size: 28px;
+    font-weight: 600;
     color: #333;
     margin-bottom: 20px;
+    text-transform: uppercase;
 }
 
 /* ✅ Table Styling */
@@ -24,10 +25,10 @@ table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 15px;
-    background: #f8f9fa;
+    background: #ffffff;
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 /* ✅ Table Header */
@@ -39,25 +40,31 @@ thead {
 
 /* ✅ Table Headers */
 th {
-    padding: 15px;
+    padding: 16px;
     text-align: left;
+    font-weight: 600;
     border-bottom: 2px solid #ddd;
 }
 
 /* ✅ Table Rows */
 td {
-    padding: 12px;
+    padding: 14px;
     border-bottom: 1px solid #ddd;
     font-size: 15px;
     text-align: left;
+    transition: background 0.3s ease-in-out;
 }
 
 /* ✅ Alternating Row Colors */
 tr:nth-child(even) {
-    background: #f2f2f2;
+    background: #f8f9fa;
 }
 
-/* ✅ Status Color Coding */
+tr:hover {
+    background: rgba(0, 123, 255, 0.1);
+}
+
+/* ✅ Status Column - Color Coding */
 td[id^="status-"] {
     font-weight: bold;
     padding: 10px;
@@ -66,19 +73,36 @@ td[id^="status-"] {
 
 /* ✅ Status Colors */
 td[id^="status-"].Confirmed {
-    color: green;
+    color: #28a745;
 }
 
 td[id^="status-"].Pending {
-    color: orange;
+    color: #ff9800;
 }
 
 td[id^="status-"].Cancelled {
-    color: red;
+    color: #dc3545;
+}
+
+/* ✅ Cancel Button Styling */
+.cancel-btn {
+    background: #dc3545;
+    color: #fff;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+    font-size: 14px;
+}
+
+.cancel-btn:hover {
+    background: #c82333;
+    transform: scale(1.05);
 }
 
 /* ✅ No Bookings Found Message */
-p {
+.no-bookings {
     font-size: 18px;
     color: #777;
     margin-top: 15px;
@@ -93,12 +117,17 @@ p {
     }
 
     th, td {
-        padding: 10px;
+        padding: 12px;
         font-size: 14px;
     }
 
     .booking-history-container {
         width: 100%;
-        padding: 15px;
+        padding: 20px;
+    }
+
+    .cancel-btn {
+        padding: 6px 10px;
+        font-size: 13px;
     }
 }

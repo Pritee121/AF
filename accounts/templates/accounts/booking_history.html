@@ -8,6 +8,142 @@
     <link rel="stylesheet" href="{% static 'css/booking_history.css' %}">
     <link rel="stylesheet" href="{% static 'css/home.css' %}">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        /* ✅ General Container Styling */
+.booking-history-container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 25px;
+    background: #ffffff;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.12);
+    border-radius: 12px;
+    text-align: center;
+    transition: all 0.3s ease-in-out;
+}
+
+/* ✅ Heading Styling */
+.booking-history-container h2 {
+    font-size: 28px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+}
+
+/* ✅ Table Styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    background: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* ✅ Table Header */
+thead {
+    background: #007bff;
+    color: white;
+    font-size: 16px;
+}
+
+/* ✅ Table Headers */
+th {
+    padding: 16px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #ddd;
+}
+
+/* ✅ Table Rows */
+td {
+    padding: 14px;
+    border-bottom: 1px solid #ddd;
+    font-size: 15px;
+    text-align: left;
+    transition: background 0.3s ease-in-out;
+}
+
+/* ✅ Alternating Row Colors */
+tr:nth-child(even) {
+    background: #f8f9fa;
+}
+
+tr:hover {
+    background: rgba(0, 123, 255, 0.1);
+}
+
+/* ✅ Status Column - Color Coding */
+td[id^="status-"] {
+    font-weight: bold;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+/* ✅ Status Colors */
+td[id^="status-"].Confirmed {
+    color: #28a745;
+}
+
+td[id^="status-"].Pending {
+    color: #ff9800;
+}
+
+td[id^="status-"].Cancelled {
+    color: #dc3545;
+}
+
+/* ✅ Cancel Button Styling */
+.cancel-btn {
+    background: #dc3545;
+    color: #fff;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+    font-size: 14px;
+}
+
+.cancel-btn:hover {
+    background: #c82333;
+    transform: scale(1.05);
+}
+
+/* ✅ No Bookings Found Message */
+.no-bookings {
+    font-size: 18px;
+    color: #777;
+    margin-top: 15px;
+}
+
+/* ✅ Responsive Table */
+@media screen and (max-width: 768px) {
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    th, td {
+        padding: 12px;
+        font-size: 14px;
+    }
+
+    .booking-history-container {
+        width: 100%;
+        padding: 20px;
+    }
+
+    .cancel-btn {
+        padding: 6px 10px;
+        font-size: 13px;
+    }
+}
+
+    </style>
 </head>
 <body>
     <!-- ✅ Header Section -->
@@ -27,7 +163,7 @@
                 <a href="{% url 'user_chat' artist.id %}" class="nav-item">Chat with {{ artist.first_name }}</a>
             {% endfor %}
 
-            <a href="{% url 'login' %}" class="nav-link">🔑 Logout</a>
+            <a href="{% url 'login' %}" class="nav-link">Logout</a>
 
             <div class="user-profile">
                 <a href="{% url 'user_profile' %}">
@@ -46,17 +182,17 @@
         <table>
             <thead>
                 <tr>
-                    <th>🎭 Artist</th>
-                    <th>🛠 Service</th>
-                    <th>📆 Date</th>
-                    <th>⏰ Time</th>
-                    <th>⌛ Duration</th>
-                    <th>💳 Payment</th>
-                    <th>💰 Price</th>
+                    <th>Artist</th>
+                    <th>Service</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Duration</th>
+                    <th>Payment</th>
+                    <th>Price</th>
                    
-                    <th>📌 Status</th>
-                    <th>❌ Cancel</th>
-                    <th>💰 Payment Status</th>
+                    <th>Status</th>
+                    <th>Cancel</th>
+                    <th>Payment Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -80,6 +216,15 @@
                             </button>
                         {% else %}
                             <span class="cancelled-text">N/A</span>
+                        {% endif %}
+                    </td>
+            
+                    <!-- ✅ Payment Status -->
+                    <td>
+                        {% if booking.payment_method|lower == "cod" %}
+                            <span class="pending-payment" id="payment-status-{{ booking.id }}">Pending</span>
+                        {% else %}
+                            <span class="paid-payment">Paid</span>
                         {% endif %}
                     </td>
                 </tr>
