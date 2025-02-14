@@ -36,9 +36,15 @@
             <select id="service" name="service" required>
                 <option value="" disabled selected>Choose a service</option>
                 {% for service in services %}
-                    <option value="{{ service.id }}">{{ service.service_name }} - Rs.{{ service.price }}</option>
+                    <option value="{{ service.id }}" data-duration="{{ service.duration }}">
+                        {{ service.service_name }} - Rs.{{ service.price }}
+                    </option>
                 {% endfor %}
             </select>
+
+            <!-- ✅ Duration Display (Auto-updating) -->
+            <label for="duration">Duration:</label>
+            <input type="text" id="duration" name="duration" readonly placeholder="Select a service first">
 
             <!-- ✅ Date Selection -->
             <label for="date">Select Date:</label>
@@ -69,10 +75,31 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            let dateInput = document.getElementById("date");
             let serviceSelect = document.getElementById("service");
+            let durationField = document.getElementById("duration");
+            let dateInput = document.getElementById("date");
             let timeInput = document.getElementById("time");
             let bookingForm = document.getElementById("booking-form");
+
+            // ✅ Update Duration When Service is Selected
+            serviceSelect.addEventListener("change", function () {
+                let selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
+                let duration = selectedOption.getAttribute("data-duration");
+
+                if (duration) {
+                    durationField.value = duration; // ✅ Auto-fill duration
+                } else {
+                    durationField.value = ""; // ✅ Reset if no service selected
+                }
+
+                // ✅ Reset and fetch available dates
+                dateInput.value = "";
+                timeInput.innerHTML = "<option value='' disabled selected>Select time</option>";
+                timeInput.disabled = true;
+                if (serviceSelect.value) {
+                    fetchAvailableDates(serviceSelect.value);
+                }
+            });
 
             // ✅ Fetch Available Dates for Selected Service
             function fetchAvailableDates(serviceId) {
@@ -116,16 +143,6 @@
                     })
                     .catch(error => console.error("Error fetching available times:", error));
             }
-
-            // ✅ Enable Date Picker After Service Selection
-            serviceSelect.addEventListener("change", function () {
-                if (serviceSelect.value) {
-                    dateInput.disabled = true;
-                    timeInput.disabled = true;
-                    timeInput.innerHTML = "<option value='' disabled selected>Select time</option>";
-                    fetchAvailableDates(serviceSelect.value); // ✅ Fetch only assigned dates
-                }
-            });
 
             // ✅ Fetch Available Times When Date is Selected
             dateInput.addEventListener("change", function () {
@@ -177,28 +194,15 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.status === "success") {
-                        Swal.fire({
-                            title: "Booking Confirmed!",
-                            text: "Your booking has been listed. You will receive a confirmation message soon.",
-                            icon: "success",
-                            confirmButtonText: "OK"
-                        }).then(() => {
-                            window.location.href = "{% url 'home' %}";  // ✅ Redirect after confirmation
-                        });
+                        Swal.fire("Booking Confirmed!", "You will receive a confirmation soon.", "success")
+                        .then(() => window.location.href = "{% url 'home' %}");
                     } else {
-                        Swal.fire({
-                            title: "Booking Failed",
-                            text: data.message || "Something went wrong. Please try again.",
-                            icon: "error",
-                            confirmButtonText: "OK"
-                        });
+                        Swal.fire("Booking Failed", data.message || "Try again.", "error");
                     }
                 })
                 .catch(error => console.error("Error:", error));
             });
-            
         });
-
     </script>
 </body>
 </html>
