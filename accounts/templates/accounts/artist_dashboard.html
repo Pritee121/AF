@@ -7,209 +7,34 @@
     <title>Artist Dashboard</title>
     <link rel="stylesheet" href="{% static 'css/artist_dashboard.css' %}">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- <style>
-        /* General Button Styles */
-        
-/* 🌍 General Reset */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Poppins', sans-serif;
-    scroll-behavior: smooth;
-}
-
-/* 🌟 Light Theme Styling */
-body {
-    background: #fdfdfd;
-    color: #333;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
-
-/* 🔥 Header Styling */
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 30px;
-    background: rgba(216, 100, 140, 0.2);
-    backdrop-filter: blur(10px);
-    border-bottom: 2px solid #D8648C;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-/* 🌟 Logo */
-.logo img {
-    height: 55px;
-    object-fit: contain;
-    transition: transform 0.3s ease-in-out;
-}
-
-.logo img:hover {
-    transform: scale(1.1);
-}
-
-/* 🔗 Navbar */
-.navbar {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-/* 🏷️ Nav Items */
-.nav-item {
-    color: #D8648C;
-    text-decoration: none;
-    font-size: 16px;
-    font-weight: 600;
-    padding: 10px 15px;
-    border-radius: 8px;
-    transition: all 0.3s ease-in-out;
-}
-
-.nav-item:hover, .nav-item.active {
-    background: #D8648C;
-    color: white;
-    transform: translateY(-2px);
-}
-
-/* 👤 Profile Image */
-.profile-link img {
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    border: 2px solid #D8648C;
-    object-fit: cover;
-    transition: transform 0.3s ease-in-out;
-}
-
-.profile-link img:hover {
-    transform: scale(1.1);
-}
-
-/* 🚀 Logout Button */
-.logout {
-    background: #D8648C;
-    color: white;
-    padding: 8px 15px;
-    border-radius: 5px;
-    transition: all 0.3s;
-}
-
-.logout:hover {
-    background: #b34d74;
-}
-
-/* 🏠 Container */
-.container {
-    max-width: 1200px;
-    margin: 60px auto;
-    padding: 20px;
-    text-align: center;
-}
-
-h1 {
-    font-size: 32px;
-    font-weight: 600;
-    margin-bottom: 20px;
-    color: #D8648C;
-}
-
-/* 📷 Profile Image */
-.profile-image {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.profile-image img {
-    width: 140px;
-    height: 140px;
-    border-radius: 50%;
-    border: 3px solid #D8648C;
-    object-fit: cover;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease-in-out;
-}
-
-.profile-image img:hover {
-    transform: scale(1.05);
-}
-
-/* 📜 Profile Details */
-.profile-details {
-    text-align: left;
-    background: #fff;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-.profile-details p {
-    font-size: 16px;
-    margin: 5px 0;
-    color: #333;
-}
-
-/* 🎓 Certificate Link */
-.profile-details a {
-    color: #007bff;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-.profile-details a:hover {
-    text-decoration: underline;
-}
-
-/* 🔙 Back Button */
-.back-home {
-    margin-top: 20px;
-}
-
-.back-btn {
-    display: inline-block;
-    background-color: #D8648C;
-    color: #fff;
-    padding: 10px 15px;
-    border-radius: 5px;
-    text-decoration: none;
-    font-weight: bold;
-    transition: background 0.3s ease;
-}
-
-.back-btn:hover {
-    background-color: #b34d74;
-}
-
-/* 📢 Dashboard Work Grid */
+    <style>
+      /* 🖼️ Work Showcase Section */
 .works-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
-    margin-top: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); /* ✅ Increased image size */
+    gap: 30px;
+    margin-top: 30px;
+    justify-content: center;
 }
 
 /* 🎨 Work Card */
 .card {
     background: white;
-    border-radius: 15px;
+    border-radius: 12px;
     overflow: hidden;
     transition: transform 0.3s ease-in-out;
-    box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.15);
     display: flex;
     flex-direction: column;
     align-items: center;
     padding: 15px;
 }
 
+/* 📷 Work Image */
 .card img {
     width: 100%;
-    height: 220px;
-    object-fit: cover;
+    height: 500px; /* ✅ Increased height */
+    object-fit: cover; /* ✅ Ensures full image visibility */
     border-radius: 10px;
     transition: transform 0.3s ease-in-out;
 }
@@ -218,7 +43,7 @@ h1 {
     transform: scale(1.05);
 }
 
-/* ℹ️ Card Content */
+/* ℹ️ Work Content */
 .card-content {
     display: flex;
     flex-direction: column;
@@ -229,15 +54,15 @@ h1 {
 }
 
 .card h3 {
-    font-size: 20px;
+    font-size: 22px;
     color: #D8648C;
-    margin-bottom: 8px;
+    margin-top: 12px;
 }
 
 .card p {
-    font-size: 14px;
+    font-size: 16px;
     color: #555;
-    margin-bottom: 15px;
+    margin-top: 8px;
 }
 
 /* ❌ No Works */
@@ -247,46 +72,29 @@ h1 {
     margin-top: 20px;
 }
 
-/* 🌟 Footer */
-.footer {
-    background: rgba(216, 100, 140, 0.2);
-    color: #D8648C;
-    text-align: center;
-    padding: 15px;
-    margin-top: auto;
-    border-top: 2px solid #D8648C;
-    backdrop-filter: blur(10px);
-}
-
-/* 📱 Responsive Design */
-@media (max-width: 768px) {
-    .header {
-        flex-direction: column;
-        text-align: center;
-        padding: 10px;
-    }
-
-    .navbar {
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .container {
-        padding: 10px;
-    }
-
-    .profile-image img {
-        width: 100px;
-        height: 100px;
+/* 🖥️ Responsive Design */
+@media (max-width: 1024px) {
+    .works-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* ✅ Adjust for tablets */
     }
 
     .card img {
-        height: 180px;
+        height: 320px; /* ✅ Adjust for tablets */
+    }
+}
+
+@media (max-width: 768px) {
+    .works-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* ✅ Adjust for mobile */
+    }
+
+    .card img {
+        height: 280px; /* ✅ Adjust for mobile */
     }
 }
 
 
-    </style> -->
+    </style> 
 </head>
 <body>
     <!-- Header -->

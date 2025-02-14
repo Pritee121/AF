@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ artist.first_name }} {{ artist.last_name }} - Profile</title>
-    <link rel="stylesheet" href="{% static 'css/explore_artist.css' %}">
+    <link rel="stylesheet" href="{% static 'css/explore_artist2.css' %}">
 </head>
 <body>
     <header>
@@ -34,14 +34,25 @@
 
         <!-- ✅ Training & Certificates Section -->
         <!-- ✅ Training & Certificates Section -->
+<!-- ✅ Training & Certificates Section -->
 <div class="training-section">
     <h3>Training & Certificates</h3>
     {% if artist.training_certificate %}
         <p><strong>Certificate:</strong></p>
-        <div class="certificate-preview">
-            <iframe src="{{ artist.training_certificate.image.url }}" width="100%" height="300px"></iframe>  <!-- ✅ Preview PDF/Image -->
-        </div>
-        <p><a href="{{ artist.training_certificate.url }}" download class="download-btn">Download Certificate</a></p>  <!-- ✅ Download Option -->
+        
+        <!-- ✅ Display Image if it's an Image -->
+        {% if artist.training_certificate.url|lower|slice:'-4:' == ".jpg" or artist.training_certificate.url|lower|slice:'-4:' == ".png" %}
+            <div class="certificate-preview">
+                <img src="{{ artist.training_certificate.url }}" alt="Certificate" class="certificate-image">
+            </div>
+        {% else %}
+            <!-- ✅ Display PDF in iframe -->
+            <div class="certificate-preview">
+                <iframe src="{{ artist.training_certificate.url }}" width="100%" height="300px"></iframe>
+            </div>
+        {% endif %}
+        
+        <p><a href="{{ artist.training_certificate.url }}" download class="download-btn">Download Certificate</a></p>  
     {% else %}
         <p>No certificates available.</p>
     {% endif %}

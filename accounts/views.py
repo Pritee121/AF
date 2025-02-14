@@ -754,13 +754,21 @@ def get_available_times(request, artist_id):
 
 
 
+# from django.shortcuts import render
+# from .models import User
+
+# def artist_list(request):
+#     artists = User.objects.filter(is_artist=True).prefetch_related('services')
+#     return render(request, 'accounts/artist_list.html', {'artists': artists})
+
+
 from django.shortcuts import render
-from .models import User
+from .models import User  # Assuming User model is used for artists
 
 def artist_list(request):
-    artists = User.objects.filter(is_artist=True).prefetch_related('services')
-    return render(request, 'accounts/artist_list.html', {'artists': artists})
-
+    artists = User.objects.filter(is_artist=True)  # ✅ Only show users who are artists
+    cities = User.objects.filter(is_artist=True).values_list('city', flat=True).distinct()  # ✅ Get cities for artists only
+    return render(request, "accounts/artist_list.html", {"artists": artists, "cities": cities})
 
 
 

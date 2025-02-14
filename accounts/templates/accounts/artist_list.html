@@ -5,17 +5,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Artist Directory</title>
-    <link rel="stylesheet" href="{% static 'css/artist_directory.css' %}">
+    <link rel="stylesheet" href="{% static 'css/artist_directory2.css' %}">
 </head>
 <body>
     <div class="back-to-home">
         <button onclick="window.location.href='{% url 'home' %}'">Back to Home</button>
     </div>
-    
+
+    <!-- ✅ Filter Section -->
+    <div class="filter-container">
+        <label for="city-filter">Filter by City:</label>
+        <select id="city-filter" onchange="filterArtists()">
+            <option value="all">All Cities</option>
+            {% for city in cities %}
+                <option value="{{ city }}">{{ city }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
     <div class="artist-container">
-        
         {% for artist in artists %}
-        <div class="artist-card">
+        <div class="artist-card" data-city="{{ artist.city }}">
             <div class="artist-image">
                 {% if artist.profile_image %}
                     <img src="{{ artist.profile_image.url }}" alt="{{ artist.first_name }} {{ artist.last_name }}">
@@ -26,13 +36,14 @@
             <div class="artist-info">
                 <h3>{{ artist.first_name }} {{ artist.last_name }}</h3>
                 <p>Email: {{ artist.email }}</p>
+                <p class="artist-city">City: {{ artist.city }}</p>
 
                 <!-- Display Services and Prices -->
                 {% if artist.services.exists %}
                     <h4>Services Offered:</h4>
                     <ul>
                         {% for service in artist.services.all %}
-                            <li>{{ service.service_name }} - ${{ service.price }}</li>
+                            <li>{{ service.service_name }} - Rs. {{ service.price }}</li>
                         {% endfor %}
                     </ul>
                 {% else %}
@@ -52,14 +63,18 @@
     </div>
 
     <script>
-        function bookArtist(artistId) {
-            // Implement booking functionality here
-            alert('Booking functionality for artist ID ' + artistId);
-        }
+        function filterArtists() {
+            let selectedCity = document.getElementById("city-filter").value.toLowerCase();
+            let artists = document.querySelectorAll(".artist-card");
 
-        function chatWithArtist(artistId) {
-            // Implement chat functionality here
-            alert('Chat functionality for artist ID ' + artistId);
+            artists.forEach(artist => {
+                let artistCity = artist.getAttribute("data-city").toLowerCase();
+                if (selectedCity === "all" || artistCity === selectedCity) {
+                    artist.style.display = "block";
+                } else {
+                    artist.style.display = "none";
+                }
+            });
         }
     </script>
 </body>

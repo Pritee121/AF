@@ -1,0 +1,161 @@
+/* ✅ General Styling */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+    padding: 20px;
+    text-align: center;
+}
+
+/* ✅ Back to Home Button */
+.back-to-home {
+    margin-bottom: 20px;
+}
+
+.back-to-home button {
+    padding: 10px 15px;
+    font-size: 16px;
+    border: none;
+    background-color: #D8648C; /* ✅ Primary Color */
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: 0.3s;
+}
+
+.back-to-home button:hover {
+    background-color: #c7527b;
+}
+
+/* ✅ Filter Dropdown */
+.filter-container {
+    margin-bottom: 20px;
+}
+
+.filter-container label {
+    font-size: 18px;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+#city-filter {
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: 2px solid #D8648C; /* ✅ Border Color */
+    background: white;
+    color: #D8648C;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+#city-filter:hover {
+    border-color: #c7527b;
+}
+
+/* ✅ Artist Cards */
+.artist-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+}
+
+.artist-card {
+    width: 300px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    text-align: center;
+    transition: 0.3s;
+    border: 2px solid #D8648C; /* ✅ Primary Color */
+}
+
+.artist-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(216, 100, 140, 0.3);
+}
+
+/* ✅ Artist Image */
+.artist-image img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #D8648C; /* ✅ Border Color */
+}
+
+/* ✅ Artist Info */
+.artist-info h3 {
+    margin-top: 10px;
+    font-size: 20px;
+    color: #D8648C; /* ✅ Title Color */
+}
+
+.artist-info p {
+    font-size: 14px;
+    color: #555;
+}
+
+/* ✅ Services List */
+.artist-info ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.artist-info ul li {
+    font-size: 14px;
+    margin-top: 5px;
+    color: #D8648C; /* ✅ Service Price Color */
+}
+
+/* ✅ Buttons */
+.button-group {
+    margin-top: 10px;
+}
+
+.button-group button {
+    padding: 8px 12px;
+    margin: 5px;
+    border: none;
+    background-color: #D8648C; /* ✅ Primary Button Color */
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: 0.3s;
+}
+
+.button-group button:hover {
+    background-color: #c7527b;
+}
+
+/* ✅ Chat Button */
+.button-group button:nth-child(2) {
+    background-color: #17a2b8;
+}
+
+.button-group button:nth-child(2):hover {
+    background-color: #138496;
+}
+
+/* ✅ Explore Button */
+.button-group button:nth-child(3) {
+    background-color: #ffc107;
+    color: black;
+}
+
+.button-group button:nth-child(3):hover {
+    background-color: #e0a800;
+}
+
+/* ✅ Responsive Design */
+@media (max-width: 768px) {
+    .artist-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .artist-card {
+        width: 90%;
+    }
+}

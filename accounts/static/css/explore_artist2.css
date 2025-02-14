@@ -1,0 +1,181 @@
+/* ✅ General Styling */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+    text-align: center;
+    padding: 20px;
+}
+
+/* ✅ Header */
+header {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+header a {
+    font-size: 18px;
+    text-decoration: none;
+    color: #D8648C;
+    font-weight: bold;
+    transition: color 0.3s ease-in-out;
+}
+
+header a:hover {
+    color: #c7527b;
+}
+
+/* ✅ Main Container */
+.artist-container {
+    width: 90%;
+    max-width: 1000px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* ✅ Artist Profile Section */
+.artist-profile {
+    text-align: center;
+    padding: 20px;
+}
+
+.artist-profile img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 4px solid #D8648C;
+    object-fit: cover;
+    margin-bottom: 15px;
+}
+
+.artist-profile h2 {
+    font-size: 26px;
+    color: #D8648C;
+    margin-bottom: 5px;
+}
+
+.artist-profile p {
+    font-size: 16px;
+    margin: 5px 0;
+    color: #555;
+}
+
+/* ✅ Booking Button */
+.artist-profile button {
+    background-color: #D8648C;
+    color: white;
+    padding: 12px 18px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+    margin-top: 10px;
+}
+
+.artist-profile button:hover {
+    background-color: #c7527b;
+}
+
+/* ✅ Training & Certificate Section */
+.training-section {
+    margin-top: 30px;
+    padding: 20px;
+    background: #f1f1f1;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.training-section h3 {
+    color: #D8648C;
+    font-size: 22px;
+    margin-bottom: 10px;
+}
+
+.certificate-preview {
+    margin-top: 10px;
+}
+
+.download-btn {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 8px 12px;
+    background-color: #D8648C;
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    border-radius: 6px;
+    transition: 0.3s;
+}
+
+.download-btn:hover {
+    background-color: #c7527b;
+}
+
+/* ✅ Work Gallery */
+.work-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+}
+
+/* ✅ Work Card */
+.work-card {
+    width: 280px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.work-card:hover {
+    transform: scale(1.05);
+}
+
+/* ✅ Work Image (Fix for full image visibility) */
+.work-card img {
+    width: 100%; /* Ensure it fills the card */
+    height: 500px; /* Adjust height */
+    object-fit: cover; /* Cover without stretching */
+    border-bottom: 3px solid #D8648C; /* Optional: Add a nice bottom border */
+}
+
+/* ✅ Work Title */
+.work-card h4 {
+    font-size: 18px;
+    color: #D8648C;
+    margin: 10px 0 5px;
+}
+
+/* ✅ Work Description */
+.work-card p {
+    font-size: 14px;
+    color: #555;
+    padding: 0 10px 15px;
+}
+
+
+/* ✅ Responsive Design */
+@media (max-width: 768px) {
+    .artist-container {
+        width: 95%;
+    }
+
+    .work-gallery {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .work-card {
+        width: 90%;
+    }
+}
