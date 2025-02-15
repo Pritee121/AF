@@ -81,9 +81,11 @@ from .views import user_profile
 from .views import artist_profile
 from .views import edit_review
 from .views import reply_to_review
-
+from .views import edit_review_reply, delete_review_reply
 urlpatterns = [
     # User Authentication
+    path('edit-review-reply/<int:review_id>/', edit_review_reply, name='edit_review_reply'),
+    path('delete-review-reply/<int:review_id>/', delete_review_reply, name='delete_review_reply'),
      path("reply-review/<int:review_id>/", reply_to_review, name="reply_to_review"),
     path('', views.register_page, name='register'),
     path('register-normal/', views.register_normal, name='register_normal'),

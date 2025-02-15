@@ -1679,3 +1679,42 @@ def reply_to_review(request, review_id):
         form = ReviewReplyForm(instance=review)
 
     return render(request, "accounts/reply_review.html", {"form": form, "review": review})
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.http import JsonResponse
+from .models import Review
+
+@login_required
+def edit_review_reply(request, review_id):
+    """ ✅ Allow artists to edit their own review replies """
+    review = get_object_or_404(Review, id=review_id)
+
+    # ✅ Ensure only the artist can edit their reply
+    if request.user != review.artist:
+        return JsonResponse({"success": False, "message": "You can only edit your own replies."}, status=403)
+
+    if request.method == "POST":
+        new_reply = request.POST.get("artist_reply")
+        review.artist_reply = new_reply
+        review.save()
+        messages.success(request, "Your reply has been updated.")
+        return redirect("services")  # ✅ Redirect to services page
+
+    return render(request, "accounts/edit_review_reply.html", {"review": review})
+
+
+@login_required
+def delete_review_reply(request, review_id):
+    """ ✅ Allow artists to delete their review reply """
+    review = get_object_or_404(Review, id=review_id)
+
+    # ✅ Ensure only the artist can delete their own reply
+    if request.user != review.artist:
+        return JsonResponse({"success": False, "message": "You can only delete your own replies."}, status=403)
+
+    review.artist_reply = ""  # ✅ Remove the reply
+    review.save()
+    messages.success(request, "Your reply has been deleted.")
+    return redirect("services")  # ✅ Redirect back to services

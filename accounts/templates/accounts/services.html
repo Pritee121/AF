@@ -74,14 +74,20 @@
                                 <div class="artist-reply">
                                     <strong>🎤 Artist's Reply:</strong>
                                     <p>{{ review.artist_reply }}</p>
+                                    
+                                    {% if request.user == review.artist %}
+                                        <a href="{% url 'edit_review_reply' review.id %}" class="edit-reply-btn">✏ Edit</a>
+                                        <button onclick="deleteReply('{{ review.id }}')" class="delete-reply-btn">❌ Delete</button>
+                                    {% endif %}
                                 </div>
                             {% elif request.user == review.artist %}
-                                <a href="{% url 'reply_to_review' review.id %}" class="reply-btn">💬 Reply</a>
+                                <a href="{% url 'edit_review_reply' review.id %}" class="reply-btn">💬 Reply</a>
                             {% endif %}
                         {% empty %}
                             <p>No reviews yet for this service.</p>
                         {% endfor %}
                     </div>
+                    
                     
 
 
@@ -123,6 +129,33 @@
             }
         });
     }
+    function deleteReply(reviewId) {
+    Swal.fire({
+        title: "Are you sure?",
+        text: "You want to delete this reply?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#D8648C",
+        cancelButtonColor: "#6c757d",
+        confirmButtonText: "Yes, delete it!",
+        cancelButtonText: "Cancel"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/delete-review-reply/${reviewId}/`, { method: "POST", headers: { "X-CSRFToken": "{{ csrf_token }}" } })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire("Deleted!", "Reply has been deleted.", "success").then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire("Error!", data.message, "error");
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+    });
+}
     </script>
 
 </body>

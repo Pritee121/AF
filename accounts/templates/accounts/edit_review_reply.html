@@ -1,0 +1,57 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Reply to Review</title>
+    <link rel="stylesheet" href="{% static 'css/review.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+
+    <header>
+        <a href="{% url 'services' %}">← Back to Services</a>
+    </header>
+
+    <div class="review-container">
+        <h2>Edit Your Reply</h2>
+        <p>Customer Review:</p>
+        <blockquote>{{ review.comment }}</blockquote>
+
+        <form method="POST" class="review-form">
+            {% csrf_token %}
+            <label for="artist_reply">Your Reply:</label>
+            <textarea name="artist_reply" id="artist_reply" rows="4" required>{{ review.artist_reply }}</textarea>
+            <div class="buttons">
+                <button type="submit">Update Reply</button>
+                <button type="button" class="delete-btn" onclick="confirmDelete()">Delete Reply</button>
+            </div>
+        </form>
+
+        <form id="delete-form" action="{% url 'delete_review_reply' review.id %}" method="POST">
+            {% csrf_token %}
+        </form>
+    </div>
+
+    <script>
+        function confirmDelete() {
+            Swal.fire({
+                title: "Are you sure?",
+                text: "Do you want to delete your reply?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#D8648C",
+                cancelButtonColor: "#6c757d",
+                confirmButtonText: "Yes, delete it!",
+                cancelButtonText: "Cancel"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById("delete-form").submit();
+                }
+            });
+        }
+    </script>
+
+</body>
+</html>
