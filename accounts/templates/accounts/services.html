@@ -63,16 +63,26 @@
                     </p>
                     
                     
-                   <!-- ✅ Show Reviews for Each Service -->
                     <div class="reviews-section">
                         <h4>Customer Reviews:</h4>
                         {% for review in service.service_reviews.all %}
                             <p>⭐ {{ review.rating }}/5 - {{ review.user.first_name }}: {{ review.comment }}</p>
                             <small>🕒 {{ review.created_at|date:"F d, Y h:i A" }}</small> 
+                    
+                            <!-- ✅ Artist Reply Section -->
+                            {% if review.artist_reply %}
+                                <div class="artist-reply">
+                                    <strong>🎤 Artist's Reply:</strong>
+                                    <p>{{ review.artist_reply }}</p>
+                                </div>
+                            {% elif request.user == review.artist %}
+                                <a href="{% url 'reply_to_review' review.id %}" class="reply-btn">💬 Reply</a>
+                            {% endif %}
                         {% empty %}
                             <p>No reviews yet for this service.</p>
                         {% endfor %}
                     </div>
+                    
 
 
                     <!-- ✅ Edit & Delete Buttons -->

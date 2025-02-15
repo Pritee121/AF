@@ -181,3 +181,13 @@ class ReviewForm(forms.ModelForm):
 
 
 
+from django import forms
+from .models import Review
+
+class ReviewReplyForm(forms.ModelForm):
+    class Meta:
+        model = Review
+        fields = ["artist_reply"]
+        widgets = {
+            "artist_reply": forms.Textarea(attrs={"rows": 2, "placeholder": "Write a reply..."}),
+        }

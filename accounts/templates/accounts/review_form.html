@@ -18,54 +18,34 @@
         <h2>Leave a Review for {{ artist.first_name }} {{ artist.last_name }}</h2>
         <p>Your feedback helps others make informed decisions.</p>
 
-        <form method="POST" class="review-form" id="reviewForm">
+        <form method="POST" class="review-form">
             {% csrf_token %}
 
-            <!-- Only show booked services -->
-            <label for="service">Service:</label>
-            <select name="service" required>
-                {% for service in services %}
-                    <option value="{{ service.id }}" {% if forloop.first %}selected{% endif %}>
-                        {{ service.service_name }}
-                    </option>
-                {% endfor %}
-            </select>
+    <label for="service">Select a Service:</label>
+    <select name="service" required>
+        {% for service in services %}
+            <option value="{{ service.id }}">{{ service.service_name }}</option>
+        {% endfor %}
+    </select>
 
-            <!--  Star Rating System -->
-            <label for="rating">Rating:</label>
-            <div class="star-rating">
-                <input type="radio" id="star5" name="rating" value="5" required><label for="star5">★</label>
-                <input type="radio" id="star4" name="rating" value="4"><label for="star4">★</label>
-                <input type="radio" id="star3" name="rating" value="3"><label for="star3">★</label>
-                <input type="radio" id="star2" name="rating" value="2"><label for="star2">★</label>
-                <input type="radio" id="star1" name="rating" value="1"><label for="star1">★</label>
-            </div>
-
-            <!--  Review Comment Box -->
-            <label for="comment">Your Review:</label>
-            <textarea name="comment" rows="4" placeholder="Write your review here..." required></textarea>
-
-            <button type="submit">Submit Review</button>
-        </form>
+    <!-- Star Rating System -->
+    <label for="rating">Rating:</label>
+    <div class="star-rating">
+        <input type="radio" id="star5" name="rating" value="5" required><label for="star5">★</label>
+        <input type="radio" id="star4" name="rating" value="4"><label for="star4">★</label>
+        <input type="radio" id="star3" name="rating" value="3"><label for="star3">★</label>
+        <input type="radio" id="star2" name="rating" value="2"><label for="star2">★</label>
+        <input type="radio" id="star1" name="rating" value="1"><label for="star1">★</label>
     </div>
 
-    <script>
-        document.getElementById("reviewForm").addEventListener("submit", function(event) {
-            event.preventDefault(); // Prevent the default form submission
-    
-            Swal.fire({
-                title: "Thank you!",
-                text: "Your review has been submitted successfully.",
-                icon: "success",
-                confirmButtonText: "OK"
-            }).then(() => {
-                window.location.href = "{% url 'home' %}";  // Redirect to home page
-            });
-    
-            this.submit();  //  Submit the form
-        });
-    </script>
-    
+    <label for="comment">Your Review:</label>
+    <textarea name="comment" required></textarea>
+
+    <input type="checkbox" name="anonymous"> Submit Anonymously
+
+    <button type="submit">Submit Review</button>
+</form>
+    </div>
 
 </body>
 </html>

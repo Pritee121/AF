@@ -358,7 +358,10 @@ class Review(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user_reviews")
     rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)], default=5)
     comment = models.TextField()
+    is_anonymous = models.BooleanField(default=False)  # ✅ New: Anonymous Option
     created_at = models.DateTimeField(auto_now_add=True)
+    artist_reply = models.TextField(blank=True, null=True)  # ✅ Artist reply field
+
 
     def __str__(self):
         return f"{self.user.first_name} reviewed {self.artist.first_name} - {self.rating} Stars"

@@ -79,10 +79,12 @@ from .views import get_available_slots
 from .views import get_available_dates, get_available_times
 from .views import user_profile
 from .views import artist_profile
-
+from .views import edit_review
+from .views import reply_to_review
 
 urlpatterns = [
     # User Authentication
+     path("reply-review/<int:review_id>/", reply_to_review, name="reply_to_review"),
     path('', views.register_page, name='register'),
     path('register-normal/', views.register_normal, name='register_normal'),
     path('verify-otp/', views.verify_otp, name='verify_otp'),
@@ -106,7 +108,7 @@ urlpatterns = [
     path("update-booking-status/<int:booking_id>/", update_booking_status, name="update_booking_status"),
     path("about-us/", aboutus, name="aboutus"),  # ✅ Route for About Us page
     path("contact-us/", contact_us, name="contactus"),
-    path('artist/<int:artist_id>/review/', add_review, name='add_review'),
+    path('artist/<int:artist_id>/review/', views.add_review, name='add_review'),
     path('delete-review/<int:review_id>/', views.delete_review, name='delete_review'),
     path('work/delete/<int:work_id>/', delete_work, name='delete_work'),  # ✅ New URL pattern
     path("service/<int:service_id>/delete/", delete_service, name="delete_service"),
@@ -147,7 +149,7 @@ urlpatterns = [
     path("certificates/", views.certificates_page, name="certificates"),  # ✅ Make sure the name is 'certificates'
     path('user/profile/', user_profile, name='user_profile'),
     path('artist/profile/', artist_profile, name='artist_profile'),
-     
+    path("edit-review/<int:review_id>/", edit_review, name="edit_review"),
 
      
      

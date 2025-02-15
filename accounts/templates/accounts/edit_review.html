@@ -1,0 +1,66 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Review</title>
+    <link rel="stylesheet" href="{% static 'css/review.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+
+    <header>
+        <a href="{% url 'home' %}">← Back to Home</a>
+    </header>
+
+    <div class="review-container">
+        <h2>Edit Your Review for {{ review.artist.first_name }} {{ review.artist.last_name }}</h2>
+        <p>Update your feedback to help others make informed decisions.</p>
+
+        <form method="POST" class="review-form" id="editReviewForm">
+            {% csrf_token %}
+
+            <!-- Show booked service as readonly -->
+            <label for="service">Service:</label>
+            <select name="service" disabled>
+                <option value="{{ review.service.id }}" selected>
+                    {{ review.service.service_name }}
+                </option>
+            </select>
+
+            <!--  Star Rating System -->
+            <label for="rating">Rating:</label>
+            <div class="star-rating">
+                <input type="radio" id="star5" name="rating" value="5" {% if review.rating == 5 %}checked{% endif %}><label for="star5">★</label>
+                <input type="radio" id="star4" name="rating" value="4" {% if review.rating == 4 %}checked{% endif %}><label for="star4">★</label>
+                <input type="radio" id="star3" name="rating" value="3" {% if review.rating == 3 %}checked{% endif %}><label for="star3">★</label>
+                <input type="radio" id="star2" name="rating" value="2" {% if review.rating == 2 %}checked{% endif %}><label for="star2">★</label>
+                <input type="radio" id="star1" name="rating" value="1" {% if review.rating == 1 %}checked{% endif %}><label for="star1">★</label>
+            </div>
+
+            <!--  Review Comment Box -->
+            <label for="comment">Your Review:</label>
+            <textarea name="comment" rows="4" required>{{ review.comment }}</textarea>
+
+            <button type="submit">Update Review</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById("editReviewForm").addEventListener("submit", function(event) {
+            event.preventDefault(); // Prevent the default form submission
+    
+            Swal.fire({
+                title: "Updated Successfully!",
+                text: "Your review has been updated.",
+                icon: "success",
+                confirmButtonText: "OK"
+            }).then(() => {
+                this.submit();  // Submit the form
+            });
+        });
+    </script>
+    
+</body>
+</html>

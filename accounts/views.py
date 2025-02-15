@@ -1391,17 +1391,11 @@ class ReviewForm(forms.ModelForm):
 
 
 
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from .models import User, Review, Booking, Service
-from .forms import ReviewForm
-
 @login_required
 def add_review(request, artist_id):
     artist = get_object_or_404(User, id=artist_id, is_artist=True)
 
-    # ✅ Get only the services that the user has booked and confirmed
+    # ✅ Get only services booked by the user for this artist
     booked_services = Service.objects.filter(
         booking__client=request.user, booking__artist=artist, booking__status="Confirmed"
     ).distinct()
@@ -1412,22 +1406,36 @@ def add_review(request, artist_id):
 
     if request.method == "POST":
         form = ReviewForm(request.POST)
+        service_id = request.POST.get("service")  # ✅ Get the service ID from the form
+
+        if not service_id:
+            messages.error(request, "Please select a valid service.")
+            return redirect(request.path)
+
+        service = get_object_or_404(Service, id=service_id)
+
+        if service not in booked_services:  # ✅ Ensure the service is valid
+            messages.error(request, "You can only review services you have booked.")
+            return redirect(request.path)
+
         if form.is_valid():
             review = form.save(commit=False)
             review.artist = artist
             review.user = request.user
-            review.service = get_object_or_404(Service, id=request.POST.get("service"))
+            review.service = service  # ✅ Assign the valid service
+            review.is_anonymous = request.POST.get("anonymous") == "on"
             review.save()
             messages.success(request, "Your review has been submitted successfully!")
-            return redirect('home')  # Redirect to services page
+            return redirect('home')
     else:
         form = ReviewForm()
 
     return render(request, 'accounts/review_form.html', {
         'form': form,
         'artist': artist,
-        'services': booked_services  # ✅ Pass only booked services
+        'services': booked_services
     })
+
 
 
 
@@ -1618,3 +1626,56 @@ def artist_profile(request):
 
 
   
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import Review
+from .forms import ReviewForm
+
+@login_required
+def edit_review(request, review_id):
+    review = get_object_or_404(Review, id=review_id, user=request.user)
+
+    if request.method == "POST":
+        form = ReviewForm(request.POST, instance=review)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Review updated successfully!")
+            return redirect("home")  # Redirect to homepage or artist details
+
+    else:
+        form = ReviewForm(instance=review)
+
+    return render(request, "accounts/edit_review.html", {"form": form, "review": review})
+
+
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import Review
+from .forms import ReviewReplyForm
+
+@login_required
+def reply_to_review(request, review_id):
+    review = get_object_or_404(Review, id=review_id)
+
+    # ✅ Ensure only the artist who owns the service can reply
+    if request.user != review.artist:
+        messages.error(request, "You can only reply to reviews on your own services.")
+        return redirect("services")
+
+    if request.method == "POST":
+        form = ReviewReplyForm(request.POST, instance=review)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Reply posted successfully!")
+            return redirect("services")
+
+    else:
+        form = ReviewReplyForm(instance=review)
+
+    return render(request, "accounts/reply_review.html", {"form": form, "review": review})

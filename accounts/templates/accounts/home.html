@@ -158,23 +158,39 @@
             {% endif %}
 
             <!-- ✅ Show Artist Reviews -->
+            <!-- ✅ Show Artist Reviews -->
             <h4>Reviews:</h4>
 {% for review in artist.artist_reviews.all %}
     <p>
         ⭐ {{ review.rating }}/5 - 
-        <strong>{{ review.user.first_name }}</strong>: {{ review.comment }}
+        <strong>{% if review.is_anonymous %}Anonymous{% else %}{{ review.user.first_name }}{% endif %}</strong>: {{ review.comment }}
         <br>
-        <small>🕒 {{ review.created_at|date:"F d, Y h:i A" }}</small>  <!-- ✅ Display formatted timestamp -->
+        <small>🕒 {{ review.created_at|date:"F d, Y h:i A" }}</small>
     </p>
+
+    <!-- ✅ Display Artist Reply -->
+    {% if review.artist_reply %}
+        <div class="artist-reply">
+            <strong>🎤 Artist's Reply:</strong>
+            <p>{{ review.artist_reply }}</p>
+        </div>
+    {% elif request.user == review.artist %}
+        <a href="{% url 'reply_to_review' review.id %}" class="reply-btn">💬 Reply</a>
+    {% endif %}
+
+    <!-- ✅ Allow Users to Edit or Delete Their Own Reviews (Even if Anonymous) -->
     {% if request.user == review.user %}
-    <form id="delete-form-{{ review.id }}" action="{% url 'delete_review' review.id %}" method="POST" style="display:inline;">
-        {% csrf_token %}
-        <button type="button" class="delete-btn" onclick="confirmDelete('{{ review.id }}')">❌ Delete</button>
-    </form>
+        <a href="{% url 'edit_review' review.id %}" class="edit-btn">✏ Edit</a>
+        <form id="delete-form-{{ review.id }}" action="{% url 'delete_review' review.id %}" method="POST" style="display:inline;">
+            {% csrf_token %}
+            <button type="button" class="delete-btn" onclick="confirmDelete('{{ review.id }}')">❌ Delete</button>
+        </form>
     {% endif %}
 {% empty %}
     <p>No reviews yet.</p>
 {% endfor %}
+
+            
 
         </div>
         {% endfor %}
