@@ -423,6 +423,96 @@ def cancel_booking(request, booking_id):
 #         "service_form": service_form,
 #         "availability_formset": availability_formset,
 #     })
+
+
+
+# from django.shortcuts import render, get_object_or_404, redirect
+# from django.forms import modelformset_factory
+# from .models import Service, ServiceAvailability
+# from .forms import ServiceForm, ServiceAvailabilityForm
+
+# def edit_service(request, service_id):
+#     service = get_object_or_404(Service, id=service_id)
+
+#     # ✅ Allow adding extra slots but don't show them by default
+#     ServiceAvailabilityFormSet = modelformset_factory(
+#         ServiceAvailability, 
+#         form=ServiceAvailabilityForm, 
+#         extra=0,  # ✅ Prevents empty default forms
+#         can_delete=True
+#     )
+
+#     if request.method == "POST":
+#         service_form = ServiceForm(request.POST, instance=service)
+#         formset = ServiceAvailabilityFormSet(request.POST)
+
+#         if service_form.is_valid() and formset.is_valid():
+#             service_form.save()
+
+#             # ✅ Save valid availability slots
+#             instances = formset.save(commit=False)
+#             for instance in instances:
+#                 instance.service = service  # ✅ Assign the service before saving
+#                 instance.save()
+
+#             # ✅ Delete removed slots
+#             for obj in formset.deleted_objects:
+#                 obj.delete()
+
+#             return redirect("services")  # ✅ Redirect after updating
+
+#     else:
+#         service_form = ServiceForm(instance=service)
+
+#         # ✅ Only fetch existing availability slots
+#         formset = ServiceAvailabilityFormSet(queryset=ServiceAvailability.objects.filter(service=service))
+
+#     return render(request, "accounts/edit_service.html", {
+#         "service_form": service_form,
+#         "availability_formset": formset,
+#     })
+# from django.shortcuts import render, get_object_or_404, redirect
+# from django.forms import modelformset_factory
+# from .models import Service, ServiceAvailability
+# from .forms import ServiceForm, ServiceAvailabilityForm
+
+# def edit_service(request, service_id):
+#     service = get_object_or_404(Service, id=service_id)
+
+#     ServiceAvailabilityFormSet = modelformset_factory(
+#         ServiceAvailability, 
+#         form=ServiceAvailabilityForm, 
+#         extra=1,  # ✅ Allow adding extra slot
+#         can_delete=True  # ✅ Allow removing slots
+#     )
+
+#     if request.method == "POST":
+#         service_form = ServiceForm(request.POST, instance=service)
+#         formset = ServiceAvailabilityFormSet(request.POST, queryset=ServiceAvailability.objects.filter(service=service))
+
+#         if service_form.is_valid() and formset.is_valid():
+#             service = service_form.save()
+
+#             for form in formset:
+#                 if form.cleaned_data and not form.cleaned_data.get("DELETE", False):
+#                     availability = form.save(commit=False)
+#                     availability.service = service
+#                     availability.save()
+
+#             for form in formset.deleted_forms:
+#                 if form.instance.pk:
+#                     form.instance.delete()
+
+#             return redirect("services")
+
+#     else:
+#         service_form = ServiceForm(instance=service)
+#         formset = ServiceAvailabilityFormSet(queryset=ServiceAvailability.objects.filter(service=service))
+
+#     return render(request, "accounts/edit_service.html", {
+#         "service_form": service_form,
+#         "availability_formset": formset,
+#     })
 from django.shortcuts import render, get_object_or_404, redirect
 from django.forms import modelformset_factory
 from .models import Service, ServiceAvailability
@@ -431,43 +521,45 @@ from .forms import ServiceForm, ServiceAvailabilityForm
 def edit_service(request, service_id):
     service = get_object_or_404(Service, id=service_id)
 
-    # ✅ Allow adding extra slots but don't show them by default
+    # ✅ Formset to manage availability slots dynamically
     ServiceAvailabilityFormSet = modelformset_factory(
         ServiceAvailability, 
         form=ServiceAvailabilityForm, 
-        extra=0,  # ✅ Prevents empty default forms
-        can_delete=True
+        extra=1,  # Allows adding extra slots dynamically
+        can_delete=True  # Allows removing slots
     )
 
     if request.method == "POST":
         service_form = ServiceForm(request.POST, instance=service)
-        formset = ServiceAvailabilityFormSet(request.POST)
+        formset = ServiceAvailabilityFormSet(request.POST, queryset=ServiceAvailability.objects.filter(service=service))
 
         if service_form.is_valid() and formset.is_valid():
-            service_form.save()
+            service = service_form.save()  # ✅ Save edited service
 
-            # ✅ Save valid availability slots
-            instances = formset.save(commit=False)
-            for instance in instances:
-                instance.service = service  # ✅ Assign the service before saving
-                instance.save()
+            # ✅ Handle formset availability slots
+            for form in formset:
+                if form.cleaned_data and not form.cleaned_data.get("DELETE", False):
+                    availability = form.save(commit=False)
+                    availability.service = service
+                    availability.save()
 
             # ✅ Delete removed slots
-            for obj in formset.deleted_objects:
-                obj.delete()
+            for form in formset.deleted_forms:
+                if form.instance.pk:
+                    form.instance.delete()
 
-            return redirect("services")  # ✅ Redirect after updating
+            return redirect("services")  # ✅ Redirect to services page
 
     else:
         service_form = ServiceForm(instance=service)
-
-        # ✅ Only fetch existing availability slots
         formset = ServiceAvailabilityFormSet(queryset=ServiceAvailability.objects.filter(service=service))
 
     return render(request, "accounts/edit_service.html", {
+        "service": service,
         "service_form": service_form,
         "availability_formset": formset,
     })
+
 
 # ✅ Artist Registration (Fully Fixed)
 def register_artists(request):
@@ -559,8 +651,43 @@ def services(request):
 
 
 
+# from django.shortcuts import render, redirect
+# from .models import Service, ServiceAvailability
+# from .forms import ServiceForm, ServiceAvailabilityFormSet
+# from django.contrib.auth.decorators import login_required
+
+# @login_required
+# def add_service(request):
+#     if request.method == "POST":
+#         service_form = ServiceForm(request.POST)
+#         formset = ServiceAvailabilityFormSet(request.POST)
+
+#         if service_form.is_valid() and formset.is_valid():
+#             service = service_form.save(commit=False)
+#             service.artist = request.user  # Assign artist before saving
+#             service.save()
+
+#             # ✅ Ensure all slots are saved correctly
+#             availabilities = formset.save(commit=False)
+#             for availability in availabilities:
+#                 availability.service = service
+#                 availability.save()
+
+#             return redirect('services')  # Redirect after successful submission
+
+#     else:
+#         service_form = ServiceForm()
+#         formset = ServiceAvailabilityFormSet()
+
+#     return render(request, 'accounts/add_service.html', {
+#         'service_form': service_form,
+#         'formset': formset
+#     })
+
+
+
 from django.shortcuts import render, redirect
-from .models import Service
+from .models import Service, ServiceAvailability
 from .forms import ServiceForm, ServiceAvailabilityFormSet
 from django.contrib.auth.decorators import login_required
 
@@ -571,27 +698,28 @@ def add_service(request):
         formset = ServiceAvailabilityFormSet(request.POST)
 
         if service_form.is_valid() and formset.is_valid():
+            # ✅ Create and Save the Service First
             service = service_form.save(commit=False)
             service.artist = request.user  # Assign artist before saving
             service.save()
 
-            availabilities = formset.save(commit=False)
-            for availability in availabilities:
-                availability.service = service
-                availability.save()
+            # ✅ Save all availability slots related to the service
+            for form in formset:
+                if form.cleaned_data and not form.cleaned_data.get('DELETE', False):
+                    availability = form.save(commit=False)
+                    availability.service = service  # Link to service
+                    availability.save()
 
-            return redirect('services')  # Redirect after successful submission
+            return redirect('services')  # Redirect to services page
 
     else:
         service_form = ServiceForm()
-        formset = ServiceAvailabilityFormSet()
+        formset = ServiceAvailabilityFormSet(queryset=ServiceAvailability.objects.none())  # Empty formset
 
     return render(request, 'accounts/add_service.html', {
         'service_form': service_form,
         'formset': formset
     })
-
-
 
 
 

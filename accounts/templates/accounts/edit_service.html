@@ -30,8 +30,25 @@
             {% csrf_token %}
 
             <h3 class="section-title">Service Details</h3>
+
             <div class="form-group">
-                {{ service_form.as_p }}
+                <label>Service Name:</label>
+                {{ service_form.service_name }}
+            </div>
+
+            <div class="form-group">
+                <label>Price:</label>
+                {{ service_form.price }}
+            </div>
+
+            <div class="form-group">
+                <label>Duration:</label>
+                {{ service_form.duration }}
+            </div>
+
+            <div class="form-group">
+                <label>Description:</label>
+                {{ service_form.description }}
             </div>
 
             <h3 class="section-title">Update Availability</h3>
@@ -39,16 +56,15 @@
                 {{ availability_formset.management_form }}
 
                 {% for form in availability_formset %}
-                    {% if form.instance.id %}  <!-- ✅ Only display existing slots -->
-                        <div class="availability-block">
-                            {{ form.as_p }}
-                        </div>
-                    {% endif %}
+                    <div class="availability-entry">
+                        {{ form.as_p }}
+                        <button type="button" class="remove-slot">❌ Remove</button>
+                    </div>
                 {% endfor %}
             </div>
 
             <!-- ✅ Add New Slot Button -->
-            <button type="button" class="add-slot-btn" onclick="addNewSlot()">➕ Add New Slot</button>
+            <button type="button" class="add-slot-btn">➕ Add New Slot</button>
 
             <button type="submit" class="submit-btn">Update Service</button>
         </form>
@@ -60,26 +76,39 @@
             flatpickr(".timepicker", { enableTime: true, noCalendar: true, dateFormat: "H:i" });
         });
 
-        function addNewSlot() {
+        document.querySelector(".add-slot-btn").addEventListener("click", function () {
             let container = document.getElementById("availability-container");
             let totalForms = document.getElementById("id_form-TOTAL_FORMS");
-            let newSlotIndex = parseInt(totalForms.value);  // ✅ Get current count of slots
-            
+            let newSlotIndex = parseInt(totalForms.value);
+
             let newSlot = document.createElement("div");
-            newSlot.classList.add("availability-block");
+            newSlot.classList.add("availability-entry");
             newSlot.innerHTML = `
                 <label>Date:</label>
                 <input type="text" name="form-${newSlotIndex}-available_date" class="datepicker" required>
                 <label>Time:</label>
                 <input type="text" name="form-${newSlotIndex}-available_time" class="timepicker" required>
+                <button type="button" class="remove-slot">❌ Remove</button>
             `;
 
             container.appendChild(newSlot);
-            totalForms.value = newSlotIndex + 1;  // ✅ Increment the total forms count
+            totalForms.value = newSlotIndex + 1;
 
             flatpickr(".datepicker", { dateFormat: "Y-m-d" });
             flatpickr(".timepicker", { enableTime: true, noCalendar: true, dateFormat: "H:i" });
-        }
+
+            newSlot.querySelector(".remove-slot").addEventListener("click", function () {
+                container.removeChild(newSlot);
+                totalForms.value = parseInt(totalForms.value) - 1;
+            });
+        });
+
+        document.querySelectorAll(".remove-slot").forEach(btn => {
+            btn.addEventListener("click", function () {
+                this.parentElement.remove();
+                document.getElementById("id_form-TOTAL_FORMS").value--;
+            });
+        });
     </script>
 
 </body>

@@ -54,12 +54,14 @@
 
                     <p class="availability">
                         <strong>Available Slots:</strong>
-                        {% for slot in service.serviceavailability_set.all %}  <!-- ✅ FIX: Use correct related name -->
+                        {% for slot in service.availability.all %}
+  <!-- ✅ FIX: Ensure correct related name -->
                             <br> 📅 {{ slot.available_date }} ⏰ {{ slot.available_time }}
                         {% empty %}
                             <br> No availability set yet.
                         {% endfor %}
                     </p>
+                    
                     
                    <!-- ✅ Show Reviews for Each Service -->
                     <div class="reviews-section">

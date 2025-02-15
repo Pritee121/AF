@@ -277,7 +277,8 @@ class Booking(models.Model):
 
 
 class ServiceAvailability(models.Model):
-    service = models.ForeignKey("Service", on_delete=models.CASCADE)
+    service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name="availability")
+
     available_date = models.DateField()
     available_time = models.TimeField()
     is_booked = models.BooleanField(default=False)  # ✅ Ensure this field exists

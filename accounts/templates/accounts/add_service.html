@@ -52,18 +52,18 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            flatpickr(".datepicker", { dateFormat: "Y-m-d", theme: "material_blue" });
+            flatpickr(".datepicker", { dateFormat: "Y-m-d" });
             flatpickr(".timepicker", { enableTime: true, noCalendar: true, dateFormat: "H:i" });
         });
 
         $(document).ready(function () {
             let formsetDiv = $("#availability-formset");
-            let totalForms = $("#id_availabilities-TOTAL_FORMS");
+            let totalForms = $("#id_availability-TOTAL_FORMS");  // ✅ Corrected ID
             let formNum = parseInt(totalForms.val());
 
             // ✅ Add new slot dynamically
             $("#add-slot").click(function () {
-                let newForm = formsetDiv.find(".availability-entry:first").clone();
+                let newForm = $(".availability-entry:first").clone();
                 
                 // ✅ Clear input values
                 newForm.find("input").each(function () {
@@ -77,8 +77,8 @@
                 totalForms.val(formNum + 1);
 
                 // ✅ Reinitialize Flatpickr for new fields
-                flatpickr(newForm.find(".datepicker"), { dateFormat: "Y-m-d" });
-                flatpickr(newForm.find(".timepicker"), { enableTime: true, noCalendar: true, dateFormat: "H:i" });
+                newForm.find(".datepicker").flatpickr({ dateFormat: "Y-m-d" });
+                newForm.find(".timepicker").flatpickr({ enableTime: true, noCalendar: true, dateFormat: "H:i" });
 
                 formNum++;
             });
@@ -95,5 +95,6 @@
             });
         });
     </script>
+    
 </body>
 </html>
