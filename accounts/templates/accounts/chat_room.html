@@ -14,27 +14,37 @@
 </form>
 
 <script>
-    const chatSocket = new WebSocket(
-        'ws://' + window.location.host + '/ws/chat/{{ room_name }}/'
-    );
+    const roomId = "{{ chat_room.id }}";
+    const userId = "{{ request.user.id }}";
+    const socket = new WebSocket(`ws://${window.location.host}/ws/chat/${roomId}/`);
 
-    chatSocket.onmessage = function(e) {
-        const data = JSON.parse(e.data);
-        const chatBox = document.getElementById('chat-box');
+    socket.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        const chatBox = document.getElementById("chat-box");
         chatBox.innerHTML += `<p><strong>${data.sender}:</strong> ${data.message}</p>`;
     };
 
-    document.getElementById('chat-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const messageInput = document.getElementById('message-input');
-        chatSocket.send(JSON.stringify({
-            'message': messageInput.value,
-            'sender': '{{ user_id }}',
-            'receiver': '{{ receiver.id }}'
-        }));
-        messageInput.value = '';
-    });
+    document.getElementById("chat-message-submit").addEventListener("click", function () {
+    const messageInput = document.getElementById("chat-message-input");
+    const message = messageInput.value;
+
+    fetch("", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: `message=${message}`
+    }).then(response => response.json())
+      .then(data => {
+          if (data.success) {
+              document.getElementById("chat-box").innerHTML += `<p><strong>You:</strong> ${message}</p>`;
+              messageInput.value = "";
+          }
+      });
+});
 </script>
+
 
 <a href="{% url 'chat_list' %}">Back to Messages</a>
 {% endblock %}
