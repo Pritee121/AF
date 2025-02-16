@@ -35,8 +35,10 @@
     };
 </script>
 {% endblock %} -->
-
-<h2>Chat with 
+{%load static%}
+<h2>
+    <button onclick="window.location.href='{% url 'chat_list' %}'" class="back-btn">← Back</button>
+    Chat with 
     {% if request.user == chat_room.user %} 
         {{ chat_room.artist.first_name }} {{ chat_room.artist.last_name }} 
     {% else %} 
@@ -45,22 +47,16 @@
 </h2>
 
 <div class="chat-container">
-    <!-- <div id="chat-box">
+    <div id="chat-box">
         {% for msg in messages %}
-            <div class="chat-message {% if msg.sender == request.user %}sent{% else %}received{% endif %}">
-                <strong>{% if msg.sender == request.user %}You{% else %}{{ msg.sender.first_name }}{% endif %}:</strong> 
-                {{ msg.message }}
+            <div class="chat-message-container {% if msg.sender == request.user %}sent-container{% else %}received-container{% endif %}">
+                <img src="{% if msg.sender.profile_image %}{{ msg.sender.profile_image.url }}{% else %}{% static 'images/default_profile.png' %}{% endif %}" class="chat-avatar">
+                <div class="chat-message {% if msg.sender == request.user %}sent{% else %}received{% endif %}">
+                    {{ msg.message }}
+                </div>
             </div>
         {% endfor %}
-    </div> -->
-    <div id="chat-box">
-    {% for msg in messages %}
-        <div class="chat-message {% if msg.sender == request.user %}sent{% else %}received{% endif %}">
-            {{ msg.message }}
-        </div>
-    {% endfor %}
-</div>
-
+    </div>
 
     <div class="chat-input">
         <input type="text" id="chat-message-input" placeholder="Type a message..." autofocus>
@@ -82,43 +78,45 @@
         const data = JSON.parse(event.data);
         const chatBox = document.getElementById("chat-box");
 
+        const messageContainer = document.createElement("div");
+        messageContainer.classList.add("chat-message-container");
+
+        const avatar = document.createElement("img");
+        avatar.classList.add("chat-avatar");
+        avatar.src = data.sender_image;
+
         const messageDiv = document.createElement("div");
         messageDiv.classList.add("chat-message");
 
         if (data.sender_id == userId) {
-            messageDiv.classList.add("sent"); 
-            messageDiv.innerHTML = `<strong>You:</strong> ${data.message}`;
+            messageContainer.classList.add("sent-container");
+            messageDiv.classList.add("sent");
         } else {
-            messageDiv.classList.add("received"); 
-            messageDiv.innerHTML = `<strong>${data.sender}:</strong> ${data.message}`;
+            messageContainer.classList.add("received-container");
+            messageDiv.classList.add("received");
         }
 
-        chatBox.appendChild(messageDiv);
-        scrollToBottom(); 
+        messageDiv.innerHTML = data.message;
+        messageContainer.appendChild(avatar);
+        messageContainer.appendChild(messageDiv);
+        chatBox.appendChild(messageContainer);
 
-        // ✅ Refresh the page after receiving a new message
-        setTimeout(() => {
-            location.reload();
-        }, 500);
+        scrollToBottom();
     };
 
-    document.getElementById("chat-message-submit").onclick = function() {
-        const messageInput = document.getElementById("chat-message-input");
-        const message = messageInput.value.trim();
-
-        if (message) {
+    function sendMessage(message) {
+        if (message.trim()) {
             socket.send(JSON.stringify({
                 "message": message,
-                "sender_id": userId
+                "sender_id": userId,
+                "sender_image": "{{ request.user.profile_image.url|default:'static/images/default_profile.png' }}"
             }));
-
-            messageInput.value = ""; 
-
-            // ✅ Refresh the page after sending the message
-            setTimeout(() => {
-                location.reload();
-            }, 500);
+            document.getElementById("chat-message-input").value = "";
         }
+    }
+
+    document.getElementById("chat-message-submit").onclick = function() {
+        sendMessage(document.getElementById("chat-message-input").value);
     };
 
     document.getElementById("chat-message-input").addEventListener("keypress", function(event) {
@@ -129,8 +127,6 @@
 
     window.onload = scrollToBottom;
 </script>
-
-
 
 <style>
     /* ✅ Chat Container */
@@ -156,6 +152,28 @@
         margin: 0;
         font-size: 18px;
         font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    /* ✅ Back Button */
+    .back-btn {
+        background: #fff;
+        color: #007bff;
+        border: none;
+        font-size: 16px;
+        padding: 6px 12px;
+        cursor: pointer;
+        border-radius: 5px;
+        transition: background 0.3s;
+        position: absolute;
+        left: 20px;
+    }
+
+    .back-btn:hover {
+        background: #f0f0f0;
     }
 
     /* ✅ Chat Box */
@@ -168,29 +186,60 @@
         flex-direction: column;
     }
 
+    /* ✅ Chat Message Container (Align Messages with Profile Images) */
+    .chat-message-container {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .sent-container {
+        justify-content: flex-end;
+    }
+
+    .received-container {
+        justify-content: flex-start;
+    }
+
+    /* ✅ Profile Image (Chat Avatar) */
+    .chat-avatar {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        margin: 5px;
+    }
+
+    .sent-container .chat-avatar {
+        margin-left: 10px;
+    }
+
+    .received-container .chat-avatar {
+        margin-right: 10px;
+    }
+
     /* ✅ Chat Messages */
     .chat-message {
-        max-width: 75%;
-        padding: 8px 12px;
-        margin: 5px;
-        border-radius: 8px;
+        max-width: 60%;
+        padding: 10px 15px;
+        border-radius: 15px;
         font-size: 14px;
         word-wrap: break-word;
     }
 
     /* ✅ Sent Messages */
     .sent {
-        align-self: flex-end;
         background: #007bff;
         color: white;
-        text-align: right;
+        text-align: left;
+        border-top-right-radius: 0;
     }
 
     /* ✅ Received Messages */
     .received {
-        align-self: flex-start;
         background: #ddd;
         color: black;
+        text-align: left;
+        border-top-left-radius: 0;
     }
 
     /* ✅ Chat Input Area */
@@ -224,4 +273,3 @@
         background: #0056b3;
     }
 </style>
-
