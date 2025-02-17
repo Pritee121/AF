@@ -253,6 +253,8 @@ JAZZMIN_SETTINGS = {
 }
 
 
+TIME_ZONE = 'Asia/Kathmandu'
+USE_TZ = True  # Enable timezone support
 
 
 

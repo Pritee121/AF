@@ -1,12 +1,23 @@
+
+
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from .models import ChatRoom
+from .models import ChatRoom, ChatMessage
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from .models import ChatRoom, ChatMessage  # ✅ Import your models properly
 
 @login_required
 def chat_list(request):
     """ ✅ List all chat rooms for the logged-in user """
     chats = ChatRoom.objects.filter(user=request.user) | ChatRoom.objects.filter(artist=request.user)
+
     return render(request, "chat/chat_list.html", {"chats": chats})
+
+
+
 
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -47,3 +58,43 @@ def start_chat(request, artist_id):
 
 
 
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from .models import ChatRoom, ChatMessage
+
+@csrf_exempt
+@login_required
+def delete_chat_room(request, room_id):
+    """Soft delete the chat for the user, but keep it visible for the other participant."""
+    if request.method == "POST":
+        chat_room = get_object_or_404(ChatRoom, id=room_id)
+
+        if request.user == chat_room.user:
+            chat_room.is_deleted_by_user = True
+        elif request.user == chat_room.artist:
+            chat_room.is_deleted_by_artist = True
+        chat_room.save()
+
+        # ✅ If both users delete, delete the chat permanently
+        if chat_room.is_deleted_by_user and chat_room.is_deleted_by_artist:
+            chat_room.delete()
+
+        return JsonResponse({"success": True})
+
+    return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
+
+
+
+
+from django.utils.timezone import localtime
+
+def chat_view(request, room_id):
+    messages = ChatMessage.objects.filter(chat_room_id=room_id).order_by("timestamp")
+    
+    # Convert timestamps to Nepal Time before sending to template
+    for message in messages:
+        message.timestamp = localtime(message.timestamp, timezone='Asia/Kathmandu')
+
+    return render(request, 'chat/chat_room.html', {'messages': messages})

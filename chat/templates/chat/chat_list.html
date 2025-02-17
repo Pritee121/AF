@@ -26,6 +26,7 @@
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
             text-align: center;
             transition: 0.3s ease-in-out;
+            position: relative;
         }
 
         /* ✅ Chat List Heading */
@@ -34,6 +35,25 @@
             color: #444;
             margin-bottom: 15px;
             font-weight: bold;
+        }
+
+        /* ✅ Back Button */
+        .back-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: #007bff;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #0056b3;
         }
 
         /* ✅ Chat List */
@@ -55,6 +75,7 @@
             cursor: pointer;
             border: 1px solid #e0e0e0;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: relative;
         }
 
         /* ✅ Chat Avatar */
@@ -76,6 +97,15 @@
             font-weight: 600;
             flex: 1;
             transition: 0.3s ease-in-out;
+        }
+
+        /* ✅ Last Message */
+        .last-message {
+            font-size: 14px;
+            color: #555;
+            margin-top: 3px;
+            display: block;
+            font-style: italic;
         }
 
         /* ✅ Hover Effects */
@@ -121,6 +151,9 @@
 <body>
 
     <div class="chat-container">
+        <!-- ✅ Back Button (Dynamically Redirects) -->
+        <button class="back-btn" onclick="redirectBack()">← Back</button>
+
         <h2>Your Chats</h2>
 
         {% if chats %}
@@ -131,15 +164,45 @@
                         {% if request.user == chat.user %}
                             <img src="{{ chat.artist.profile_image.url|default:'/static/images/default_profile.png' }}" 
                                  alt="{{ chat.artist.first_name }}'s Profile Picture" class="chat-avatar">
-                            <a href="{% url 'chat_room' chat.id %}">
-                                {{ chat.artist.first_name }} {{ chat.artist.last_name }}
-                            </a>
+                            <div>
+                                <a href="{% url 'chat_room' chat.id %}">
+                                    {{ chat.artist.first_name }} {{ chat.artist.last_name }}
+                                </a>
+                                <span class="last-message">
+                                    {% with chat.messages.last as last_msg %}
+                                        {% if last_msg %}
+                                            {% if last_msg.sender == request.user %}
+                                                You: {{ last_msg.message|truncatechars:30 }}
+                                            {% else %}
+                                                {{ last_msg.sender.first_name }}: {{ last_msg.message|truncatechars:30 }}
+                                            {% endif %}
+                                        {% else %}
+                                            No messages yet.
+                                        {% endif %}
+                                    {% endwith %}
+                                </span>
+                            </div>
                         {% else %}
                             <img src="{{ chat.user.profile_image.url|default:'/static/images/default_profile.png' }}" 
                                  alt="{{ chat.user.first_name }}'s Profile Picture" class="chat-avatar">
-                            <a href="{% url 'chat_room' chat.id %}">
-                                {{ chat.user.first_name }} {{ chat.user.last_name }}
-                            </a>
+                            <div>
+                                <a href="{% url 'chat_room' chat.id %}">
+                                    {{ chat.user.first_name }} {{ chat.user.last_name }}
+                                </a>
+                                <span class="last-message">
+                                    {% with chat.messages.last as last_msg %}
+                                        {% if last_msg %}
+                                            {% if last_msg.sender == request.user %}
+                                                You: {{ last_msg.message|truncatechars:30 }}
+                                            {% else %}
+                                                {{ last_msg.sender.first_name }}: {{ last_msg.message|truncatechars:30 }}
+                                            {% endif %}
+                                        {% else %}
+                                            No messages yet.
+                                        {% endif %}
+                                    {% endwith %}
+                                </span>
+                            </div>
                         {% endif %}
                     </li>
                 {% endfor %}
@@ -148,6 +211,14 @@
             <p class="no-chats">No chats available.</p>
         {% endif %}
     </div>
+
+    <script>
+        function redirectBack() {
+            const isArtist = "{{ request.user.is_artist|default:False }}" === "True";
+            const backUrl = isArtist ? "{% url 'artist_dashboard' %}" : "{% url 'home' %}";
+            window.location.href = backUrl;
+        }
+    </script>
 
 </body>
 </html>
