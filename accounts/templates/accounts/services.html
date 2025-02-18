@@ -95,7 +95,7 @@
                     <a href="{% url 'edit_service' service.id %}" class="edit-btn">✏ Edit</a>
                     <form id="delete-service-{{ service.id }}" action="{% url 'delete_service' service.id %}" method="POST" style="display:inline;">
                         {% csrf_token %}
-                        <button type="button" class="delete-btn" onclick="confirmDeleteService('{{ service.id }}')">❌ Delete Service</button>
+                        <button type="button" class="delete-btn" onclick="confirmDeleteService('{{ service.id }}')">❌ Delete</button>
                     </form>
                 </div>
                 
