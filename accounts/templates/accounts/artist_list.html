@@ -75,70 +75,109 @@ body.dark-mode {
     </div>
     <button id="dark-mode-toggle">🌙 Dark Mode</button>
 
-    <!-- ✅ Filter Section -->
-    <div class="filter-container">
-        <label for="city-filter">Filter by City:</label>
-        <select id="city-filter" onchange="filterArtists()">
-            <option value="all">All Cities</option>
-            {% for city in cities %}
-                <option value="{{ city }}">{{ city }}</option>
-            {% endfor %}
-        </select>
-    </div>
+  <!-- ✅ Filter Section -->
+<div class="filter-container">
+    <label for="city-filter">Filter by City:</label>
+    <select id="city-filter" onchange="filterArtists()">
+        <option value="all">All Cities</option>
+        {% for city in cities %}
+            <option value="{{ city }}">{{ city }}</option>
+        {% endfor %}
+    </select>
 
-    <div class="artist-container">
-        {% for artist in artists %}
-        <div class="artist-card" data-city="{{ artist.city }}">
-            <div class="artist-image">
-                {% if artist.profile_image %}
-                    <img src="{{ artist.profile_image.url }}" alt="{{ artist.first_name }} {{ artist.last_name }}">
-                {% else %}
-                    <img src="{% static 'images/default_profile.png' %}" alt="Default Profile Image">
-                {% endif %}
-            </div>
-            <div class="artist-info">
-                <h3>{{ artist.first_name }} {{ artist.last_name }}</h3>
-                <p>Email: {{ artist.email }}</p>
-                <p class="artist-city">City: {{ artist.city }}</p>
+    <label for="price-filter">Filter by Price:</label>
+    <select id="price-filter" onchange="filterArtists()">
+        <option value="all">All Prices</option>
+        <option value="0-500">Rs. 0 - Rs. 500</option>
+        <option value="501-1000">Rs. 501 - Rs. 1000</option>
+        <option value="1001-2000">Rs. 1001 - Rs. 2000</option>
+        <option value="2001-5000">Rs. 2001 - Rs. 5000</option>
+        <option value="5001-10000">Rs. 5001 - Rs. 10000</option>
+        <option value="10000+">Rs. 10000+</option>
+    </select>
+</div>
 
-                <!-- Display Services and Prices -->
-                {% if artist.services.exists %}
-                    <h4>Services Offered:</h4>
-                    <ul>
-                        {% for service in artist.services.all %}
-                            <li>{{ service.service_name }} - Rs. {{ service.price }}</li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p>No services listed.</p>
-                {% endif %}
+<!-- ✅ Artists List -->
+<div class="artist-container">
+    {% for artist in artists %}
+    <div class="artist-card" data-city="{{ artist.city }}">
+        <div class="artist-image">
+            {% if artist.profile_image %}
+                <img src="{{ artist.profile_image.url }}" alt="{{ artist.first_name }} {{ artist.last_name }}">
+            {% else %}
+                <img src="{% static 'images/default_profile.png' %}" alt="Default Profile Image">
+            {% endif %}
+        </div>
+        <div class="artist-info">
+            <h3>{{ artist.first_name }} {{ artist.last_name }}</h3>
+            <p>Email: {{ artist.email }}</p>
+            <p class="artist-city">City: {{ artist.city }}</p>
 
-                <div class="button-group">
-                    <button onclick="bookArtist('{{ artist.id }}')">Book Now</button>
-                    <button onclick="chatWithArtist('{{ artist.id }}')">Chat Now</button>
-                    <button onclick="window.location.href='{% url 'artist_detail' artist.id %}'">Explore Artist</button>
-                </div>
+            <!-- ✅ Display Services and Prices -->
+            {% if artist.services.exists %}
+                <h4>Services Offered:</h4>
+                <ul>
+                    {% for service in artist.services.all %}
+                        <li class="service-item" data-price="{{ service.price }}">
+                            {{ service.service_name }} - Rs. {{ service.price }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No services listed.</p>
+            {% endif %}
+
+            <div class="button-group">
+                <button onclick="bookArtist('{{ artist.id }}')">Book Now</button>
+                <button onclick="chatWithArtist('{{ artist.id }}')">Chat Now</button>
+                <button onclick="window.location.href='{% url 'artist_detail' artist.id %}'">Explore Artist</button>
             </div>
         </div>
-        {% empty %}
-        <p>No artists registered yet.</p>
-        {% endfor %}
     </div>
+    {% empty %}
+    <p>No artists registered yet.</p>
+    {% endfor %}
+</div>
 
     <script>
-        function filterArtists() {
-            let selectedCity = document.getElementById("city-filter").value.toLowerCase();
-            let artists = document.querySelectorAll(".artist-card");
+       function filterArtists() {
+    let selectedCity = document.getElementById("city-filter").value.toLowerCase();
+    let selectedPrice = document.getElementById("price-filter").value;
+    let artists = document.querySelectorAll(".artist-card");
 
-            artists.forEach(artist => {
-                let artistCity = artist.getAttribute("data-city").toLowerCase();
-                if (selectedCity === "all" || artistCity === selectedCity) {
-                    artist.style.display = "block";
-                } else {
-                    artist.style.display = "none";
-                }
-            });
-        }document.addEventListener("DOMContentLoaded", function () {
+    artists.forEach(artist => {
+        let artistCity = artist.getAttribute("data-city").toLowerCase();
+        let serviceItems = artist.querySelectorAll(".service-item");
+        let showArtist = false;
+
+        serviceItems.forEach(service => {
+            let servicePrice = parseInt(service.getAttribute("data-price"));
+
+            if (priceMatches(servicePrice, selectedPrice)) {
+                showArtist = true;
+            }
+        });
+
+        if ((selectedCity === "all" || artistCity === selectedCity) && showArtist) {
+            artist.style.display = "block";
+        } else {
+            artist.style.display = "none";
+        }
+    });
+}
+
+function priceMatches(servicePrice, selectedPrice) {
+    if (selectedPrice === "all") return true;
+
+    let [minPrice, maxPrice] = selectedPrice.split("-").map(Number);
+
+    if (selectedPrice === "10000+" && servicePrice >= 10000) return true;
+    if (servicePrice >= minPrice && (maxPrice ? servicePrice <= maxPrice : true)) return true;
+
+    return false;
+}
+
+document.addEventListener("DOMContentLoaded", function () {
     const darkModeToggle = document.getElementById("dark-mode-toggle");
     const body = document.body;
 
@@ -162,6 +201,7 @@ body.dark-mode {
         }
     });
 });
+
     </script>
 </body>
 </html>
