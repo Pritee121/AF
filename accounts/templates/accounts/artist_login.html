@@ -9,8 +9,18 @@
 </head>
 <body>
     <div class="login-container">
-        <div class="login-box">
-            <h2>Artist Login</h2>
+        
+        <!-- Left Panel (Logo & Branding) -->
+        <div class="left-panel">
+            <div class="logo">
+                <img src="{% static 'imagess/logo.png' %}" alt="Artist Logo">
+            </div>
+            
+        </div>
+
+        <!-- Right Panel (Login Form) -->
+        <div class="right-panel">
+            <h1>Artist Login</h1>
 
             <form method="POST" class="login-form">
                 {% csrf_token %}
@@ -33,7 +43,6 @@
                 <button type="submit" class="btn btn-login">Login</button>
             </form>
 
-            <!-- Forgot Password Link -->
             <p>
                 <a href="{% url 'artist_password_reset' %}" class="forgot-password">Forgot Password?</a>
             </p>

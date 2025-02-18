@@ -29,10 +29,11 @@ class User(AbstractUser):
     phone = models.CharField(max_length=15, unique=True)
     password = models.CharField(max_length=100)
     profile_image = models.ImageField(upload_to="profile_images/", null=True, blank=True)
+    city = models.CharField(max_length=100, null=True, blank=True)
     is_verified = models.BooleanField(default=False)
     is_artist = models.BooleanField(default=False)
     otp = models.CharField(max_length=6, blank=True, null=True)  # ✅ Stores OTP
-    city = models.CharField(max_length=100, null=True, blank=True)
+    
     works_at = models.CharField(max_length=255, null=True, blank=True)
     experience_years = models.IntegerField(default=0, null=True, blank=True)
     training_certificate = models.FileField(upload_to="certificates/", null=True, blank=True)

@@ -40,7 +40,7 @@ class ProfileUpdateForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'phone', 'profile_image', 'password']
+        fields = ['first_name', 'last_name', 'email', 'phone', 'profile_image','city', 'password']
 
     def clean_password(self):
         password = self.cleaned_data.get('password')

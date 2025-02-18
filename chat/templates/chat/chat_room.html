@@ -157,6 +157,7 @@
         .delete-chat-btn:hover {
             background: darkred;
         }
+        
     </style>
 </head>
 <body>
@@ -170,7 +171,7 @@
         {% else %} 
             {{ chat_room.user.first_name }} {{ chat_room.user.last_name }} 
         {% endif %}
-        <button id="delete-chat-btn" class="delete-chat-btn">🗑 Delete Chat</button>
+        <!-- <button id="delete-chat-btn" class="delete-chat-btn">🗑 Delete Chat</button> -->
     </h2>
 
     <!-- ✅ Chat Box -->
