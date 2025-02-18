@@ -198,61 +198,431 @@ def artist_login(request):
 #         "booked_artists": list(booked_artists),  # Convert to list
 #         "sort_by": sort_by,
 #     })
+
+
+
+
+
+# from django.shortcuts import render
+# from django.contrib.auth.decorators import login_required
+# from django.core.paginator import Paginator
+# from django.db.models import Avg, Count
+# from .models import User, Booking
+
+# @login_required(login_url='login')
+# def home_page(request):
+#     query = request.GET.get("search", "").strip()
+#     sort_by = request.GET.get("sort_by", "rating")  # Default sorting by rating
+
+#     # ✅ Filter artists based on search query (city)
+#     artists = User.objects.filter(is_artist=True)
+#     if query:
+#         artists = artists.filter(city__icontains=query)
+
+#     # ✅ Annotate artists with their average rating
+#     artists = artists.annotate(avg_rating=Avg('artist_reviews__rating'))
+
+#     # ✅ Sorting logic
+#     if sort_by == "rating":
+#         artists = artists.order_by('-avg_rating')  # Highest rating first
+#     elif sort_by == "name":
+#         artists = artists.order_by('first_name', 'last_name')  # Alphabetical
+#     elif sort_by == "experience":
+#         artists = artists.order_by('-experience_years')  # Most experienced first
+
+#     # ✅ Pagination (10 artists per page)
+#     paginator = Paginator(artists, 10)  
+#     page_number = request.GET.get("page")
+#     page_obj = paginator.get_page(page_number)
+
+#     # ✅ Fetch all artist IDs where the user has a confirmed booking
+#     booked_artists = Booking.objects.filter(client=request.user, status="Confirmed").values_list('artist_id', flat=True)
+
+#     # ✅ AI-BASED RECOMMENDATION LOGIC
+#     # ✅ Find other users who booked the same artists as this user
+#     similar_users = Booking.objects.filter(artist_id__in=booked_artists).values_list("client_id", flat=True).distinct()
+
+#     # ✅ Find new artists booked by similar users but NOT booked by the current user
+#     recommended_artists = User.objects.filter(
+#         is_artist=True, 
+#         bookings__client_id__in=similar_users
+#     ).exclude(id__in=booked_artists).annotate(
+#         booking_count=Count("bookings")
+#     ).order_by("-booking_count")[:5]  # ✅ Top 5 recommended artists
+
+#     return render(request, "accounts/home.html", {
+#         "artists": page_obj,  # Paginated artists
+#         "recommended_artists": recommended_artists,  # ✅ Pass recommended artists
+#         "query": query,
+#         "message": "No artists found in this city." if not artists.exists() else "",
+#         "booked_artists": list(booked_artists),
+#         "sort_by": sort_by,
+#     })
+# from django.shortcuts import render
+# from django.contrib.auth.decorators import login_required
+# from django.db.models import Count, Avg
+# from .models import User, Booking
+
+# @login_required
+# def home_page(request):
+#     user = request.user
+
+#     # ✅ Step 1: Get all artists
+#     artists = User.objects.filter(is_artist=True)
+
+#     # ✅ Step 2: First, recommend artists from the same city
+#     recommended_artists = artists.filter(city=user.city).exclude(id=user.id)
+
+#     # ✅ Step 3: Fetch user’s previous bookings
+#     booked_artist_ids = Booking.objects.filter(client=user).values_list('artist_id', flat=True)
+
+#     # ✅ Step 4: Find similar users who booked the same artists
+#     similar_users = Booking.objects.filter(artist_id__in=booked_artist_ids).values_list("client_id", flat=True).distinct()
+
+#     # ✅ Step 5: Find new artists booked by similar users but NOT booked by this user
+#     ai_recommended_artists = User.objects.filter(
+#         is_artist=True,
+#         bookings__client_id__in=similar_users
+#     ).exclude(id__in=booked_artist_ids).annotate(
+#         booking_count=Count("bookings")
+#     ).order_by("-booking_count")[:5]
+
+#     # ✅ Step 6: If no AI recommendations, fallback to top-rated artists
+#     if not ai_recommended_artists.exists():
+#         ai_recommended_artists = artists.annotate(
+#             avg_rating=Avg('artist_reviews__rating')
+#         ).order_by('-avg_rating')[:5]  # ✅ Top-rated artists
+
+#     return render(request, "accounts/home.html", {
+#         "artists": artists,
+#         "recommended_artists": ai_recommended_artists,  # ✅ Best AI-based recommendations
+#     }) AI 
+# from django.shortcuts import render
+# from django.contrib.auth.decorators import login_required
+# from django.core.paginator import Paginator
+# from django.db.models import Avg, Count
+# from .models import User, Booking, Review
+
+# @login_required(login_url='login')
+# def home_page(request):
+#     user = request.user
+#     query = request.GET.get("search", "").strip()
+#     sort_by = request.GET.get("sort_by", "rating")  # Default sorting by rating
+
+#     # ✅ Step 1: Filter Artists (By City if Searched)
+#     artists = User.objects.filter(is_artist=True)
+#     if query:
+#         artists = artists.filter(city__icontains=query)
+
+#     # ✅ Step 2: Annotate Artists with Average Rating
+#     artists = artists.annotate(avg_rating=Avg('artist_reviews__rating'))
+
+#     # ✅ Step 3: Sorting Logic
+#     if sort_by == "rating":
+#         artists = artists.order_by('-avg_rating')  # Highest rating first
+#     elif sort_by == "name":
+#         artists = artists.order_by('first_name', 'last_name')  # Alphabetical
+#     elif sort_by == "experience":
+#         artists = artists.order_by('-experience_years')  # Most experienced first
+
+#     # ✅ Step 4: Paginate Artists (10 per page)
+#     paginator = Paginator(artists, 10)
+#     page_number = request.GET.get("page")
+#     page_obj = paginator.get_page(page_number)
+
+#     # ✅ Step 5: Fetch Booked Artists by User
+#     booked_artist_ids = Booking.objects.filter(client=user, status="Confirmed").values_list('artist_id', flat=True)
+
+#     # ✅ Step 6: AI-BASED RECOMMENDATION LOGIC (Fixed)
+#     recommended_artists = []
+
+#     if booked_artist_ids:  # ✅ Only run recommendation logic if user has bookings
+#         # ✅ Find other users who booked the same artists
+#         similar_users = Booking.objects.filter(artist_id__in=booked_artist_ids).values_list("client_id", flat=True).distinct()
+
+#         if similar_users:
+#             # ✅ Find new artists booked by similar users but NOT booked by this user
+#             recommended_artists = User.objects.filter(
+#                 is_artist=True,
+#                 bookings__client_id__in=similar_users
+#             ).exclude(id__in=booked_artist_ids).annotate(
+#                 booking_count=Count("bookings")
+#             ).order_by("-booking_count")[:5]
+
+#     # ✅ Step 7: Fallback to Top-Rated Artists if No Recommendations Found
+#     if not recommended_artists:
+#         recommended_artists = artists.order_by('-avg_rating')[:5]  # ✅ Pick top-rated artists
+
+#     # ✅ Step 8: Fetch Latest Artist Reviews
+#     artist_reviews = Review.objects.select_related("artist", "user").order_by("-created_at")[:10]
+
+#     return render(request, "accounts/home.html", {
+#         "artists": page_obj,  # Paginated Artists
+#         "recommended_artists": recommended_artists,  # AI-Based Recommended Artists (Fixed)
+#         "artist_reviews": artist_reviews,  # Latest Artist Reviews
+#         "query": query,
+#         "message": "No artists found in this city." if not artists.exists() else "",
+#         "booked_artists": list(booked_artist_ids),  # List of booked artist IDs
+#         "sort_by": sort_by,
+#     })
+# from django.shortcuts import render
+# from django.contrib.auth.decorators import login_required
+# from django.core.paginator import Paginator
+# from django.db.models import Avg, Count
+# from .models import User, Booking, Review
+
+# @login_required(login_url='login')
+# def home_page(request):
+#     user = request.user
+#     query = request.GET.get("search", "").strip()
+#     sort_by = request.GET.get("sort_by", "rating")  # Default sorting by rating
+
+#     # ✅ Step 1: Filter Artists (By City if Searched)
+#     artists = User.objects.filter(is_artist=True)
+#     if query:
+#         artists = artists.filter(city__icontains=query)
+
+#     # ✅ Step 2: Annotate Artists with Average Rating
+#     artists = artists.annotate(avg_rating=Avg('artist_reviews__rating'))  # ✅ Proper annotation
+
+#     # ✅ Step 3: Sorting Logic (Fixing the Issue)
+#     if sort_by == "rating":
+#         artists = artists.order_by('-avg_rating')  # ✅ Sorting now works properly
+#     elif sort_by == "name":
+#         artists = artists.order_by('first_name', 'last_name')
+#     elif sort_by == "experience":
+#         artists = artists.order_by('-experience_years')
+
+#     # ✅ Step 4: Paginate Artists (10 per page)
+#     paginator = Paginator(artists, 10)
+#     page_number = request.GET.get("page")
+#     page_obj = paginator.get_page(page_number)
+
+#     # ✅ Step 5: Fetch Booked Artists by User
+#     booked_artist_ids = Booking.objects.filter(client=user, status="Confirmed").values_list('artist_id', flat=True)
+
+#     # ✅ Step 6: AI-BASED RECOMMENDATION LOGIC (Fixed)
+#     recommended_artists = []
+
+#     if booked_artist_ids:
+#         similar_users = Booking.objects.filter(artist_id__in=booked_artist_ids).values_list("client_id", flat=True).distinct()
+
+#         if similar_users:
+#             recommended_artists = User.objects.filter(
+#                 is_artist=True,
+#                 bookings__client_id__in=similar_users
+#             ).exclude(id__in=booked_artist_ids).annotate(
+#                 booking_count=Count("bookings")
+#             ).order_by("-booking_count")[:5]
+
+#     # ✅ Step 7: Fallback to Artists from the Same City
+#     if not recommended_artists and user.city:
+#         recommended_artists = User.objects.filter(
+#             is_artist=True,
+#             city=user.city
+#         ).exclude(id=user.id).annotate(avg_rating=Avg('artist_reviews__rating')).order_by('-avg_rating')[:5]
+
+#     # ✅ Step 8: Fallback to Top-Rated Artists if No Recommendations Found
+#     if not recommended_artists:
+#         recommended_artists = artists.order_by('-avg_rating')[:5]  # ✅ Pick top-rated artists
+
+#     # ✅ Step 9: Fetch Latest Artist Reviews
+#     artist_reviews = Review.objects.select_related("artist", "user").order_by("-created_at")[:10]
+
+#     return render(request, "accounts/home.html", {
+#         "artists": page_obj,  # Paginated Artists
+#         "recommended_artists": recommended_artists,  # AI-Based + City-Based Recommended Artists
+#         "artist_reviews": artist_reviews,  # Latest Artist Reviews
+#         "query": query,
+#         "message": "No artists found in this city." if not artists.exists() else "",
+#         "booked_artists": list(booked_artist_ids),  # List of booked artist IDs
+#         "sort_by": sort_by,
+#     }) 2
+
+# from django.shortcuts import render
+# from django.contrib.auth.decorators import login_required
+# from django.core.paginator import Paginator
+# from django.db.models import Avg, Count
+# from .models import User, Booking, Review
+
+# @login_required(login_url='login')
+# def home_page(request):
+#     user = request.user
+#     query = request.GET.get("search", "").strip()
+#     sort_by = request.GET.get("sort_by", "rating")  # Default sorting by rating
+
+#     # ✅ Step 1: Filter Artists (By City if Searched)
+#     artists = User.objects.filter(is_artist=True)
+#     if query:
+#         artists = artists.filter(city__icontains=query)
+
+#     # ✅ Step 2: Annotate Artists with Average Rating
+#     artists = artists.annotate(avg_rating=Avg('artist_reviews__rating'))
+
+#     # ✅ Step 3: Sorting Logic (Fixing the Issue)
+#     if sort_by == "rating":
+#         artists = artists.order_by('-avg_rating')
+#     elif sort_by == "name":
+#         artists = artists.order_by('first_name', 'last_name')
+#     elif sort_by == "experience":
+#         artists = artists.order_by('-experience_years')
+
+#     # ✅ Step 4: Paginate Artists (10 per page)
+#     paginator = Paginator(artists, 10)
+#     page_number = request.GET.get("page")
+#     page_obj = paginator.get_page(page_number)
+
+#     # ✅ Step 5: Fetch Booked Artists by User
+#     user_bookings = Booking.objects.filter(client=user, status="Confirmed").order_by('-date')
+#     booked_artist_ids = user_bookings.values_list('artist_id', flat=True)
+
+#     # ✅ Step 6: AI-BASED RECOMMENDATION LOGIC
+#     recommended_artists = []
+
+#     if booked_artist_ids:
+#         # ✅ Find other users who booked the same artists
+#         similar_users = Booking.objects.filter(artist_id__in=booked_artist_ids).values_list("client_id", flat=True).distinct()
+
+#         if similar_users:
+#             recommended_artists = User.objects.filter(
+#                 is_artist=True,
+#                 bookings__client_id__in=similar_users
+#             ).exclude(id__in=booked_artist_ids).annotate(
+#                 booking_count=Count("bookings")
+#             ).order_by("-booking_count")[:5]
+
+#     # ✅ Step 7: Check Latest Booking City
+#     if not recommended_artists and user_bookings.exists():
+#         latest_booking = user_bookings.first()  # Get the latest booked artist
+#         latest_artist_city = latest_booking.artist.city
+
+#         recommended_artists = User.objects.filter(
+#             is_artist=True,
+#             city=latest_artist_city
+#         ).exclude(id=user.id).annotate(avg_rating=Avg('artist_reviews__rating')).order_by('-avg_rating')[:5]
+
+#     # ✅ Step 8: Fallback to Artists from the Same City
+#     if not recommended_artists and user.city:
+#         recommended_artists = User.objects.filter(
+#             is_artist=True,
+#             city=user.city
+#         ).exclude(id=user.id).annotate(avg_rating=Avg('artist_reviews__rating')).order_by('-avg_rating')[:5]
+
+#     # ✅ Step 9: Fallback to Top-Rated Artists if No Recommendations Found
+#     if not recommended_artists:
+#         recommended_artists = artists.order_by('-avg_rating')[:5]
+
+#     # ✅ Step 10: Fetch Latest Artist Reviews
+#     artist_reviews = Review.objects.select_related("artist", "user").order_by("-created_at")[:10]
+
+#     return render(request, "accounts/home.html", {
+#         "artists": page_obj,  # Paginated Artists
+#         "recommended_artists": recommended_artists,  # AI-Based Recommended Artists
+#         "artist_reviews": artist_reviews,  # Latest Artist Reviews
+#         "query": query,
+#         "message": "No artists found in this city." if not artists.exists() else "",
+#         "booked_artists": list(booked_artist_ids),  # List of booked artist IDs
+#         "sort_by": sort_by,
+#     })
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Avg, Count
-from .models import User, Booking
+from .models import User, Booking, Review
 
 @login_required(login_url='login')
 def home_page(request):
+    user = request.user
     query = request.GET.get("search", "").strip()
     sort_by = request.GET.get("sort_by", "rating")  # Default sorting by rating
 
-    # ✅ Filter artists based on search query (city)
-    artists = User.objects.filter(is_artist=True)
+    # ✅ Step 1: Get All Artists (Keep Unavailable in Main List)
+    artists = User.objects.filter(is_artist=True)  # Keep all artists (available & unavailable)
     if query:
         artists = artists.filter(city__icontains=query)
 
-    # ✅ Annotate artists with their average rating
+    # ✅ Step 2: Annotate Artists with Average Rating
     artists = artists.annotate(avg_rating=Avg('artist_reviews__rating'))
 
-    # ✅ Sorting logic
+    # ✅ Step 3: Sorting Logic
     if sort_by == "rating":
-        artists = artists.order_by('-avg_rating')  # Highest rating first
+        artists = artists.order_by('-avg_rating')
     elif sort_by == "name":
-        artists = artists.order_by('first_name', 'last_name')  # Alphabetical
+        artists = artists.order_by('first_name', 'last_name')
     elif sort_by == "experience":
-        artists = artists.order_by('-experience_years')  # Most experienced first
+        artists = artists.order_by('-experience_years')
 
-    # ✅ Pagination (10 artists per page)
-    paginator = Paginator(artists, 10)  
+    # ✅ Step 4: Paginate Artists (10 per page)
+    paginator = Paginator(artists, 10)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
-    # ✅ Fetch all artist IDs where the user has a confirmed booking
-    booked_artists = Booking.objects.filter(client=request.user, status="Confirmed").values_list('artist_id', flat=True)
+    # ✅ Step 5: Fetch Booked Artists by User
+    user_bookings = Booking.objects.filter(client=user, status="Confirmed").order_by('-date')
+    booked_artist_ids = user_bookings.values_list('artist_id', flat=True)
 
-    # ✅ AI-BASED RECOMMENDATION LOGIC
-    # ✅ Find other users who booked the same artists as this user
-    similar_users = Booking.objects.filter(artist_id__in=booked_artists).values_list("client_id", flat=True).distinct()
+    # ✅ Debugging
+    print(f"Booked Artists: {list(booked_artist_ids)}")
 
-    # ✅ Find new artists booked by similar users but NOT booked by the current user
-    recommended_artists = User.objects.filter(
-        is_artist=True, 
-        bookings__client_id__in=similar_users
-    ).exclude(id__in=booked_artists).annotate(
-        booking_count=Count("bookings")
-    ).order_by("-booking_count")[:5]  # ✅ Top 5 recommended artists
+    # ✅ Step 6: AI-BASED RECOMMENDATION LOGIC (ONLY AVAILABLE ARTISTS)
+    recommended_artists = []
+
+    if booked_artist_ids:
+        # ✅ Find users who booked the same artists
+        similar_users = Booking.objects.filter(artist_id__in=booked_artist_ids).values_list("client_id", flat=True).distinct()
+        
+        # ✅ Debugging
+        print(f"Similar Users: {list(similar_users)}")
+
+        if similar_users:
+            recommended_artists = User.objects.filter(
+                is_artist=True,
+                is_available=True,  # ✅ Only available artists in recommendations
+                bookings__client_id__in=similar_users
+            ).exclude(id__in=booked_artist_ids).annotate(
+                booking_count=Count("bookings")
+            ).order_by("-booking_count")[:5]
+
+    # ✅ Step 7: Check Latest Booking City (ONLY AVAILABLE ARTISTS)
+    if not recommended_artists and user_bookings.exists():
+        latest_booking = user_bookings.first()
+        latest_artist_city = latest_booking.artist.city
+
+        recommended_artists = User.objects.filter(
+            is_artist=True,
+            is_available=True,
+            city=latest_artist_city
+        ).exclude(id=user.id).annotate(avg_rating=Avg('artist_reviews__rating')).order_by('-avg_rating')[:5]
+
+    # ✅ Step 8: Fallback to Artists from the Same City (ONLY AVAILABLE ARTISTS)
+    if not recommended_artists and user.city:
+        recommended_artists = User.objects.filter(
+            is_artist=True,
+            is_available=True,
+            city=user.city
+        ).exclude(id=user.id).annotate(avg_rating=Avg('artist_reviews__rating')).order_by('-avg_rating')[:5]
+
+    # ✅ Step 9: Fallback to Top-Rated Artists (ONLY AVAILABLE ARTISTS)
+    if not recommended_artists:
+        recommended_artists = artists.filter(is_available=True).order_by('-avg_rating')[:5]
+
+    # ✅ Debugging
+    print(f"Recommended Artists: {[artist.first_name for artist in recommended_artists]}")
+
+    # ✅ Step 10: Fetch Latest Artist Reviews
+    artist_reviews = Review.objects.select_related("artist", "user").order_by("-created_at")[:10]
 
     return render(request, "accounts/home.html", {
-        "artists": page_obj,  # Paginated artists
-        "recommended_artists": recommended_artists,  # ✅ Pass recommended artists
+        "artists": page_obj,  # ✅ Keep all artists (available & unavailable)
+        "recommended_artists": recommended_artists,  # ✅ Remove unavailable artists from recommendations
+        "artist_reviews": artist_reviews,  # Latest Artist Reviews
         "query": query,
         "message": "No artists found in this city." if not artists.exists() else "",
-        "booked_artists": list(booked_artists),
+        "booked_artists": list(booked_artist_ids),  # List of booked artist IDs
         "sort_by": sort_by,
     })
+
+
 
 # from django.shortcuts import render, redirect, get_object_or_404
 # from django.contrib.auth.decorators import login_required
