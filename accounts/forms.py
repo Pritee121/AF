@@ -1,4 +1,3 @@
-
 from django import forms
 from .models import User
 from django.core.validators import MinLengthValidator
@@ -29,8 +28,6 @@ class LoginForm(forms.Form):
 class OTPForm(forms.Form):
     otp = forms.CharField(max_length=6)
 
-
-
 from django import forms
 from .models import User
 from django.contrib.auth.hashers import make_password
@@ -47,8 +44,6 @@ class ProfileUpdateForm(forms.ModelForm):
         if password:
             return make_password(password)  # Hash new password
         return None  # Return None if password field is empty
-
-
 
 from django import forms
 from .models import User
@@ -85,9 +80,6 @@ class ArtistRegisterForm(forms.ModelForm):
         
         return image  # ✅ Ensure correct indentation
 
-
-
-
 from django import forms
 from .models import TrainingCertificate
 
@@ -96,7 +88,6 @@ class TrainingCertificateForm(forms.ModelForm):
         model = TrainingCertificate
         fields = ["certificate"]
 
-
 from django import forms
 from .models import Work
 
@@ -104,8 +95,6 @@ class WorkUploadForm(forms.ModelForm):
     class Meta:
         model = Work
         fields = ['title', 'description', 'image']
-
-
 
 from django import forms
 from .models import Service, ServiceAvailability
@@ -140,14 +129,6 @@ ServiceAvailabilityFormSet = inlineformset_factory(
     extra=1, can_delete=True
 )
 
-
-# from django import forms
-# from .models import Booking
-
-# class BookingForm(forms.ModelForm):
-#     class Meta:
-#         model = Booking
-#         fields = ['service', 'date', 'time', 'payment_method']
 from django import forms
 from .models import Booking
 
@@ -171,8 +152,6 @@ class BookingForm(forms.ModelForm):
 
         return cleaned_data
 
-
-
 from django import forms
 from .models import Review
 
@@ -184,9 +163,6 @@ class ReviewForm(forms.ModelForm):
             'rating': forms.Select(choices=[(i, i) for i in range(1, 6)]),
             'comment': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Write your review...'})
         }
-
-
-
 
 from django import forms
 from .models import Review

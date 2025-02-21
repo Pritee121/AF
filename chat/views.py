@@ -1,21 +1,6 @@
-
-
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from .models import ChatRoom, ChatMessage
-
-# from django.shortcuts import render, get_object_or_404, redirect
-# from django.contrib.auth.decorators import login_required
-# from django.http import JsonResponse
-# from .models import ChatRoom, ChatMessage  # ✅ Import your models properly
-
-# @login_required
-# def chat_list(request):
-#     """ ✅ List all chat rooms for the logged-in user """
-#     chats = ChatRoom.objects.filter(user=request.user) | ChatRoom.objects.filter(artist=request.user)
-    
-#     return render(request, "chat/chat_list.html", {"chats": chats})
-
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Subquery, OuterRef
 from django.shortcuts import render
