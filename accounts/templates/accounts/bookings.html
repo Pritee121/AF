@@ -85,8 +85,16 @@
             <h3>Booking Location</h3>
             <div id="map"></div>
         </div>
+   <!-- Footer -->
+    <footer class="footer">
+        <p>Artist Finder &copy; All rights reserved</p>
+    </footer>
 
     </div>
+   <!-- Footer -->
+   <footer class="footer">
+    <p>Artist Finder &copy; All rights reserved</p>
+</footer>
 
     <script>
         // ✅ Initialize Leaflet Map
@@ -111,56 +119,57 @@
             Swal.fire("Location Loaded", "Map updated with the selected booking location.", "success");
         }
 
-        // ✅ Function to Update Booking Status
         function updateBookingStatus(bookingId, status) {
-            Swal.fire({
-                title: `Are you sure?`,
-                text: `Do you want to ${status.toLowerCase()} this booking?`,
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonText: "Yes, proceed!",
-                cancelButtonText: "No, cancel"
-            }).then((result) => {
-                if (!result.isConfirmed) {
-                    return;
-                }
-
-                fetch(`/update-booking-status/${bookingId}/`, {
-                    method: "POST",
-                    headers: {
-                        "X-CSRFToken": "{{ csrf_token }}",
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ status: status })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        document.getElementById(`status-${bookingId}`).innerText = data.status;
-                        Swal.fire({
-                            title: "Success!",
-                            text: data.message + " A confirmation email has been sent.",
-                            icon: "success",
-                            confirmButtonText: "OK"
-                        });
-                    } else {
-                        Swal.fire({
-                            title: "Error!",
-                            text: data.error || "Could not update booking. Try again later.",
-                            icon: "error"
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error("Error:", error);
-                    Swal.fire({
-                        title: "Error!",
-                        text: "Something went wrong! Please try again later.",
-                        icon: "error"
-                    });
-                });
-            });
+    Swal.fire({
+        title: `Are you sure?`,
+        text: `Do you want to ${status.toLowerCase()} this booking?`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, proceed!",
+        cancelButtonText: "No, cancel"
+    }).then((result) => {
+        if (!result.isConfirmed) {
+            return;
         }
+
+        fetch(`/update-booking-status/${bookingId}/`, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ status: status })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    title: "Success!",
+                    text: data.message + " A confirmation email has been sent.",
+                    icon: "success",
+                    confirmButtonText: "OK"
+                }).then(() => {
+                    location.reload(); // Refresh the page after confirmation
+                });
+            } else {
+                Swal.fire({
+                    title: "Error!",
+                    text: data.error || "Could not update booking. Try again later.",
+                    icon: "error"
+                });
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            Swal.fire({
+                title: "Error!",
+                text: "Something went wrong! Please try again later.",
+                icon: "error"
+            });
+        });
+    });
+}
+
     </script>
 </body>
 </html>

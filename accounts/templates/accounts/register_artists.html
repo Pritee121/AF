@@ -49,12 +49,16 @@
                 <input type="number" id="experience_years" name="experience_years" placeholder="Enter years of experience" required>
             </div>
 
+            <!-- ✅ Multiple Certificate Uploads -->
             <div class="input-group full-width">
-                <label for="training_certificate">Training Certificate:</label>
-                <input type="file" id="training_certificate" name="training_certificate" accept="application/pdf, image/*">
+                <label for="training_certificates">Upload Training Certificates:</label>
+                <input type="file" id="training_certificates" name="training_certificates" accept="application/pdf, image/*" multiple>
             </div>
-            <label for="profile-image">Upload Profile Image</label>
+
+            <div class="input-group full-width">
+                <label for="profile-image">Upload Profile Image</label>
                 <input type="file" id="profile-image" name="profile_image" accept="image/*">
+            </div>
 
             <div class="input-group">
                 <label for="password">Password:</label>

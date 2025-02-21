@@ -6,8 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Our Services</title>
     <link rel="stylesheet" href="{% static 'css/artist_dashboard.css' %}">
-    <link rel="stylesheet" href="{% static 'css/services.css' %}">
+    <link rel="stylesheet" href="{% static 'css/services2.css' %}">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        
+    </script>
 </head>
 <body>
     <!-- Header -->
@@ -18,9 +21,10 @@
         <nav class="navbar">
             <a href="{% url 'artist_dashboard' %}" class="nav-item">Dashboard</a>
             
+            <a href="{% url 'chat_list' %}" class="nav-item">Chats</a>
+
             
             
-           
             <a href="{% url 'services' %}" class="nav-item active">Services</a>
             <a href="{% url 'bookings' %}" class="nav-item">Bookings</a>
             <a href="{% url 'certificates' %}" class="nav-item">Certificates</a>
@@ -107,9 +111,11 @@
     </section>
 
     <!-- Footer -->
-    <footer class="footer">
+       <!-- Footer -->
+       <footer class="footer">
         <p>Artist Finder &copy; All rights reserved</p>
     </footer>
+
 
     <!-- JavaScript for Delete Confirmation -->
     <script>

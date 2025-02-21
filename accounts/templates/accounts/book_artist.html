@@ -19,68 +19,6 @@
 
     <link rel="stylesheet" href="{% static 'css/book_artist.css' %}">
     <style>#map { height: 300px; width: 100%; }</style>
-    <style>
-        /* 🌙 Dark Mode Styles */
-body.dark-mode {
-    background-color: #121212;
-    color: #ffffff;
-}
-
-/* ✅ Update other elements for dark mode */
-.dark-mode .header,
-.dark-mode .navbar {
-    background-color: #222;
-}
-
-.dark-mode .nav-link {
-    color: white;
-}
-
-.dark-mode .search-form {
-    background: #333;
-    box-shadow: 0px 4px 6px rgba(255, 255, 255, 0.1);
-}
-
-.dark-mode input,
-.dark-mode textarea,
-.dark-mode select {
-    background-color: #222;
-    color: white;
-    border: 1px solid #555;
-}
-
-.dark-mode .book-btn {
-    background-color: #D8648C;
-    color: white;
-}
-
-.dark-mode .book-btn:hover {
-    background-color: #b24d70;
-}
-
-.dark-mode .artist-container {
-    background-color: #1a1a1a;
-}
-
-/* ✅ Toggle Switch */
-#dark-mode-toggle {
-    position: fixed;
-    top: 10px;
-    right: 20px;
-    background: #222;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    cursor: pointer;
-    border-radius: 5px;
-}
-
-.dark-mode #dark-mode-toggle {
-    background: #f8f9fa;
-    color: #222;
-}
-
-    </style>
 </head>
 <body>
     <header>
@@ -93,7 +31,6 @@ body.dark-mode {
         <form id="booking-form" method="POST" action="{% url 'book_artist' artist.id %}">
             {% csrf_token %}
 
-            <!-- ✅ Service Selection -->
             <label for="service">Select Service:</label>
             <select id="service" name="service" required>
                 <option value="" disabled selected>Choose a service</option>
@@ -104,27 +41,22 @@ body.dark-mode {
                 {% endfor %}
             </select>
 
-            <!-- ✅ Duration Display (Auto-updating) -->
             <label for="duration">Duration:</label>
             <input type="text" id="duration" name="duration" readonly placeholder="Select a service first">
 
-            <!-- ✅ Date Selection -->
             <label for="date">Select Date:</label>
             <input type="text" id="date" name="date" required placeholder="Choose a date" disabled>
 
-            <!-- ✅ Time Selection -->
             <label for="time">Select Time:</label>
             <select id="time" name="time" required disabled>
                 <option value="" disabled selected>Select time</option>
             </select>
 
-            <!-- ✅ Location Selection -->
             <label for="map">Select Location:</label>
             <div id="map"></div>
             <input type="hidden" id="latitude" name="latitude">
             <input type="hidden" id="longitude" name="longitude">
 
-            <!-- ✅ Payment Selection -->
             <label for="payment_method">Select Payment Method:</label>
             <select id="payment_method" name="payment_method" required>
                 <option value="khalti">Khalti</option>
@@ -143,27 +75,70 @@ body.dark-mode {
             let timeInput = document.getElementById("time");
             let bookingForm = document.getElementById("booking-form");
 
-            // ✅ Update Duration When Service is Selected
+            var map, marker;
+
+            // ✅ Function to Initialize Map
+            function initMap(lat, lng) {
+                map = L.map('map').setView([lat, lng], 13);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap'
+                }).addTo(map);
+
+                marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+
+                // ✅ Update Input Fields
+                document.getElementById("latitude").value = lat;
+                document.getElementById("longitude").value = lng;
+
+                // ✅ Update Coordinates on Drag
+                marker.on('dragend', function () {
+                    var position = marker.getLatLng();
+                    document.getElementById("latitude").value = position.lat.toFixed(6);
+                    document.getElementById("longitude").value = position.lng.toFixed(6);
+                });
+            }
+
+            // ✅ Try Getting User's Current Location Immediately
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function (position) {
+                        var userLat = position.coords.latitude;
+                        var userLng = position.coords.longitude;
+                        initMap(userLat, userLng); // ✅ Load map at user's actual location
+                    },
+                    function (error) {
+                        console.error("Geolocation Error:", error);
+                        alert("Location access denied. Using default location.");
+                        initMap(27.7172, 85.3240); // ✅ Kathmandu as fallback
+                    }
+                );
+            } else {
+                alert("Geolocation not supported by this browser.");
+                initMap(27.7172, 85.3240); // ✅ Kathmandu as fallback
+            }
+
+            // ✅ Service Duration Auto-Update
             serviceSelect.addEventListener("change", function () {
                 let selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
                 let duration = selectedOption.getAttribute("data-duration");
 
                 if (duration) {
-                    durationField.value = duration; // ✅ Auto-fill duration
+                    durationField.value = duration;
                 } else {
-                    durationField.value = ""; // ✅ Reset if no service selected
+                    durationField.value = "";
                 }
 
-                // ✅ Reset and fetch available dates
                 dateInput.value = "";
                 timeInput.innerHTML = "<option value='' disabled selected>Select time</option>";
                 timeInput.disabled = true;
+
                 if (serviceSelect.value) {
                     fetchAvailableDates(serviceSelect.value);
                 }
             });
 
-            // ✅ Fetch Available Dates for Selected Service
+            // ✅ Fetch Available Dates
             function fetchAvailableDates(serviceId) {
                 fetch(`/get-available-dates/{{ artist.id }}/?service_id=${serviceId}`)
                     .then(response => response.json())
@@ -177,14 +152,14 @@ body.dark-mode {
                                 dateFormat: "Y-m-d",
                                 enableTime: false,
                                 disableMobile: true,
-                                enable: data.available_dates  // ✅ Show only available dates
+                                enable: data.available_dates
                             });
                         }
                     })
                     .catch(error => console.error("Error fetching available dates:", error));
             }
 
-            // ✅ Fetch Available Times for Selected Date & Service
+            // ✅ Fetch Available Times
             function fetchAvailableTimes(serviceId, date) {
                 fetch(`/get-available-times/{{ artist.id }}/?service_id=${serviceId}&date=${date}`)
                     .then(response => response.json())
@@ -206,7 +181,6 @@ body.dark-mode {
                     .catch(error => console.error("Error fetching available times:", error));
             }
 
-            // ✅ Fetch Available Times When Date is Selected
             dateInput.addEventListener("change", function () {
                 let selectedServiceId = serviceSelect.value;
                 let selectedDate = dateInput.value;
@@ -215,40 +189,11 @@ body.dark-mode {
                 }
             });
 
-            // ✅ Leaflet.js for Location Selection
-            var map = L.map('map').setView([27.7172, 85.3240], 13); // Default to Kathmandu
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap'
-            }).addTo(map);
-
-            var marker = L.marker([27.7172, 85.3240], { draggable: true }).addTo(map);
-
-            // ✅ Get User's Current Location
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function (position) {
-                    var userLat = position.coords.latitude;
-                    var userLng = position.coords.longitude;
-                    var userLocation = new L.LatLng(userLat, userLng);
-                    map.setView(userLocation, 13);
-                    marker.setLatLng(userLocation);
-                    document.getElementById("latitude").value = userLat;
-                    document.getElementById("longitude").value = userLng;
-                });
-            }
-
-            // ✅ Update Lat & Lng on Marker Drag
-            marker.on('dragend', function(event) {
-                var position = marker.getLatLng();
-                document.getElementById("latitude").value = position.lat.toFixed(6);
-                document.getElementById("longitude").value = position.lng.toFixed(6);
-            });
-
-            // ✅ Handle Form Submission with AJAX
-            bookingForm.addEventListener("submit", function(event) {
-                event.preventDefault();  // ✅ Prevent default form submission
+            // ✅ Success Message on Form Submission
+            bookingForm.addEventListener("submit", function (event) {
+                event.preventDefault();
 
                 let formData = new FormData(bookingForm);
-
                 fetch(bookingForm.action, {
                     method: "POST",
                     body: formData
@@ -256,7 +201,7 @@ body.dark-mode {
                 .then(response => response.json())
                 .then(data => {
                     if (data.status === "success") {
-                        Swal.fire("Booking Confirmed!", "You will receive a confirmation soon.", "success")
+                        Swal.fire("Your booking has been listed!", "You will receive a confirmation soon.", "success")
                         .then(() => window.location.href = "{% url 'home' %}");
                     } else {
                         Swal.fire("Booking Failed", data.message || "Try again.", "error");
@@ -264,34 +209,8 @@ body.dark-mode {
                 })
                 .catch(error => console.error("Error:", error));
             });
+
         });
-        
-document.addEventListener("DOMContentLoaded", function () {
-    const darkModeToggle = document.getElementById("dark-mode-toggle");
-    const body = document.body;
-
-    // ✅ Check if dark mode is enabled in localStorage
-    if (localStorage.getItem("darkMode") === "enabled") {
-        body.classList.add("dark-mode");
-        darkModeToggle.textContent = "☀ Light Mode";
-    }
-
-    // ✅ Toggle Dark Mode
-    darkModeToggle.addEventListener("click", function () {
-        body.classList.toggle("dark-mode");
-
-        // ✅ Save the preference in localStorage
-        if (body.classList.contains("dark-mode")) {
-            localStorage.setItem("darkMode", "enabled");
-            darkModeToggle.textContent = "☀ Light Mode";
-        } else {
-            localStorage.setItem("darkMode", "disabled");
-            darkModeToggle.textContent = "🌙 Dark Mode";
-        }
-    });
-});
-
-
     </script>
 </body>
 </html>

@@ -4,18 +4,36 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from .models import ChatRoom, ChatMessage
 
-from django.shortcuts import render, get_object_or_404, redirect
+# from django.shortcuts import render, get_object_or_404, redirect
+# from django.contrib.auth.decorators import login_required
+# from django.http import JsonResponse
+# from .models import ChatRoom, ChatMessage  # ✅ Import your models properly
+
+# @login_required
+# def chat_list(request):
+#     """ ✅ List all chat rooms for the logged-in user """
+#     chats = ChatRoom.objects.filter(user=request.user) | ChatRoom.objects.filter(artist=request.user)
+    
+#     return render(request, "chat/chat_list.html", {"chats": chats})
+
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
-from .models import ChatRoom, ChatMessage  # ✅ Import your models properly
+from django.db.models import Q, Subquery, OuterRef
+from django.shortcuts import render
+from .models import ChatRoom, ChatMessage
 
 @login_required
 def chat_list(request):
-    """ ✅ List all chat rooms for the logged-in user """
-    chats = ChatRoom.objects.filter(user=request.user) | ChatRoom.objects.filter(artist=request.user)
+    """ ✅ List all chat rooms for the logged-in user, ordered by most recent message """
+    chats = ChatRoom.objects.filter(Q(user=request.user) | Q(artist=request.user))
+
+    # ✅ Get the latest message for each chat
+    latest_message_subquery = ChatMessage.objects.filter(
+        chat_room=OuterRef('pk')
+    ).order_by('-timestamp').values('message')[:1]  # Only get the latest message
+
+    chats = chats.annotate(last_message=Subquery(latest_message_subquery))
 
     return render(request, "chat/chat_list.html", {"chats": chats})
-
 
 
 

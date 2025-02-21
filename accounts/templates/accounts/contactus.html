@@ -84,65 +84,119 @@ button[type="submit"]:hover {
     background-color: #c6537a;
 }
 
-/* 🌙 Dark Mode Styles */
+/* ✅ Settings Dropdown */
+.settings-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+/* ✅ Settings Button */
+#settings-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #ffffff;
+    margin-left: 15px;
+}
+
+/* ✅ Dropdown Content */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: #ffffff;
+    min-width: 150px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    overflow: hidden;
+    z-index: 1000;
+}
+
+/* ✅ Dropdown Buttons */
+.dropdown-content button,
+.dropdown-content a {
+    width: 100%;
+    padding: 10px;
+    text-align: left;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 14px;
+    display: block;
+    color: #333;
+}
+
+/* ✅ Hover Effect */
+.dropdown-content button:hover,
+.dropdown-content a:hover {
+    background-color: #f1f1f1;
+}
+
+/* ✅ Show Dropdown */
+.show {
+    display: block;
+}
+
+/* ✅ Dark Mode Styles for Entire Page */
 body.dark-mode {
     background-color: #121212;
     color: #ffffff;
 }
 
-/* ✅ Update other elements for dark mode */
-.dark-mode .header,
-.dark-mode .navbar {
+/* ✅ Dark Mode for Navbar */
+body.dark-mode .header, 
+body.dark-mode .navbar {
     background-color: #222;
 }
 
-.dark-mode .nav-link {
+/* ✅ Dark Mode for Buttons */
+body.dark-mode .search-form,
+body.dark-mode .settings-dropdown,
+body.dark-mode .recommended-section,
+body.dark-mode .artist-container {
+    background-color: #1a1a1a;
     color: white;
 }
 
-.dark-mode .search-form {
-    background: #333;
-    box-shadow: 0px 4px 6px rgba(255, 255, 255, 0.1);
-}
-
-.dark-mode input,
-.dark-mode textarea,
-.dark-mode select {
+/* ✅ Dark Mode for Search Bar */
+body.dark-mode .search-form input {
     background-color: #222;
     color: white;
     border: 1px solid #555;
 }
 
-.dark-mode .book-btn {
+/* ✅ Dark Mode for Buttons */
+body.dark-mode .book-btn {
     background-color: #D8648C;
     color: white;
 }
-
-.dark-mode .book-btn:hover {
+body.dark-mode .book-btn:hover {
     background-color: #b24d70;
 }
 
-.dark-mode .artist-container {
-    background-color: #1a1a1a;
-}
-
-/* ✅ Toggle Switch */
-#dark-mode-toggle {
-    position: fixed;
-    top: 10px;
-    right: 20px;
-    background: #222;
+/* ✅ Dark Mode for Review Cards */
+body.dark-mode .recommended-card {
+    background-color: #333;
     color: white;
-    border: none;
-    padding: 10px 15px;
-    cursor: pointer;
-    border-radius: 5px;
+    border-color: #D8648C;
 }
 
-.dark-mode #dark-mode-toggle {
-    background: #f8f9fa;
-    color: #222;
+/* ✅ Dark Mode for Settings Dropdown */
+body.dark-mode .dropdown-content {
+    background-color: #222;
 }
+
+body.dark-mode .dropdown-content button,
+body.dark-mode .dropdown-content a {
+    color: white;
+}
+
+body.dark-mode .dropdown-content button:hover,
+body.dark-mode .dropdown-content a:hover {
+    background-color: #444;
+}
+
 
 
     </style>
@@ -153,31 +207,31 @@ body.dark-mode {
             <img src="{% static 'imagess/logo.png' %}" alt="Artist Finder Logo">
         </div>
         <nav class="navbar">
-            <a href="{% url 'home' %}" class="nav-link" >Home</a>
+            <a href="{% url 'home' %}" class="nav-link">Home</a>
             <a href="{% url 'booking_history' %}" class="nav-link">Booking History</a>
-
             <a href="{% url 'aboutus' %}" class="nav-link">About Us</a>
-
             <a href="{% url 'contactus' %}" class="nav-link active">Contact Us</a>
-
-      
-
-
-
-
-            <a href="{% url 'artist_list' %}"  class="nav-link">View All Artists</a>
-
-            <!-- ✅ Correct logout URL -->
-            <a href="{% url 'login' %}" class="nav-link">Logout</a>
-            <button id="dark-mode-toggle">🌙 Dark Mode</button>
-
+            <a href="{% url 'chat_list' %}" class="nav-link">Chats</a>
+            <a href="{% url 'artist_list' %}" class="nav-link">View Artists</a>
+        
+            <!-- ✅ Settings Dropdown -->
+            <div class="settings-dropdown">
+                <button id="settings-btn">⚙️</button>  <!-- Settings Icon -->
+                <div id="dropdown-content" class="dropdown-content">
+                    <button id="dark-mode-toggle">🌙 Dark Mode</button>
+                    <a href="{% url 'login' %}" class="nav-link">🚪 Logout</a>
+                </div>
+            </div>
+        
+            <!-- ✅ User Profile Image -->
             <div class="user-profile">
-                <a href="{% url 'user_profile' %}">  <!-- Correct Django URL template syntax -->
+                <a href="{% url 'user_profile' %}">
                     <img src="{{ user.profile_image.url }}" alt="User" class="user-image">
                 </a>
             </div>
-            
         </nav>
+        
+        
     </header>
 
     <div class="contact-container">
@@ -241,27 +295,42 @@ body.dark-mode {
             })
             .catch(error => console.error("Error:", error));
         });
-        document.addEventListener("DOMContentLoaded", function () {
+        
+document.addEventListener("DOMContentLoaded", function () {
     const darkModeToggle = document.getElementById("dark-mode-toggle");
     const body = document.body;
+    const settingsBtn = document.getElementById("settings-btn");
+    const dropdownContent = document.getElementById("dropdown-content");
 
-    // ✅ Check if dark mode is enabled in localStorage
+    // ✅ Check if Dark Mode was previously enabled in localStorage
     if (localStorage.getItem("darkMode") === "enabled") {
         body.classList.add("dark-mode");
         darkModeToggle.textContent = "☀ Light Mode";
     }
 
-    // ✅ Toggle Dark Mode
+    // ✅ Toggle Dark Mode when button is clicked
     darkModeToggle.addEventListener("click", function () {
         body.classList.toggle("dark-mode");
 
-        // ✅ Save the preference in localStorage
         if (body.classList.contains("dark-mode")) {
             localStorage.setItem("darkMode", "enabled");
             darkModeToggle.textContent = "☀ Light Mode";
         } else {
             localStorage.setItem("darkMode", "disabled");
             darkModeToggle.textContent = "🌙 Dark Mode";
+        }
+    });
+
+    // ✅ Show/Hide Settings Dropdown
+    settingsBtn.addEventListener("click", function (event) {
+        dropdownContent.classList.toggle("show");
+        event.stopPropagation();
+    });
+
+    // ✅ Hide dropdown when clicking outside
+    document.addEventListener("click", function (event) {
+        if (!settingsBtn.contains(event.target) && !dropdownContent.contains(event.target)) {
+            dropdownContent.classList.remove("show");
         }
     });
 });

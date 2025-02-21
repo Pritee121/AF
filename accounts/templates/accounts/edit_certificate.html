@@ -1,0 +1,32 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Certificate</title>
+    <link rel="stylesheet" href="{% static 'css/certificates.css' %}">
+</head>
+<body>
+
+    <div class="container">
+        <h2>Edit Certificate</h2>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label for="certificate">Update Certificate:</label>
+            {{ form.certificate }}
+            <button type="submit">Save Changes</button>
+        </form>
+
+        <div class="back-container">
+            <a href="{% url 'artist_certificates' %}" class="back-btn">⬅ Back to Certificates</a>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>Artist Finder &copy; All rights reserved</p>
+    </footer>
+
+</body>
+</html>

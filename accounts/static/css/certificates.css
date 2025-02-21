@@ -1,131 +1,172 @@
-/* ✅ General Styling */
+/* ✅ General Page Styles */
 body {
-    font-family: 'Poppins', sans-serif;
-    background-color: #f9f0f7;
+    font-family: Arial, sans-serif;
+    background-color: #fdf2f6; /* Light pinkish background */
     color: #333;
     margin: 0;
     padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
 }
 
-/* ✅ Main Container */
+/* ✅ Container Styling */
 .container {
-    background-color: white;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    width: 420px;
+    max-width: 800px;
+    margin: 40px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
     text-align: center;
-    border-top: 6px solid #D8648C;
 }
 
-/* ✅ Upload Form */
+/* ✅ Headings */
+h2 {
+    color: #D8648C;
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+/* ✅ Form Styling */
 form {
-    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+label {
+    font-size: 16px;
+    font-weight: bold;
+    color: #444;
+    margin-bottom: 5px;
 }
 
 input[type="file"] {
-    width: 100%;
     padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
     margin-bottom: 10px;
 }
 
 button {
-    background-color: #D8648C;
+    background: #D8648C;
     color: white;
-    border: none;
     padding: 10px 15px;
-    border-radius: 6px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
     cursor: pointer;
-    font-weight: bold;
-    transition: 0.3s;
+    transition: all 0.3s ease-in-out;
 }
 
 button:hover {
-    background-color: #B94C74;
+    background: #b24d70;
 }
 
-/* ✅ Certificate Card */
+/* ✅ Certificates Grid */
+.certificates-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+/* ✅ Individual Certificate Card */
 .certificate-card {
-    background-color: #fff;
+    background: white;
     padding: 15px;
-    margin-top: 15px;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
 }
 
-.view-btn {
+.certificate-card p {
+    font-size: 14px;
+    color: #777;
+    margin-bottom: 10px;
+}
+
+/* ✅ Certificate Preview */
+.certificate-image {
+    width: 100%;
+    height: auto;
+    border-radius: 5px;
+}
+
+/* ✅ Certificate Actions */
+.certificate-actions {
+    margin-top: 10px;
+}
+
+.view-btn, .edit-btn, .delete-btn {
     display: inline-block;
-    background-color: #28a745;
-    color: white;
     padding: 8px 12px;
-    border-radius: 6px;
+    font-size: 14px;
+    border-radius: 5px;
+    text-align: center;
+    transition: all 0.3s ease-in-out;
     text-decoration: none;
-    font-weight: bold;
-    transition: 0.3s;
+    margin-right: 5px;
 }
 
-.view-btn:hover {
-    background-color: #218838;
+/* ✅ Button Colors */
+.view-btn {
+    background-color: #007bff;
+    color: white;
 }
 
-/* ✅ Back Buttons */
+.edit-btn {
+    background-color: #ffc107;
+    color: white;
+}
+
+.delete-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+}
+
+/* ✅ Hover Effects */
+.view-btn:hover, .edit-btn:hover, .delete-btn:hover {
+    transform: scale(1.05);
+}
+
+/* ✅ No Certificates Message */
+.no-certificates {
+    font-size: 16px;
+    color: #888;
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* ✅ Back to Dashboard */
 .back-container {
     margin-top: 20px;
 }
 
 .back-btn {
     display: inline-block;
-    background-color: #D8648C;
-    color: white;
     padding: 10px 15px;
-    border-radius: 6px;
+    background-color: #444;
+    color: white;
+    border-radius: 5px;
     text-decoration: none;
-    font-weight: bold;
-    transition: 0.3s;
+    transition: all 0.3s ease-in-out;
 }
 
 .back-btn:hover {
-    background-color: #B94C74;
+    background-color: #222;
+    transform: scale(1.05);
 }
 
-/* ✅ Modal Styling */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-}
-
-.modal-content {
-    background-color: white;
-    margin: 10% auto;
-    padding: 20px;
-    width: 60%;
-    border-radius: 10px;
-    position: relative;
-}
-
-.modal-content iframe {
-    width: 100%;
-    height: 500px;
-    border-radius: 10px;
-}
-
-.close-btn {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 24px;
-    cursor: pointer;
+/* ✅ Footer */
+.footer {
+    text-align: center;
+    margin-top: 40px;
+    padding: 10px;
+    background-color: #222;
+    color: white;
+    font-size: 14px;
 }

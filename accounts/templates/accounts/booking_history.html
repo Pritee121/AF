@@ -8,198 +8,176 @@
     <link rel="stylesheet" href="{% static 'css/booking_history.css' %}">
     <link rel="stylesheet" href="{% static 'css/home.css' %}">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <style>
-        /* ✅ General Container Styling */
-.booking-history-container {
-    width: 90%;
-    max-width: 1200px;
-    margin: 30px auto;
-    padding: 25px;
-    background: #ffffff;
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.12);
-    border-radius: 12px;
-    text-align: center;
-    transition: all 0.3s ease-in-out;
+        /* ✅ General Table Styling */
+        .booking-history-container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 25px;
+            background: #ffffff;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.12);
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.3s ease-in-out;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        thead {
+            background: #007bff;
+            color: white;
+            font-size: 16px;
+        }
+
+        th, td {
+            padding: 14px;
+            border-bottom: 1px solid #ddd;
+            font-size: 15px;
+            text-align: left;
+            transition: background 0.3s ease-in-out;
+        }
+
+        tr:nth-child(even) { background: #f8f9fa; }
+        tr:hover { background: rgba(0, 123, 255, 0.1); }
+
+        /* ✅ Cancel Button Styling */
+        .cancel-btn {
+            background: #dc3545;
+            color: #fff;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s ease-in-out;
+            font-size: 14px;
+        }
+
+        .cancel-btn:hover { background: #c82333; transform: scale(1.05); }
+        .disabled-text { color: gray; cursor: not-allowed; }
+
+       /* ✅ Settings Dropdown */
+.settings-dropdown {
+    position: relative;
+    display: inline-block;
 }
 
-/* ✅ Heading Styling */
-.booking-history-container h2 {
-    font-size: 28px;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 20px;
-    text-transform: uppercase;
+/* ✅ Settings Button */
+#settings-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #ffffff;
+    margin-left: 15px;
 }
 
-/* ✅ Table Styling */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-    background: #ffffff;
+/* ✅ Dropdown Content */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: #ffffff;
+    min-width: 150px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
 }
 
-/* ✅ Table Header */
-thead {
-    background: #007bff;
-    color: white;
-    font-size: 16px;
-}
-
-/* ✅ Table Headers */
-th {
-    padding: 16px;
-    text-align: left;
-    font-weight: 600;
-    border-bottom: 2px solid #ddd;
-}
-
-/* ✅ Table Rows */
-td {
-    padding: 14px;
-    border-bottom: 1px solid #ddd;
-    font-size: 15px;
-    text-align: left;
-    transition: background 0.3s ease-in-out;
-}
-
-/* ✅ Alternating Row Colors */
-tr:nth-child(even) {
-    background: #f8f9fa;
-}
-
-tr:hover {
-    background: rgba(0, 123, 255, 0.1);
-}
-
-/* ✅ Status Column - Color Coding */
-td[id^="status-"] {
-    font-weight: bold;
+/* ✅ Dropdown Buttons */
+.dropdown-content button,
+.dropdown-content a {
+    width: 100%;
     padding: 10px;
-    border-radius: 5px;
-}
-
-/* ✅ Status Colors */
-td[id^="status-"].Confirmed {
-    color: #28a745;
-}
-
-td[id^="status-"].Pending {
-    color: #ff9800;
-}
-
-td[id^="status-"].Cancelled {
-    color: #dc3545;
-}
-
-/* ✅ Cancel Button Styling */
-.cancel-btn {
-    background: #dc3545;
-    color: #fff;
-    padding: 8px 12px;
+    text-align: left;
     border: none;
-    border-radius: 6px;
+    background: none;
     cursor: pointer;
-    transition: background 0.3s ease-in-out;
     font-size: 14px;
+    display: block;
+    color: #333;
 }
 
-.cancel-btn:hover {
-    background: #c82333;
-    transform: scale(1.05);
+/* ✅ Hover Effect */
+.dropdown-content button:hover,
+.dropdown-content a:hover {
+    background-color: #f1f1f1;
 }
 
-/* ✅ No Bookings Found Message */
-.no-bookings {
-    font-size: 18px;
-    color: #777;
-    margin-top: 15px;
+/* ✅ Show Dropdown */
+.show {
+    display: block;
 }
 
-/* ✅ Responsive Table */
-@media screen and (max-width: 768px) {
-    table {
-        display: block;
-        overflow-x: auto;
-        white-space: nowrap;
-    }
-
-    th, td {
-        padding: 12px;
-        font-size: 14px;
-    }
-
-    .booking-history-container {
-        width: 100%;
-        padding: 20px;
-    }
-
-    .cancel-btn {
-        padding: 6px 10px;
-        font-size: 13px;
-    }
+/* ✅ Dark Mode Styles for Entire Page */
+body.dark-mode {
+    background-color: #121212;
+    color: #ffffff;
 }
-/* ✅ Update other elements for dark mode */
-.dark-mode .header,
-.dark-mode .navbar {
+
+/* ✅ Dark Mode for Navbar */
+body.dark-mode .header, 
+body.dark-mode .navbar {
     background-color: #222;
 }
 
-.dark-mode .nav-link {
+/* ✅ Dark Mode for Buttons */
+body.dark-mode .search-form,
+body.dark-mode .settings-dropdown,
+body.dark-mode .recommended-section,
+body.dark-mode .artist-container {
+    background-color: #1a1a1a;
     color: white;
 }
 
-.dark-mode .search-form {
-    background: #333;
-    box-shadow: 0px 4px 6px rgba(255, 255, 255, 0.1);
-}
-
-.dark-mode input,
-.dark-mode textarea,
-.dark-mode select {
+/* ✅ Dark Mode for Search Bar */
+body.dark-mode .search-form input {
     background-color: #222;
     color: white;
     border: 1px solid #555;
 }
 
-.dark-mode .book-btn {
+/* ✅ Dark Mode for Buttons */
+body.dark-mode .book-btn {
     background-color: #D8648C;
     color: white;
 }
-
-.dark-mode .book-btn:hover {
+body.dark-mode .book-btn:hover {
     background-color: #b24d70;
 }
 
-.dark-mode .artist-container {
-    background-color: #1a1a1a;
-}
-
-/* ✅ Toggle Switch */
-#dark-mode-toggle {
-    position: fixed;
-    top: 10px;
-    right: 20px;
-    background: #222;
+/* ✅ Dark Mode for Review Cards */
+body.dark-mode .recommended-card {
+    background-color: #333;
     color: white;
-    border: none;
-    padding: 10px 15px;
-    cursor: pointer;
-    border-radius: 5px;
+    border-color: #D8648C;
 }
 
-.dark-mode #dark-mode-toggle {
-    background: #f8f9fa;
-    color: #222;
+/* ✅ Dark Mode for Settings Dropdown */
+body.dark-mode .dropdown-content {
+    background-color: #222;
 }
-/* 🌙 Dark Mode Styles */
-body.dark-mode {
-    background-color: #121212;
-    color: #ffffff;
+
+body.dark-mode .dropdown-content button,
+body.dark-mode .dropdown-content a {
+    color: white;
 }
+
+body.dark-mode .dropdown-content button:hover,
+body.dark-mode .dropdown-content a:hover {
+    background-color: #444;
+}
+
     </style>
 </head>
 <body>
@@ -213,22 +191,26 @@ body.dark-mode {
             <a href="{% url 'booking_history' %}" class="nav-link active">Booking History</a>
             <a href="{% url 'aboutus' %}" class="nav-link">About Us</a>
             <a href="{% url 'contactus' %}" class="nav-link">Contact Us</a>
+            <a href="{% url 'chat_list' %}" class="nav-link">Chats</a>
             <a href="{% url 'artist_list' %}" class="nav-link">View Artists</a>
-
-            <!-- ✅ Show Chat Option for Each Artist -->
-            {% for artist in artists %}
-                <a href="{% url 'user_chat' artist.id %}" class="nav-item">Chat with {{ artist.first_name }}</a>
-            {% endfor %}
-            <button id="dark-mode-toggle">🌙 Dark Mode</button>
-
-            <a href="{% url 'login' %}" class="nav-link">Logout</a>
-
+        
+            <!-- ✅ Settings Dropdown -->
+            <div class="settings-dropdown">
+                <button id="settings-btn">⚙️</button>  <!-- Settings Icon -->
+                <div id="dropdown-content" class="dropdown-content">
+                    <button id="dark-mode-toggle">🌙 Dark Mode</button>
+                    <a href="{% url 'login' %}" class="nav-link">🚪 Logout</a>
+                </div>
+            </div>
+        
+            <!-- ✅ User Profile Image -->
             <div class="user-profile">
                 <a href="{% url 'user_profile' %}">
-                    <img src="{% static 'images/mi.jpg' %}" alt="User Profile" class="user-image">
+                    <img src="{{ user.profile_image.url }}" alt="User" class="user-image">
                 </a>
             </div>
         </nav>
+        
     </header>
 
     <!-- ✅ Booking History Section -->
@@ -247,7 +229,6 @@ body.dark-mode {
                     <th>Duration</th>
                     <th>Payment</th>
                     <th>Price</th>
-                   
                     <th>Status</th>
                     <th>Cancel</th>
                     <th>Payment Status</th>
@@ -264,19 +245,23 @@ body.dark-mode {
                     <td>{{ booking.payment_method|title }}</td>
                     <td>Rs. {{ booking.service.price }}</td>
                     <td id="status-{{ booking.id }}">{{ booking.status }}</td>
-            
-                    <!-- ✅ Cancel Booking Button -->
+
+                    <!-- ✅ Cancel Button (Only if more than 24 hours left) -->
                     <td>
                         {% if booking.status == "Pending" or booking.status == "Confirmed" %}
-                            <button type="button" class="cancel-btn"
-                                onclick="confirmCancel('{{ booking.id }}', '{{ booking.service.id }}', '{{ booking.date }}')">
-                                ❌ Cancel
-                            </button>
+                            {% if booking.time_left > 24 %}
+                                <button type="button" class="cancel-btn"
+                                        onclick="confirmCancel('{{ booking.id }}', '{{ booking.service.id }}', '{{ booking.date }}')">
+                                    ❌ Cancel
+                                </button>
+                            {% else %}
+                                <span class="disabled-text">❌ Cannot Cancel</span>
+                            {% endif %}
                         {% else %}
                             <span class="cancelled-text">N/A</span>
                         {% endif %}
                     </td>
-            
+
                     <!-- ✅ Payment Status -->
                     <td>
                         {% if booking.payment_method|lower == "cod" %}
@@ -288,194 +273,67 @@ body.dark-mode {
                 </tr>
                 {% endfor %}
             </tbody>
-            
         </table>
         {% else %}
             <p class="no-bookings">🙁 No bookings found.</p>
         {% endif %}
     </div>
 
-    <!-- ✅ SweetAlert2 Script for Confirmation -->
+    <!-- ✅ Dark Mode & Cancel Script -->
     <script>
-//         function confirmCancel(bookingId) {
-//             Swal.fire({
-//                 title: "Cancel Booking?",
-//                 text: "Are you sure you want to cancel this booking?",
-//                 icon: "warning",
-//                 showCancelButton: true,
-//                 confirmButtonColor: "#D8648C",
-//                 cancelButtonColor: "#6c757d",
-//                 confirmButtonText: "Yes, cancel it!",
-//                 cancelButtonText: "No, keep it"
-//             }).then((result) => {
-//                 if (result.isConfirmed) {
-//                     document.getElementById(`cancel-booking-${bookingId}`).submit();
-//                 }
-//             });
-//         }function handleCODBooking(userId, serviceId) {
-//     fetch("/cod_booking/", {
-//         method: "POST",
-//         body: JSON.stringify({
-//             user_id: userId,
-//             service_id: serviceId
-//         }),
-//         headers: { "Content-Type": "application/json" }
-//     })
-//     .then(response => response.json())
-//     .then(data => {
-//         if (data.success) {
-//             alert("Booking successful! Payment is pending.");
-//             window.location.href = "/dashboard";  // ✅ Redirect to Dashboard
-//         } else {
-//             alert("Booking failed! Please try again.");
-//         }
-//     });
-// }
-// function confirmCancel(bookingId, serviceId, date) {
-//     Swal.fire({
-//         title: "Cancel Booking?",
-//         text: "Are you sure you want to cancel this booking?",
-//         icon: "warning",
-//         showCancelButton: true,
-//         confirmButtonColor: "#D8648C",
-//         cancelButtonColor: "#6c757d",
-//         confirmButtonText: "Yes, cancel it!",
-//         cancelButtonText: "No, keep it"
-//     }).then((result) => {
-//         if (result.isConfirmed) {
-//             fetch(`/cancel-booking/${bookingId}/`, {
-//                 method: "POST",
-//                 headers: {
-//                     "X-CSRFToken": "{{ csrf_token }}",
-//                     "Content-Type": "application/json"
-//                 }
-//             })
-//             .then(response => response.json())
-//             .then(data => {
-//                 if (data.success) {
-//                     Swal.fire("Cancelled!", data.message, "success");
+        document.addEventListener("DOMContentLoaded", function () {
+            const darkModeToggle = document.getElementById("dark-mode-toggle");
+            const body = document.body;
 
-//                     // ✅ Remove booking from table
-//                     document.getElementById(`booking-row-${bookingId}`).remove();
+            if (localStorage.getItem("darkMode") === "enabled") {
+                body.classList.add("dark-mode");
+                darkModeToggle.textContent = "☀ Light Mode";
+            }
 
-//                     // ✅ Refresh available slots dynamically
-//                     refreshAvailableSlots(serviceId, date);
-//                 } else {
-//                     Swal.fire("Error!", data.message, "error");
-//                 }
-//             })
-//             .catch(error => console.error("Error:", error));
-//         }
-//     });
-// }
+            darkModeToggle.addEventListener("click", function () {
+                body.classList.toggle("dark-mode");
 
-// // ✅ Refresh available slots dynamically
-// function refreshAvailableSlots(serviceId, date) {
-//     let timeDropdown = document.getElementById("time");
-//     fetch(`/get-available-times/{{ artist.id }}/?service_id=${serviceId}&date=${date}`)
-//     .then(response => response.json())
-//     .then(data => {
-//         timeDropdown.innerHTML = "<option value='' disabled selected>Choose a time</option>";
-//         if (data.available_times.length === 0) {
-//             Swal.fire("No Available Slots", "No slots available for this date. Please choose another date.", "info");
-//             timeDropdown.disabled = true;
-//         } else {
-//             timeDropdown.disabled = false;
-//             data.available_times.forEach(time => {
-//                 let option = document.createElement("option");
-//                 option.value = time;
-//                 option.textContent = time;
-//                 timeDropdown.appendChild(option);
-//             });
-//         }
-//     })
-//     .catch(error => console.error("Error fetching available slots:", error));
-// }
-function confirmCancel(bookingId, serviceId, date) {
-    Swal.fire({
-        title: "Cancel Booking?",
-        text: "Are you sure you want to cancel this booking?",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#D8648C",
-        cancelButtonColor: "#6c757d",
-        confirmButtonText: "Yes, cancel it!",
-        cancelButtonText: "No, keep it"
-    }).then((result) => {
-        if (result.isConfirmed) {
-            fetch(`/cancel-booking/${bookingId}/`, {
-                method: "POST",
-                headers: {
-                    "X-CSRFToken": "{{ csrf_token }}",
-                    "Content-Type": "application/json"
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    Swal.fire("Cancelled!", data.message, "success");
-
-                    // ✅ Remove the booking row from the table
-                    let row = document.getElementById(`booking-row-${bookingId}`);
-                    if (row) {
-                        row.remove();  // ✅ Permanently remove row from DOM
-                    }
-
-                    // ✅ Check if there are any bookings left, if not, show message
-                    if (document.querySelectorAll("tbody tr").length === 0) {
-                        document.querySelector(".no-bookings").style.display = "block";
-                    }
-
-                    // ✅ Refresh available slots dynamically
-                    refreshAvailableSlots(serviceId, date);
+                if (body.classList.contains("dark-mode")) {
+                    localStorage.setItem("darkMode", "enabled");
+                    darkModeToggle.textContent = "☀ Light Mode";
                 } else {
-                    Swal.fire("Error!", data.message, "error");
+                    localStorage.setItem("darkMode", "disabled");
+                    darkModeToggle.textContent = "🌙 Dark Mode";
                 }
-            })
-            .catch(error => console.error("Error:", error));
-        }
-    });
-}
-
-// ✅ Refresh Available Slots in Booking Form
-function refreshAvailableSlots(serviceId, date) {
-    let timeDropdown = document.getElementById("time");
-
-    fetch(`/get-available-times/{{ artist.id }}/?service_id=${serviceId}&date=${date}`)
-    .then(response => response.json())
-    .then(data => {
-        timeDropdown.innerHTML = "<option value='' disabled selected>Choose a time</option>";
-        if (data.available_times.length === 0) {
-            Swal.fire("No Available Slots", "No slots available for this date. Please choose another date.", "info");
-            timeDropdown.disabled = true;
-        } else {
-            timeDropdown.disabled = false;
-            data.available_times.forEach(time => {
-                let option = document.createElement("option");
-                option.value = time;
-                option.textContent = time;
-                timeDropdown.appendChild(option);
             });
-        }
-    })
-    .catch(error => console.error("Error fetching available slots:", error));
-}
+        });
 
-document.addEventListener("DOMContentLoaded", function () {
+        function confirmCancel(bookingId, serviceId, date) {
+            Swal.fire({
+                title: "Cancel Booking?",
+                text: "Are you sure you want to cancel this booking?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#D8648C",
+                cancelButtonColor: "#6c757d",
+                confirmButtonText: "Yes, cancel it!",
+                cancelButtonText: "No, keep it"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById(`booking-row-${bookingId}`).remove();
+                }
+            });
+        }document.addEventListener("DOMContentLoaded", function () {
     const darkModeToggle = document.getElementById("dark-mode-toggle");
     const body = document.body;
+    const settingsBtn = document.getElementById("settings-btn");
+    const dropdownContent = document.getElementById("dropdown-content");
 
-    // ✅ Check if dark mode is enabled in localStorage
+    // ✅ Check if Dark Mode was previously enabled
     if (localStorage.getItem("darkMode") === "enabled") {
         body.classList.add("dark-mode");
         darkModeToggle.textContent = "☀ Light Mode";
     }
 
-    // ✅ Toggle Dark Mode
+    // ✅ Toggle Dark Mode when clicked
     darkModeToggle.addEventListener("click", function () {
         body.classList.toggle("dark-mode");
 
-        // ✅ Save the preference in localStorage
         if (body.classList.contains("dark-mode")) {
             localStorage.setItem("darkMode", "enabled");
             darkModeToggle.textContent = "☀ Light Mode";
@@ -484,9 +342,20 @@ document.addEventListener("DOMContentLoaded", function () {
             darkModeToggle.textContent = "🌙 Dark Mode";
         }
     });
+
+    // ✅ Show/Hide Settings Dropdown
+    settingsBtn.addEventListener("click", function (event) {
+        dropdownContent.classList.toggle("show");
+        event.stopPropagation();
+    });
+
+    // ✅ Hide dropdown when clicking outside
+    document.addEventListener("click", function (event) {
+        if (!settingsBtn.contains(event.target) && !dropdownContent.contains(event.target)) {
+            dropdownContent.classList.remove("show");
+        }
+    });
 });
-
-
     </script>
 
 </body>

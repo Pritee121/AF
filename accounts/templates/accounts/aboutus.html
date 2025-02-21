@@ -10,64 +10,117 @@
     <link rel="stylesheet" href="{% static 'css/home.css' %}">
     <link rel="stylesheet" href="{% static 'css/aboutus.css' %}">
 <style>
-    /* 🌙 Dark Mode Styles */
+/* ✅ Settings Dropdown */
+.settings-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+/* ✅ Settings Button */
+#settings-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #ffffff;
+    margin-left: 15px;
+}
+
+/* ✅ Dropdown Content */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: #ffffff;
+    min-width: 150px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    overflow: hidden;
+    z-index: 1000;
+}
+
+/* ✅ Dropdown Buttons */
+.dropdown-content button,
+.dropdown-content a {
+    width: 100%;
+    padding: 10px;
+    text-align: left;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 14px;
+    display: block;
+    color: #333;
+}
+
+/* ✅ Hover Effect */
+.dropdown-content button:hover,
+.dropdown-content a:hover {
+    background-color: #f1f1f1;
+}
+
+/* ✅ Show Dropdown */
+.show {
+    display: block;
+}
+
+/* ✅ Dark Mode Styles for Entire Page */
 body.dark-mode {
     background-color: #121212;
     color: #ffffff;
 }
 
-/* ✅ Update other elements for dark mode */
-.dark-mode .header,
-.dark-mode .navbar {
+/* ✅ Dark Mode for Navbar */
+body.dark-mode .header, 
+body.dark-mode .navbar {
     background-color: #222;
 }
 
-.dark-mode .nav-link {
+/* ✅ Dark Mode for Buttons */
+body.dark-mode .search-form,
+body.dark-mode .settings-dropdown,
+body.dark-mode .recommended-section,
+body.dark-mode .artist-container {
+    background-color: #1a1a1a;
     color: white;
 }
 
-.dark-mode .search-form {
-    background: #333;
-    box-shadow: 0px 4px 6px rgba(255, 255, 255, 0.1);
-}
-
-.dark-mode input,
-.dark-mode textarea,
-.dark-mode select {
+/* ✅ Dark Mode for Search Bar */
+body.dark-mode .search-form input {
     background-color: #222;
     color: white;
     border: 1px solid #555;
 }
 
-.dark-mode .book-btn {
+/* ✅ Dark Mode for Buttons */
+body.dark-mode .book-btn {
     background-color: #D8648C;
     color: white;
 }
-
-.dark-mode .book-btn:hover {
+body.dark-mode .book-btn:hover {
     background-color: #b24d70;
 }
 
-.dark-mode .artist-container {
-    background-color: #1a1a1a;
-}
-
-/* ✅ Toggle Switch */
-#dark-mode-toggle {
-    position: fixed;
-    top: 10px;
-    right: 20px;
-    background: #222;
+/* ✅ Dark Mode for Review Cards */
+body.dark-mode .recommended-card {
+    background-color: #333;
     color: white;
-    border: none;
-    padding: 10px 15px;
-    cursor: pointer;
-    border-radius: 5px;
+    border-color: #D8648C;
 }
 
-.dark-mode #dark-mode-toggle {
-    background: #f8f9fa;
-    color: #222;
+/* ✅ Dark Mode for Settings Dropdown */
+body.dark-mode .dropdown-content {
+    background-color: #222;
+}
+
+body.dark-mode .dropdown-content button,
+body.dark-mode .dropdown-content a {
+    color: white;
+}
+
+body.dark-mode .dropdown-content button:hover,
+body.dark-mode .dropdown-content a:hover {
+    background-color: #444;
 }
 
 </style>
@@ -84,21 +137,26 @@ body.dark-mode {
             <a href="{% url 'booking_history' %}" class="nav-link">Booking History</a>
             <a href="{% url 'aboutus' %}" class="nav-link active">About Us</a>
             <a href="{% url 'contactus' %}" class="nav-link">Contact Us</a>
-
-            {% for artist in artists %}
-                <a href="{% url 'user_chat' artist.id %}" class="nav-item">Chat with {{ artist.first_name }}</a>
-            {% endfor %}
-
-            <a href="{% url 'artist_list' %}" class="nav-link">View All Artists</a>
-            <a href="{% url 'login' %}" class="nav-link">Logout</a>
-            <button id="dark-mode-toggle">🌙 Dark Mode</button>
-
+            <a href="{% url 'chat_list' %}" class="nav-link">Chats</a>
+            <a href="{% url 'artist_list' %}" class="nav-link">View Artists</a>
+        
+            <!-- ✅ Settings Dropdown -->
+            <div class="settings-dropdown">
+                <button id="settings-btn">⚙️</button>  <!-- Settings Icon -->
+                <div id="dropdown-content" class="dropdown-content">
+                    <button id="dark-mode-toggle">🌙 Dark Mode</button>
+                    <a href="{% url 'login' %}" class="nav-link">🚪 Logout</a>
+                </div>
+            </div>
+        
+            <!-- ✅ User Profile Image -->
             <div class="user-profile">
                 <a href="{% url 'user_profile' %}">
-                    <img src="{% static 'images/mi.jpg' %}" alt="User" class="user-image">
+                    <img src="{{ user.profile_image.url }}" alt="User" class="user-image">
                 </a>
             </div>
         </nav>
+        
     </header>
 
     <!-- About Us Section -->

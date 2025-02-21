@@ -5,66 +5,173 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ artist.first_name }} {{ artist.last_name }} - Profile</title>
+    
+    <!-- ✅ FontAwesome for Messenger Icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
     <link rel="stylesheet" href="{% static 'css/explore_artist2.css' %}">
+
     <style>
         /* 🌙 Dark Mode Styles */
-body.dark-mode {
-    background-color: #121212;
-    color: #ffffff;
+        body.dark-mode {
+            background-color: #121212;
+            color: #ffffff;
+        }
+
+        .dark-mode .header,
+        .dark-mode .navbar {
+            background-color: #222;
+        }
+
+        .dark-mode .nav-link {
+            color: white;
+        }
+
+        .dark-mode .search-form {
+            background: #333;
+            box-shadow: 0px 4px 6px rgba(255, 255, 255, 0.1);
+        }
+
+        .dark-mode input,
+        .dark-mode textarea,
+        .dark-mode select {
+            background-color: #222;
+            color: white;
+            border: 1px solid #555;
+        }
+
+        .dark-mode .book-btn {
+            background-color: #D8648C;
+            color: white;
+        }
+
+        .dark-mode .book-btn:hover {
+            background-color: #b24d70;
+        }
+
+        .dark-mode .artist-container {
+            background-color: #1a1a1a;
+        }
+
+        /* ✅ Toggle Switch */
+        #dark-mode-toggle {
+            position: fixed;
+            top: 10px;
+            right: 20px;
+            background: #222;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .dark-mode #dark-mode-toggle {
+            background: #f8f9fa;
+            color: #222;
+        }
+
+        /* ✅ Messenger Icon Styling */
+        .messenger-icon {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #D8648C;
+            color: white;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .messenger-icon i {
+            font-size: 24px;
+        }
+
+        .messenger-icon:hover {
+            transform: scale(1.1);
+        }
+
+        /* ✅ Tooltip Styling */
+        .messenger-icon .tooltip {
+            position: absolute;
+            bottom: 60px;
+            background: #333;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            white-space: nowrap;
+        }
+
+        .messenger-icon:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+        .certificates-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
 }
 
-/* ✅ Update other elements for dark mode */
-.dark-mode .header,
-.dark-mode .navbar {
-    background-color: #222;
+.certificate-card {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 250px;
 }
 
-.dark-mode .nav-link {
-    color: white;
-}
-
-.dark-mode .search-form {
-    background: #333;
-    box-shadow: 0px 4px 6px rgba(255, 255, 255, 0.1);
-}
-
-.dark-mode input,
-.dark-mode textarea,
-.dark-mode select {
-    background-color: #222;
-    color: white;
-    border: 1px solid #555;
-}
-
-.dark-mode .book-btn {
-    background-color: #D8648C;
-    color: white;
-}
-
-.dark-mode .book-btn:hover {
-    background-color: #b24d70;
-}
-
-.dark-mode .artist-container {
-    background-color: #1a1a1a;
-}
-
-/* ✅ Toggle Switch */
-#dark-mode-toggle {
-    position: fixed;
-    top: 10px;
-    right: 20px;
-    background: #222;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    cursor: pointer;
+.certificate-image {
+    width: 100%;
+    max-height: 200px;
+    object-fit: contain;
     border-radius: 5px;
 }
 
-.dark-mode #dark-mode-toggle {
-    background: #f8f9fa;
-    color: #222;
+.certificate-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.view-btn, .edit-btn, .delete-btn {
+    padding: 8px 12px;
+    font-size: 14px;
+    border-radius: 5px;
+    text-align: center;
+    transition: all 0.3s ease-in-out;
+    display: inline-block;
+    text-decoration: none;
+}
+
+.view-btn {
+    background-color: #007bff;
+    color: white;
+}
+
+.edit-btn {
+    background-color: #ffc107;
+    color: white;
+}
+
+.delete-btn {
+    background-color: #dc3545;
+    color: white;
+}
+
+.view-btn:hover, .edit-btn:hover, .delete-btn:hover {
+    transform: scale(1.05);
 }
 
     </style>
@@ -91,35 +198,32 @@ body.dark-mode {
             <p><strong>Works At:</strong> {{ artist.works_at }}</p>
 
             <button onclick="window.location.href='{% url 'book_artist' artist.id %}'">Book Now</button>
-           
         </div>
 
         <!-- ✅ Training & Certificates Section -->
-        <!-- ✅ Training & Certificates Section -->
-<!-- ✅ Training & Certificates Section -->
-<div class="training-section">
-    <h3>Training & Certificates</h3>
-    {% if artist.training_certificate %}
-        <p><strong>Certificate:</strong></p>
+        <div class="training-section">
+            <h3>Training & Certificates</h3>
+            {% if artist.certificates.all %}
+                <div class="certificates-container">
+                    {% for certificate in artist.certificates.all %}
+                        <div class="certificate-card">
+                            <p> {{ certificate.uploaded_at|date:"F d, Y" }}</p>
+                            
+                            {% if certificate.certificate.url|lower|slice:'-4:' == ".jpg" or certificate.certificate.url|lower|slice:'-4:' == ".png" %}
+                                <img src="{{ certificate.certificate.url }}" alt="Certificate" class="certificate-image">
+                            {% else %}
+                                <iframe src="{{ certificate.certificate.url }}" width="100%" height="200px"></iframe>
+                            {% endif %}
         
-        <!-- ✅ Display Image if it's an Image -->
-        {% if artist.training_certificate.url|lower|slice:'-4:' == ".jpg" or artist.training_certificate.url|lower|slice:'-4:' == ".png" %}
-            <div class="certificate-preview">
-                <img src="{{ artist.training_certificate.url }}" alt="Certificate" class="certificate-image">
-            </div>
-        {% else %}
-            <!-- ✅ Display PDF in iframe -->
-            <div class="certificate-preview">
-                <iframe src="{{ artist.training_certificate.url }}" width="100%" height="300px"></iframe>
-            </div>
-        {% endif %}
+                           
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>No training certificates uploaded yet.</p>
+            {% endif %}
+        </div>
         
-        <p><a href="{{ artist.training_certificate.url }}" download class="download-btn">Download Certificate</a></p>  
-    {% else %}
-        <p>No certificates available.</p>
-    {% endif %}
-</div>
-
 
         <!-- ✅ Artist Work Section -->
         <div class="work-section">
@@ -138,40 +242,47 @@ body.dark-mode {
         </div>
     </div>
 
+    <!-- ✅ Messenger Icon with Tooltip -->
+    <div class="messenger-icon" onclick="openChat({{ artist.id }})">
+        <i class="fab fa-facebook-messenger"></i>
+        <span class="tooltip">Chat with Artist</span>
+    </div>
+
     <script>
         function bookArtist(artistId) {
             alert("Booking artist ID: " + artistId);
         }
-        function chatWithArtist(artistId) {
-            alert("Starting chat with artist ID: " + artistId);
+
+        function openChat(artistId) {
+            // Ensure artistId is valid
+            if (artistId) {
+                window.location.href = "{% url 'start_chat' 0 %}".replace("0", artistId);
+            } else {
+                alert("Chat room not found for this artist.");
+            }
         }
-        
-document.addEventListener("DOMContentLoaded", function () {
-    const darkModeToggle = document.getElementById("dark-mode-toggle");
-    const body = document.body;
 
-    // ✅ Check if dark mode is enabled in localStorage
-    if (localStorage.getItem("darkMode") === "enabled") {
-        body.classList.add("dark-mode");
-        darkModeToggle.textContent = "☀ Light Mode";
-    }
+        document.addEventListener("DOMContentLoaded", function () {
+            const darkModeToggle = document.getElementById("dark-mode-toggle");
+            const body = document.body;
 
-    // ✅ Toggle Dark Mode
-    darkModeToggle.addEventListener("click", function () {
-        body.classList.toggle("dark-mode");
+            if (localStorage.getItem("darkMode") === "enabled") {
+                body.classList.add("dark-mode");
+                darkModeToggle.textContent = "☀ Light Mode";
+            }
 
-        // ✅ Save the preference in localStorage
-        if (body.classList.contains("dark-mode")) {
-            localStorage.setItem("darkMode", "enabled");
-            darkModeToggle.textContent = "☀ Light Mode";
-        } else {
-            localStorage.setItem("darkMode", "disabled");
-            darkModeToggle.textContent = "🌙 Dark Mode";
-        }
-    });
-});
+            darkModeToggle.addEventListener("click", function () {
+                body.classList.toggle("dark-mode");
 
-
+                if (body.classList.contains("dark-mode")) {
+                    localStorage.setItem("darkMode", "enabled");
+                    darkModeToggle.textContent = "☀ Light Mode";
+                } else {
+                    localStorage.setItem("darkMode", "disabled");
+                    darkModeToggle.textContent = "🌙 Dark Mode";
+                }
+            });
+        });
     </script>
 </body>
 </html>

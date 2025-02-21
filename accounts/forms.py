@@ -62,7 +62,7 @@ class ArtistRegisterForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'email', 'phone', 'city',
-                  'works_at', 'experience_years', 'training_certificate', 'profile_image']
+                  'works_at', 'experience_years', 'profile_image']
 
     def clean_confirm_password(self):
         """ ✅ Ensure passwords match """
@@ -88,6 +88,13 @@ class ArtistRegisterForm(forms.ModelForm):
 
 
 
+from django import forms
+from .models import TrainingCertificate
+
+class TrainingCertificateForm(forms.ModelForm):
+    class Meta:
+        model = TrainingCertificate
+        fields = ["certificate"]
 
 
 from django import forms

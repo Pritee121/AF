@@ -82,9 +82,13 @@ from .views import artist_profile
 from .views import edit_review
 from .views import reply_to_review
 from .views import edit_review_reply, delete_review_reply
+from .views import artist_certificates, edit_certificate, delete_certificate
 urlpatterns = [
     
     # User Authentication
+    path("certificates/", artist_certificates, name="artist_certificates"),
+    path("certificates/edit/<int:certificate_id>/", edit_certificate, name="edit_certificate"),
+    path("certificates/delete/<int:certificate_id>/", delete_certificate, name="delete_certificate"),
     path('edit-review-reply/<int:review_id>/', edit_review_reply, name='edit_review_reply'),
     path('delete-review-reply/<int:review_id>/', delete_review_reply, name='delete_review_reply'),
      path("reply-review/<int:review_id>/", reply_to_review, name="reply_to_review"),
@@ -153,8 +157,8 @@ urlpatterns = [
     path('user/profile/', user_profile, name='user_profile'),
     path('artist/profile/', artist_profile, name='artist_profile'),
     path("edit-review/<int:review_id>/", edit_review, name="edit_review"),
-
-     
+      path('customize-booking/', views.customize_booking, name='customize_booking'),
+      path('process-booking/', views.process_booking, name='process_booking'),
      
 ]
 

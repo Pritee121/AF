@@ -15,10 +15,11 @@
     <div class="chat-container">
         <h2>Chat with {{ artist.first_name }}</h2>
         <div class="chat-box" id="chatBox">
-            {% for msg in messages %}
+            {% for msg in messages|dictsortreversed:"id" %}
                 <p><strong>{{ msg.sender.first_name }}:</strong> {{ msg.message }}</p>
             {% endfor %}
         </div>
+        
         <input type="text" id="chatInput" placeholder="Type your message..." onkeypress="sendMessage(event)">
         <button onclick="sendChat()">Send</button>
     </div>
@@ -34,31 +35,32 @@
         }
 
         function sendChat() {
-            var chatBox = document.getElementById("chatBox");
-            var input = document.getElementById("chatInput");
-            var message = input.value.trim();
+    var chatBox = document.getElementById("chatBox");
+    var input = document.getElementById("chatInput");
+    var message = input.value.trim();
 
-            if (message !== "") {
-                chatBox.innerHTML += `<p><strong>You:</strong> ${message}</p>`;
-                input.value = "";
-                chatBox.scrollTop = chatBox.scrollHeight;
+    if (message !== "") {
+        chatBox.innerHTML = `<p><strong>You:</strong> ${message}</p>` + chatBox.innerHTML;
+        input.value = "";
+        chatBox.scrollTop = 0;  // Scroll to the top
 
-                fetch("{% url 'send_message' %}", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRFToken": "{{ csrf_token }}"
-                    },
-                    body: JSON.stringify({
-                        sender_id: senderId,
-                        receiver_id: receiverId,
-                        message: message
-                    })
-                })
-                .then(response => response.json())
-                .then(data => console.log(data));
-            }
-        }
+        fetch("{% url 'send_message' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}"
+            },
+            body: JSON.stringify({
+                sender_id: senderId,
+                receiver_id: receiverId,
+                message: message
+            })
+        })
+        .then(response => response.json())
+        .then(data => console.log(data));
+    }
+}
+
     </script>
 </body>
 </html>

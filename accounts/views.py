@@ -524,10 +524,105 @@ def artist_login(request):
 #         "booked_artists": list(booked_artist_ids),  # List of booked artist IDs
 #         "sort_by": sort_by,
 #     })
+# from django.shortcuts import render
+# from django.contrib.auth.decorators import login_required
+# from django.core.paginator import Paginator
+# from django.db.models import Avg, Count, Q
+# from .models import User, Booking, Review
+
+# @login_required(login_url='login')
+# def home_page(request):
+#     user = request.user
+#     query = request.GET.get("search", "").strip()
+#     sort_by = request.GET.get("sort_by", "rating")  # Default sorting by rating
+
+#     # ✅ Step 1: Get All Artists (Keep Unavailable in Main List)
+#     artists = User.objects.filter(is_artist=True)  # Keep all artists (available & unavailable)
+#     if query:
+#         artists = artists.filter(city__icontains=query)
+
+#     # ✅ Step 2: Annotate Artists with Average Rating
+#     # artists = artists.annotate(avg_rating=Avg('artist_reviews__rating'))
+#     # ✅ Get all artists and count only confirmed bookings
+#     artists = User.objects.filter(is_artist=True).annotate(
+#         appointment_count=Count('bookings', filter=Q(bookings__status="Confirmed"))
+#     )
+#     # ✅ Step 3: Sorting Logic
+
+
+#     # ✅ Step 4: Paginate Artists (10 per page)
+#     paginator = Paginator(artists, 10)
+#     page_number = request.GET.get("page")
+#     page_obj = paginator.get_page(page_number)
+
+#     # ✅ Step 5: Fetch Booked Artists by User
+#     user_bookings = Booking.objects.filter(client=user, status="Confirmed").order_by('-date')
+#     booked_artist_ids = user_bookings.values_list('artist_id', flat=True)
+
+#     # ✅ Debugging
+#     print(f"Booked Artists: {list(booked_artist_ids)}")
+
+#     # ✅ Step 6: AI-BASED RECOMMENDATION LOGIC (ONLY AVAILABLE ARTISTS)
+#     recommended_artists = []
+
+#     if booked_artist_ids:
+#         # ✅ Find users who booked the same artists
+#         similar_users = Booking.objects.filter(artist_id__in=booked_artist_ids).values_list("client_id", flat=True).distinct()
+        
+#         # ✅ Debugging
+#         print(f"Similar Users: {list(similar_users)}")
+
+#         if similar_users:
+#             recommended_artists = User.objects.filter(
+#                 is_artist=True,
+#                 is_available=True,  # ✅ Only available artists in recommendations
+#                 bookings__client_id__in=similar_users
+#             ).exclude(id__in=booked_artist_ids).annotate(
+#                 booking_count=Count("bookings")
+#             ).order_by("-booking_count")[:5]
+
+#     # ✅ Step 7: Check Latest Booking City (ONLY AVAILABLE ARTISTS)
+#     if not recommended_artists and user_bookings.exists():
+#         latest_booking = user_bookings.first()
+#         latest_artist_city = latest_booking.artist.city
+
+#         recommended_artists = User.objects.filter(
+#             is_artist=True,
+#             is_available=True,
+#             city=latest_artist_city
+#         ).exclude(id=user.id).annotate(avg_rating=Avg('artist_reviews__rating')).order_by('-avg_rating')[:5]
+
+#     # ✅ Step 8: Fallback to Artists from the Same City (ONLY AVAILABLE ARTISTS)
+#     if not recommended_artists and user.city:
+#         recommended_artists = User.objects.filter(
+#             is_artist=True,
+#             is_available=True,
+#             city=user.city
+#         ).exclude(id=user.id).annotate(avg_rating=Avg('artist_reviews__rating')).order_by('-avg_rating')[:5]
+
+#     # ✅ Step 9: Fallback to Top-Rated Artists (ONLY AVAILABLE ARTISTS)
+#     if not recommended_artists:
+#         recommended_artists = artists.filter(is_available=True).order_by('-avg_rating')[:5]
+
+#     # ✅ Debugging
+#     print(f"Recommended Artists: {[artist.first_name for artist in recommended_artists]}")
+
+#     # ✅ Step 10: Fetch Latest Artist Reviews
+#     artist_reviews = Review.objects.select_related("artist", "user").order_by("-created_at")[:10]
+
+#     return render(request, "accounts/home.html", {
+#         "artists": page_obj,  # ✅ Keep all artists (available & unavailable)
+#         "recommended_artists": recommended_artists,  # ✅ Remove unavailable artists from recommendations
+#         "artist_reviews": artist_reviews,  # Latest Artist Reviews
+#         "query": query,
+#         "message": "No artists found in this city." if not artists.exists() else "",
+#         "booked_artists": list(booked_artist_ids),  # List of booked artist IDs
+#         "sort_by": sort_by,
+#     })
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db.models import Avg, Count
+from django.db.models import Avg, Count, Q  # ✅ Import Avg, Count, and Q
 from .models import User, Booking, Review
 
 @login_required(login_url='login')
@@ -538,19 +633,21 @@ def home_page(request):
 
     # ✅ Step 1: Get All Artists (Keep Unavailable in Main List)
     artists = User.objects.filter(is_artist=True)  # Keep all artists (available & unavailable)
+    
     if query:
         artists = artists.filter(city__icontains=query)
 
     # ✅ Step 2: Annotate Artists with Average Rating
-    artists = artists.annotate(avg_rating=Avg('artist_reviews__rating'))
+    artists = artists.annotate(
+        avg_rating=Avg('artist_reviews__rating'),  # ✅ Correct annotation
+        appointment_count=Count('bookings', filter=Q(bookings__status="Confirmed"))
+    )
 
     # ✅ Step 3: Sorting Logic
     if sort_by == "rating":
-        artists = artists.order_by('-avg_rating')
-    elif sort_by == "name":
-        artists = artists.order_by('first_name', 'last_name')
-    elif sort_by == "experience":
-        artists = artists.order_by('-experience_years')
+        artists = artists.order_by('-avg_rating')  # ✅ Sort by average rating
+    elif sort_by == "appointments":
+        artists = artists.order_by('-appointment_count')  # ✅ Sort by confirmed appointments
 
     # ✅ Step 4: Paginate Artists (10 per page)
     paginator = Paginator(artists, 10)
@@ -561,23 +658,17 @@ def home_page(request):
     user_bookings = Booking.objects.filter(client=user, status="Confirmed").order_by('-date')
     booked_artist_ids = user_bookings.values_list('artist_id', flat=True)
 
-    # ✅ Debugging
-    print(f"Booked Artists: {list(booked_artist_ids)}")
-
     # ✅ Step 6: AI-BASED RECOMMENDATION LOGIC (ONLY AVAILABLE ARTISTS)
     recommended_artists = []
 
     if booked_artist_ids:
         # ✅ Find users who booked the same artists
         similar_users = Booking.objects.filter(artist_id__in=booked_artist_ids).values_list("client_id", flat=True).distinct()
-        
-        # ✅ Debugging
-        print(f"Similar Users: {list(similar_users)}")
 
         if similar_users:
             recommended_artists = User.objects.filter(
                 is_artist=True,
-                is_available=True,  # ✅ Only available artists in recommendations
+                is_available=True,
                 bookings__client_id__in=similar_users
             ).exclude(id__in=booked_artist_ids).annotate(
                 booking_count=Count("bookings")
@@ -606,10 +697,7 @@ def home_page(request):
     if not recommended_artists:
         recommended_artists = artists.filter(is_available=True).order_by('-avg_rating')[:5]
 
-    # ✅ Debugging
-    print(f"Recommended Artists: {[artist.first_name for artist in recommended_artists]}")
-
-    # ✅ Step 10: Fetch Latest Artist Reviews
+    # ✅ Fetch Latest Artist Reviews
     artist_reviews = Review.objects.select_related("artist", "user").order_by("-created_at")[:10]
 
     return render(request, "accounts/home.html", {
@@ -621,6 +709,9 @@ def home_page(request):
         "booked_artists": list(booked_artist_ids),  # List of booked artist IDs
         "sort_by": sort_by,
     })
+
+
+
 
 
 
@@ -931,10 +1022,47 @@ def edit_service(request, service_id):
     })
 
 
-# ✅ Artist Registration (Fully Fixed)
+# # ✅ Artist Registration (Fully Fixed)
+# def register_artists(request):
+#     if request.method == "POST":
+#         form = ArtistRegisterForm(request.POST, request.FILES)
+#         if form.is_valid():
+#             otp = str(random.randint(100000, 999999))
+#             user = form.save(commit=False)
+
+#             # ✅ Ensure password is hashed properly
+#             if form.cleaned_data.get('password'):
+#                 user.password = make_password(form.cleaned_data['password'])
+
+#             user.is_artist = True  
+#             user.is_verified = False  
+#             user.otp = otp  
+#             user.save()
+
+#             send_mail(
+#                 'Your OTP for Artist Registration', 
+#                 f'Your OTP is {otp}', 
+#                 'admin@artistfinder.com', 
+#                 [user.email]
+#             )
+
+#             request.session['user_id'] = user.id
+#             return redirect('verify_otp')
+
+#     return render(request, 'accounts/register_artists.html', {'form': ArtistRegisterForm()})
+import random
+from django.shortcuts import render, redirect
+from django.contrib.auth.hashers import make_password
+from django.core.mail import send_mail
+from django.contrib import messages
+from .forms import ArtistRegisterForm
+from .models import User, TrainingCertificate
+
 def register_artists(request):
     if request.method == "POST":
         form = ArtistRegisterForm(request.POST, request.FILES)
+        training_certificates = request.FILES.getlist("training_certificates")  # ✅ Get multiple certificates
+
         if form.is_valid():
             otp = str(random.randint(100000, 999999))
             user = form.save(commit=False)
@@ -948,6 +1076,11 @@ def register_artists(request):
             user.otp = otp  
             user.save()
 
+            # ✅ Save multiple certificates
+            for certificate in training_certificates:
+                TrainingCertificate.objects.create(artist=user, certificate=certificate)
+
+            # ✅ Send OTP email
             send_mail(
                 'Your OTP for Artist Registration', 
                 f'Your OTP is {otp}', 
@@ -956,7 +1089,11 @@ def register_artists(request):
             )
 
             request.session['user_id'] = user.id
+            messages.success(request, "Registration successful! Please verify your OTP.")
             return redirect('verify_otp')
+
+        else:
+            messages.error(request, "Error in registration. Please check your details.")
 
     return render(request, 'accounts/register_artists.html', {'form': ArtistRegisterForm()})
 
@@ -1691,26 +1828,49 @@ def update_booking_status(request, booking_id):
 
 
 
-from django.shortcuts import render
+# from django.shortcuts import render
+# from django.contrib.auth.decorators import login_required
+# from .models import Booking, Notification
+
+# @login_required
+# def booking_history(request):
+#     # ✅ Fetch the user's bookings
+#     user_bookings = Booking.objects.filter(client=request.user).order_by("-date")
+
+#     # ✅ Fetch notifications for the user
+#     user_notifications = Notification.objects.filter(user=request.user).order_by("-created_at")
+
+#     # ✅ Mark notifications as read
+#     Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+
+#     return render(request, "accounts/booking_history.html", {
+#         "user_bookings": user_bookings,
+#         "notifications": user_notifications
+#     })
+
+from datetime import datetime
+from django.utils.timezone import now, make_aware
 from django.contrib.auth.decorators import login_required
-from .models import Booking, Notification
+from django.shortcuts import render
+from .models import Booking
 
-@login_required
+@login_required(login_url='login')
 def booking_history(request):
-    # ✅ Fetch the user's bookings
-    user_bookings = Booking.objects.filter(client=request.user).order_by("-date")
+    user = request.user
+    today = now().date()
 
-    # ✅ Fetch notifications for the user
-    user_notifications = Notification.objects.filter(user=request.user).order_by("-created_at")
+    user_bookings = Booking.objects.filter(client=user).order_by('-date')
 
-    # ✅ Mark notifications as read
-    Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+    # ✅ Calculate the remaining time for cancellation
+    for booking in user_bookings:
+        appointment_datetime = make_aware(datetime.combine(booking.date, booking.time))  # Convert to timezone-aware
+        remaining_time = (appointment_datetime - now()).total_seconds() / 3600  # Convert to hours
+        booking.time_left = remaining_time  # Attach to object for template use
 
     return render(request, "accounts/booking_history.html", {
         "user_bookings": user_bookings,
-        "notifications": user_notifications
+        "today": today,  # Pass today's date for comparison
     })
-
 
 
 from django.shortcuts import render
@@ -2089,3 +2249,73 @@ def delete_review_reply(request, review_id):
     review.save()
     messages.success(request, "Your reply has been deleted.")
     return redirect("services")  # ✅ Redirect back to services
+
+from django.shortcuts import render
+
+def customize_booking(request):
+    return render(request, 'accounts/customize_booking.html')
+
+
+from django.shortcuts import render, redirect
+from django.http import HttpResponse
+
+def process_booking(request):
+    if request.method == 'POST':
+        date = request.POST.get('date')
+        time = request.POST.get('time')
+        members = request.POST.get('members')
+        services = request.POST.getlist('services')  # ✅ Get multiple selected services
+        details = request.POST.get('details')
+
+        services_str = ", ".join(services)  # Convert list to string
+
+        # ✅ Save the booking to the database (optional)
+        print(f"Booking Received - Date: {date}, Time: {time}, Members: {members}, Services: {services_str}, Details: {details}")
+
+        return HttpResponse(f"Booking confirmed for {members} members on {date} at {time} for {services_str}!")
+
+    return redirect('customize_booking')
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import TrainingCertificate
+from .forms import TrainingCertificateForm  # ✅ Make sure this import exists
+
+
+def artist_certificates(request):
+    if request.method == "POST":
+        form = TrainingCertificateForm(request.POST, request.FILES)
+        if form.is_valid():
+            certificate = form.save(commit=False)
+            certificate.artist = request.user  # ✅ Associate with logged-in artist
+            certificate.save()
+            messages.success(request, "Certificate uploaded successfully!")
+            return redirect("artist_certificates")
+
+    certificates = request.user.certificates.all()
+    return render(request, "accounts/certificates.html", {"certificates": certificates})
+
+# ✅ Edit Certificate
+def edit_certificate(request, certificate_id):
+    certificate = get_object_or_404(TrainingCertificate, id=certificate_id, artist=request.user)
+
+    if request.method == "POST":
+        form = TrainingCertificateForm(request.POST, request.FILES, instance=certificate)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Certificate updated successfully!")
+            return redirect("artist_certificates")
+
+    return render(request, "accounts/edit_certificate.html", {"form": TrainingCertificateForm(instance=certificate)})
+
+# ✅ Delete Certificate
+def delete_certificate(request, certificate_id):
+    certificate = get_object_or_404(TrainingCertificate, id=certificate_id, artist=request.user)
+
+    if request.method == "POST":
+        certificate.delete()
+        messages.success(request, "Certificate deleted successfully!")
+        return redirect("artist_certificates")
+
+    return render(request, "delete_certificate.html", {"certificate": certificate})

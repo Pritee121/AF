@@ -1,0 +1,149 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customize Your Booking</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <style>
+        /* 🌍 Global Styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f4f6f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* ✅ Booking Container */
+        .booking-container {
+            max-width: 700px;
+            margin: 50px auto;
+            padding: 30px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: 0.3s ease-in-out;
+        }
+
+        h2 {
+            color: #007bff;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        /* ✅ Booking Form */
+        .booking-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group {
+            text-align: left;
+        }
+
+        label {
+            font-weight: bold;
+            color: #444;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        select[multiple] {
+            height: 120px;
+        }
+
+        /* ✅ Submit Button */
+        .submit-btn {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: 0.3s ease-in-out;
+            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+        }
+
+        .submit-btn:hover {
+            background: linear-gradient(135deg, #0056b3, #003f7f);
+            box-shadow: 0 6px 15px rgba(0, 123, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        /* ✅ Back Button */
+        .back-btn {
+            margin-top: 15px;
+            display: inline-block;
+            padding: 10px 15px;
+            color: #007bff;
+            font-weight: bold;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .back-btn:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="booking-container">
+        <h2>Customize Your Booking</h2>
+
+        <form action="{% url 'process_booking' %}" method="POST" class="booking-form">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="date">Select Date:</label>
+                <input type="date" id="date" name="date" required>
+            </div>
+
+            <div class="form-group">
+                <label for="time">Select Time:</label>
+                <input type="time" id="time" name="time" required>
+            </div>
+
+            <div class="form-group">
+                <label for="members">Number of Members:</label>
+                <input type="number" id="members" name="members" min="1" required>
+            </div>
+
+            <div class="form-group">
+                <label for="services">Select Services (Hold Ctrl/Cmd to select multiple):</label>
+                <select id="services" name="services" multiple required>
+                    <option value="Photography">Photography</option>
+                    <option value="Videography">Videography</option>
+                    <option value="Editing">Editing</option>
+                    <option value="Makeup">Makeup</option>
+                    <option value="Event Planning">Event Planning</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="details">Additional Details:</label>
+                <textarea id="details" name="details" rows="4" placeholder="Enter any specific requirements..."></textarea>
+            </div>
+
+            <button type="submit" class="submit-btn">Book Now</button>
+        </form>
+
+        <a href="{% url 'home' %}" class="back-btn">← Back to Home</a>
+    </div>
+
+</body>
+</html>

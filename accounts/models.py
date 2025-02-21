@@ -36,7 +36,7 @@ class User(AbstractUser):
     
     works_at = models.CharField(max_length=255, null=True, blank=True)
     experience_years = models.IntegerField(default=0, null=True, blank=True)
-    training_certificate = models.FileField(upload_to="certificates/", null=True, blank=True)
+    # training_certificate = models.FileField(upload_to="certificates/", null=True, blank=True)
     is_available = models.BooleanField(default=True) 
     
 
@@ -51,7 +51,12 @@ class User(AbstractUser):
 
 
 
+class TrainingCertificate(models.Model):
+    artist = models.ForeignKey(User, on_delete=models.CASCADE, related_name="certificates")
+    certificate = models.FileField(upload_to="certificates/")
 
+    def __str__(self):
+        return f"Certificate for {self.artist.email}"
 
 
 class Work(models.Model):

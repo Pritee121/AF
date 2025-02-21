@@ -7,7 +7,18 @@
     <title>Availability Status</title>
     <link rel="stylesheet" href="{% static 'css/availability2.css' %}">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  
+  <style>
+    .footer {
+    background: rgba(216, 100, 140, 0.2);
+    color: #D8648C;
+    text-align: center;
+    padding: 15px;
+    margin-top: auto;
+    border-top: 2px solid #D8648C;
+    backdrop-filter: blur(10px);
+    width: 100%;
+}
+  </style>
 </head>
 <body>
     <header>
@@ -32,6 +43,10 @@
             </button>
         </form>
     </div>
+   <!-- Footer -->
+   <footer class="footer">
+    <p>Artist Finder &copy; All rights reserved</p>
+</footer>
 
     <script>
         document.querySelector('.toggle-btn').addEventListener('click', function(event) {

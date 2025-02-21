@@ -6,11 +6,171 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Certificates</title>
     <link rel="stylesheet" href="{% static 'css/certificates.css' %}">
+    <style>
+        /* ✅ General Page Styles */
+/* ✅ General Page Styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #fdf2f6;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+/* ✅ Container */
+.container {
+    max-width: 800px;
+    margin: 40px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    overflow: hidden; /* ✅ Prevents content from being cut off */
+}
+
+/* ✅ Certificates Grid */
+.certificates-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+/* ✅ Certificate Card */
+.certificate-card {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 100%; /* ✅ Ensures proper width */
+    max-width: 350px; /* ✅ Limits max width for proper spacing */
+    overflow: hidden;
+}
+
+/* ✅ Fix Certificate Image */
+.certificate-image {
+    width: 100%;
+    max-height: 250px; /* ✅ Prevents image from overflowing */
+    object-fit: cover; /* ✅ Keeps image properly sized */
+    border-radius: 5px;
+}
+
+/* ✅ Fix for Iframe (PDF View) */
+iframe {
+    width: 100%;
+    height: 250px; /* ✅ Adjust to fit properly */
+    border: none;
+}
+
+/* ✅ Certificate Actions (Button Container) */
+.certificate-actions {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    gap: 8px; /* ✅ Equal spacing */
+}
+
+/* ✅ Standard Button Styling */
+.view-btn, .edit-btn{
+    display: inline-block;
+    width: 90px; /* ✅ Ensures all buttons have the same width */
+    height: 20px; /* ✅ Ensures same height */
+    padding: 10px 0; /* ✅ Same vertical padding */
+    font-size: 14px;
+    font-weight: bold;
+    margin-top: 10px;
+    border-radius: 6px;
+    text-align: center;
+    transition: all 0.3s ease-in-out;
+    text-decoration: none;
+    line-height: 20px; /* ✅ Centers text properly */
+    border: none;
+}
+
+/* ✅ Fix Delete Button (Since it's a <button> not <a>) */
+.delete-btn {
+    background-color: #dc3545;
+    color: white;
+    cursor: pointer;
+    text-align: center;
+    height: 40px;
+    margin-top:  px;
+}
+
+/* ✅ Ensure Delete Button Matches Other Buttons */
+.delete-btn form {
+    display: inline-block;
+}
+
+.delete-btn button {
+    width: 100px; /* ✅ Match width */
+    height: 60px; /* ✅ Match height */
+    padding: 10px 0;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+/* ✅ Button Colors */
+.view-btn { background-color: #007bff; color: white; }
+.edit-btn { background-color: #ffc107; color: white; }
+.delete-btn:hover, .view-btn:hover, .edit-btn:hover {
+    transform: scale(1.05);
+    opacity: 0.9;
+}
+
+
+
+/* ✅ No Certificates Message */
+.no-certificates {
+    font-size: 16px;
+    color: #888;
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* ✅ Back Button */
+.back-container { margin-top: 20px; }
+
+.back-btn {
+    padding: 10px 15px;
+    background-color: #444;
+    color: white;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: all 0.3s ease-in-out;
+}
+
+.back-btn:hover {
+    background-color: #222;
+    transform: scale(1.05);
+}
+
+/* ✅ Footer */
+.footer {
+    text-align: center;
+    margin-top: 40px;
+    padding: 10px;
+    background-color: #222;
+    color: white;
+    font-size: 14px;
+}
+
+
+    </style>
 </head>
 <body>
 
     <div class="container">
-        <h2>Upload Your Training Certificate</h2>
+        <!-- <h2>Upload Your Training Certificate</h2> -->
 
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
@@ -19,14 +179,33 @@
             <button type="submit">Upload</button>
         </form>
         
-        <h2>Your Training Certificate</h2>
-        {% if user.training_certificate %}
-            <div class="certificate-card">
-                <p>📅 Uploaded: {{ user.training_certificate.uploaded_at|date:"F d, Y" }}</p>
-                <a href="{{ user.training_certificate.url }}" target="_blank" class="view-btn">View Certificate</a>
+        <h2>Your Training Certificates</h2>
+        
+        {% if user.certificates.all %}
+            <div class="certificates-grid">
+                {% for certificate in user.certificates.all %}
+                    <div class="certificate-card">
+                        <p>📅 Uploaded: {{ certificate.uploaded_at|date:"F d, Y" }}</p>
+                        
+                        {% if certificate.certificate.url|lower|slice:'-4:' == ".jpg" or certificate.certificate.url|lower|slice:'-4:' == ".png" %}
+                            <img src="{{ certificate.certificate.url }}" alt="Certificate" class="certificate-image">
+                        {% else %}
+                            <iframe src="{{ certificate.certificate.url }}" width="100%" height="200px"></iframe>
+                        {% endif %}
+
+                        <div class="certificate-actions">
+                            <a href="{{ certificate.certificate.url }}" target="_blank" class="view-btn">🔍 View</a>
+                            <a href="{% url 'edit_certificate' certificate.id %}" class="edit-btn">✏ Edit</a>
+                            <form method="post" action="{% url 'delete_certificate' certificate.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="delete-btn">🗑 Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
             </div>
         {% else %}
-            <p class="no-certificates">No training certificate uploaded yet.</p>
+            <p class="no-certificates">No training certificates uploaded yet.</p>
         {% endif %}
 
         <!-- ✅ Back to Dashboard Button -->
@@ -34,6 +213,8 @@
             <a href="{% url 'artist_dashboard' %}" class="back-btn">⬅ Back to Dashboard</a>
         </div>
     </div>
+
+   
 
 </body>
 </html>
