@@ -208,13 +208,7 @@ body {
             <p><strong>Experience Years:</strong> {{ user.experience_years }}+ years</p>
 
             <!-- Training Certificate -->
-            <p><strong>Training Certificate:</strong>
-                {% if user.training_certificate %}
-                    <a href="{{ user.training_certificate.url }}" target="_blank">View Certificate</a>
-                {% else %}
-                    Not Uploaded
-                {% endif %}
-            </p>
+          
         </div>
 
         <!-- Editable Form (Hidden by Default) -->

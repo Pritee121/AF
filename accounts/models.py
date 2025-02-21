@@ -32,6 +32,7 @@ class User(AbstractUser):
     city = models.CharField(max_length=100, null=True, blank=True)
     is_verified = models.BooleanField(default=False)
     is_artist = models.BooleanField(default=False)
+    is_approved = models.BooleanField(default=False)  # ✅ Admin approval
     otp = models.CharField(max_length=6, blank=True, null=True)  # ✅ Stores OTP
     
     works_at = models.CharField(max_length=255, null=True, blank=True)

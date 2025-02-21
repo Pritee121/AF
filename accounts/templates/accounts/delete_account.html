@@ -1,0 +1,56 @@
+
+
+{% block content %}
+<div class="delete-account-container">
+    <h2>Delete Account</h2>
+    <p>Enter your password to confirm account deletion.</p>
+    
+    
+
+    <form method="POST">
+        {% csrf_token %}
+        <label for="password">Password:</label>
+        <input type="password" name="password" required>
+        <button type="submit" class="delete-btn">🗑️ Delete Account</button>
+    </form>
+    
+    <a href="{% url 'home' %}" class="cancel-btn">Cancel</a>
+</div>
+
+<style>
+    .delete-account-container {
+        max-width: 400px;
+        margin: auto;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        background-color: #fff;
+        text-align: center;
+    }
+    .delete-btn {
+        background-color: red;
+        color: white;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    .delete-btn:hover {
+        background-color: darkred;
+    }
+    .cancel-btn {
+        display: inline-block;
+        margin-top: 10px;
+        text-decoration: none;
+        color: blue;
+    }
+    .messages {
+        list-style: none;
+        padding: 0;
+    }
+    .messages li {
+        color: red;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}

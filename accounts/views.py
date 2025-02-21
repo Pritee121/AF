@@ -127,6 +127,36 @@ def login_page(request):
 
 
 
+# def artist_login(request):
+#     if request.method == 'POST':
+#         form = LoginForm(request.POST)
+#         if form.is_valid():
+#             email = form.cleaned_data['email']
+#             password = form.cleaned_data['password']
+#             user = authenticate(request, email=email, password=password)
+
+#             if user is None:
+#                 form.add_error(None, 'Invalid email or password.')
+#                 return render(request, "accounts/artist_login.html", {'form': form})
+
+#             if user.is_artist:
+#                 if not user.is_verified:
+#                     form.add_error(None, 'Account not verified. Please verify via OTP.')
+#                     return render(request, "accounts/artist_login.html", {'form': form})
+
+#                 login(request, user)
+#                 request.session['user_type'] = 'artist'  # Store artist separately
+#                 return redirect('artist_dashboard')
+
+#             else:
+#                 form.add_error(None, 'Invalid email or password.')
+
+#     return render(request, "accounts/artist_login.html", {'form': LoginForm()})
+
+from django.contrib.auth import authenticate, login
+from django.shortcuts import render, redirect
+from .forms import LoginForm
+
 def artist_login(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
@@ -144,15 +174,81 @@ def artist_login(request):
                     form.add_error(None, 'Account not verified. Please verify via OTP.')
                     return render(request, "accounts/artist_login.html", {'form': form})
 
+                if not user.is_approved:  # ✅ Check if admin has approved the artist
+                    form.add_error(None, 'Your account is pending admin approval.')
+                    return render(request, "accounts/artist_login.html", {'form': form})
+
                 login(request, user)
-                request.session['user_type'] = 'artist'  # Store artist separately
+                request.session['user_type'] = 'artist'
                 return redirect('artist_dashboard')
 
             else:
                 form.add_error(None, 'Invalid email or password.')
 
     return render(request, "accounts/artist_login.html", {'form': LoginForm()})
+# from django.contrib.auth import authenticate, login
+# from django.core.mail import send_mail
+# from django.conf import settings
+# from django.shortcuts import render, redirect
+# from .forms import LoginForm
+# import logging
 
+# logger = logging.getLogger(__name__)  # ✅ Setup logging
+
+# def artist_login(request):
+#     if request.method == 'POST':
+#         form = LoginForm(request.POST)
+#         if form.is_valid():
+#             email = form.cleaned_data['email']
+#             password = form.cleaned_data['password']
+#             user = authenticate(request, email=email, password=password)
+
+#             if user is None:
+#                 form.add_error(None, 'Invalid email or password.')
+#                 return render(request, "accounts/artist_login.html", {'form': form})
+
+#             if user.is_artist:
+#                 if not user.is_verified:
+#                     form.add_error(None, 'Account not verified. Please verify via OTP.')
+#                     return render(request, "accounts/artist_login.html", {'form': form})
+
+#                 if not user.is_approved:  # ✅ Check if admin has approved the artist
+#                     form.add_error(None, 'Your account is pending admin approval.')
+#                     return render(request, "accounts/artist_login.html", {'form': form})
+
+#                 # ✅ Artist is approved → Send a welcome email
+#                 if not request.session.get("approval_email_sent", False):  # Prevent duplicate emails
+#                     try:
+#                         send_mail(
+#                             subject="🎨 Welcome to Artist Finder!",
+#                             message=f"""
+#                             Dear {user.first_name},
+
+#                             Your artist account has been approved! 🎉 You can now log in and manage your profile, showcase your work, and accept bookings.
+
+#                             🌟 Dashboard: https://yourwebsite.com/dashboard
+
+#                             Best Regards,
+#                             Artist Finder Team
+#                             """,
+#                             from_email=settings.DEFAULT_FROM_EMAIL,
+#                             recipient_list=[user.email],
+#                             fail_silently=False,
+#                         )
+#                         logger.info(f"✅ Welcome email sent to {user.email}")
+#                         request.session["approval_email_sent"] = True  # ✅ Prevent multiple emails on repeated logins
+#                     except Exception as e:
+#                         logger.error(f"❌ Error sending email to {user.email}: {str(e)}")
+
+#                 # ✅ Log the artist in
+#                 login(request, user)
+#                 request.session['user_type'] = 'artist'
+#                 return redirect('artist_dashboard')
+
+#             else:
+#                 form.add_error(None, 'Invalid email or password.')
+
+#     return render(request, "accounts/artist_login.html", {'form': LoginForm()})
 
 
 
@@ -712,6 +808,53 @@ def home_page(request):
 
 
 
+from django.core.mail import send_mail
+from django.conf import settings
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+from .models import User
+import logging
+
+logger = logging.getLogger(__name__)  # ✅ Setup logging
+
+def approve_artist(request, artist_id):
+    """ ✅ Admin manually approves an artist and sends an email """
+    artist = get_object_or_404(User, id=artist_id, is_artist=True)
+
+    if artist.is_approved:
+        messages.warning(request, "This artist is already approved.")
+        return redirect("admin:accounts_user_changelist")  # Redirect to admin users list
+
+    # ✅ Approve artist
+    artist.is_approved = True
+    artist.save()
+
+    # ✅ Send email notification
+    try:
+        send_mail(
+            subject="🎨 Your Artist Account Has Been Approved!",
+            message=f"""
+            Dear {artist.first_name},
+
+            Your artist account has been approved! 🎉 You can now log in and manage your profile, showcase your work, and accept bookings.
+
+            🌟 Dashboard: https://yourwebsite.com/dashboard
+
+            Best Regards,
+            Artist Finder Team
+            """,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[artist.email],
+            fail_silently=False,
+        )
+        logger.info(f"✅ Approval email sent to {artist.email}")
+
+    except Exception as e:
+        logger.error(f"❌ Error sending approval email to {artist.email}: {str(e)}")
+        messages.error(request, f"Error sending email to {artist.email}: {str(e)}")
+
+    messages.success(request, "Artist approved and email sent successfully.")
+    return redirect("admin:accounts_user_changelist")  # Redirect back to admin
 
 
 
@@ -1050,6 +1193,52 @@ def edit_service(request, service_id):
 #             return redirect('verify_otp')
 
 #     return render(request, 'accounts/register_artists.html', {'form': ArtistRegisterForm()})
+# import random
+# from django.shortcuts import render, redirect
+# from django.contrib.auth.hashers import make_password
+# from django.core.mail import send_mail
+# from django.contrib import messages
+# from .forms import ArtistRegisterForm
+# from .models import User, TrainingCertificate
+
+# def register_artists(request):
+#     if request.method == "POST":
+#         form = ArtistRegisterForm(request.POST, request.FILES)
+#         training_certificates = request.FILES.getlist("training_certificates")  # ✅ Get multiple certificates
+
+#         if form.is_valid():
+#             otp = str(random.randint(100000, 999999))
+#             user = form.save(commit=False)
+
+#             # ✅ Ensure password is hashed properly
+#             if form.cleaned_data.get('password'):
+#                 user.password = make_password(form.cleaned_data['password'])
+
+#             user.is_artist = True  
+#             user.is_verified = False  
+#             user.otp = otp  
+#             user.save()
+
+#             # ✅ Save multiple certificates
+#             for certificate in training_certificates:
+#                 TrainingCertificate.objects.create(artist=user, certificate=certificate)
+
+#             # ✅ Send OTP email
+#             send_mail(
+#                 'Your OTP for Artist Registration', 
+#                 f'Your OTP is {otp}', 
+#                 'admin@artistfinder.com', 
+#                 [user.email]
+#             )
+
+#             request.session['user_id'] = user.id
+#             messages.success(request, "Registration successful! Please verify your OTP.")
+#             return redirect('verify_otp')
+
+#         else:
+#             messages.error(request, "Error in registration. Please check your details.")
+
+#     return render(request, 'accounts/register_artists.html', {'form': ArtistRegisterForm()})
 import random
 from django.shortcuts import render, redirect
 from django.contrib.auth.hashers import make_password
@@ -1061,26 +1250,26 @@ from .models import User, TrainingCertificate
 def register_artists(request):
     if request.method == "POST":
         form = ArtistRegisterForm(request.POST, request.FILES)
-        training_certificates = request.FILES.getlist("training_certificates")  # ✅ Get multiple certificates
+        training_certificates = request.FILES.getlist("training_certificates")
 
         if form.is_valid():
             otp = str(random.randint(100000, 999999))
             user = form.save(commit=False)
 
-            # ✅ Ensure password is hashed properly
             if form.cleaned_data.get('password'):
                 user.password = make_password(form.cleaned_data['password'])
 
             user.is_artist = True  
             user.is_verified = False  
+            user.is_approved = False  # ✅ Artist needs admin approval
             user.otp = otp  
             user.save()
 
-            # ✅ Save multiple certificates
+            # Save multiple certificates
             for certificate in training_certificates:
                 TrainingCertificate.objects.create(artist=user, certificate=certificate)
 
-            # ✅ Send OTP email
+            # Send OTP email
             send_mail(
                 'Your OTP for Artist Registration', 
                 f'Your OTP is {otp}', 
@@ -2319,3 +2508,5 @@ def delete_certificate(request, certificate_id):
         return redirect("artist_certificates")
 
     return render(request, "delete_certificate.html", {"certificate": certificate})
+
+

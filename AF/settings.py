@@ -92,7 +92,7 @@ WSGI_APPLICATION = 'AF.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'Af@#.sqlite3',
+        'NAME': BASE_DIR / 'Af@###.sqlite3',
     }
 }
 
@@ -144,7 +144,8 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
@@ -235,7 +236,7 @@ JAZZMIN_SETTINGS = {
         {"name": "Home", "url": "admin:index", "permissions": ["auth.view_user"]},
         {"name": "View Site", "url": "/", "new_window": True},
         {"name": "Users", "url": "admin:accounts_user_changelist"},
-        {"name": "Bookings", "url": "admin:bookings_booking_changelist"},
+      {"name": "Bookings", "url": "admin:accounts_booking_changelist"}, 
     ],
 
     # ✅ SIDEBAR MENU SETTINGS
@@ -261,3 +262,23 @@ USE_TZ = True  # Enable timezone support
 
 
 
+import logging
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": "django_email.log",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["file"],
+            "level": "DEBUG",
+            "propagate": True,
+        },
+    },
+}
