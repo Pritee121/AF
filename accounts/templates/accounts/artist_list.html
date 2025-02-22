@@ -66,6 +66,23 @@ body.dark-mode {
     background: #f8f9fa;
     color: #222;
 }
+/* Fix footer at the bottom */
+.footer {
+    background: rgba(216, 100, 140, 0.2);
+    color: #D8648C;
+    text-align: center;
+    padding: 15px;
+    border-top: 2px solid #D8648C;
+    backdrop-filter: blur(10px);
+    width: 100%;
+    position: relative; /* Use relative positioning */
+    bottom: 0;
+    margin-top: 250px;
+}
+
+
+
+
 
     </style>
 </head>
@@ -86,15 +103,13 @@ body.dark-mode {
     </select>
 
     <label for="price-filter">Filter by Price:</label>
-    <select id="price-filter" onchange="filterArtists()">
-        <option value="all">All Prices</option>
-        <option value="0-500">Rs. 0 - Rs. 500</option>
-        <option value="501-1000">Rs. 501 - Rs. 1000</option>
-        <option value="1001-2000">Rs. 1001 - Rs. 2000</option>
-        <option value="2001-5000">Rs. 2001 - Rs. 5000</option>
-        <option value="5001-10000">Rs. 5001 - Rs. 10000</option>
-        <option value="10000+">Rs. 10000+</option>
-    </select>
+<select id="price-filter" onchange="filterArtists()">
+    <option value="all">All Prices</option>
+    {% for range in price_ranges %}
+        <option value="{{ range }}">{{ range }}</option>
+    {% endfor %}
+</select>
+
 </div>
 
 <!-- ✅ Artists List -->
@@ -128,8 +143,11 @@ body.dark-mode {
             {% endif %}
 
             <div class="button-group">
-                <button onclick="bookArtist('{{ artist.id }}')">Book Now</button>
-                <button onclick="chatWithArtist('{{ artist.id }}')">Chat Now</button>
+                <button onclick="window.location.href='{% url 'book_artist' artist.id %}'">Book Now
+                </button>
+                <button onclick="window.location.href='{% url 'start_chat' artist.id %}'">
+                    💬 Chat Now
+                </button>
                 <button onclick="window.location.href='{% url 'artist_detail' artist.id %}'">Explore Artist</button>
             </div>
         </div>
@@ -140,7 +158,7 @@ body.dark-mode {
 </div>
 
     <script>
-       function filterArtists() {
+     function filterArtists() {
     let selectedCity = document.getElementById("city-filter").value.toLowerCase();
     let selectedPrice = document.getElementById("price-filter").value;
     let artists = document.querySelectorAll(".artist-card");
@@ -169,13 +187,18 @@ body.dark-mode {
 function priceMatches(servicePrice, selectedPrice) {
     if (selectedPrice === "all") return true;
 
-    let [minPrice, maxPrice] = selectedPrice.split("-").map(Number);
-
-    if (selectedPrice === "10000+" && servicePrice >= 10000) return true;
-    if (servicePrice >= minPrice && (maxPrice ? servicePrice <= maxPrice : true)) return true;
-
+    let priceParts = selectedPrice.split("-");
+    if (selectedPrice.includes("+")) {
+        let minPrice = parseInt(selectedPrice.replace("+", ""));
+        return servicePrice >= minPrice;
+    } else if (priceParts.length === 2) {
+        let minPrice = parseInt(priceParts[0]);
+        let maxPrice = parseInt(priceParts[1]);
+        return servicePrice >= minPrice && servicePrice <= maxPrice;
+    }
     return false;
 }
+
 
 document.addEventListener("DOMContentLoaded", function () {
     const darkModeToggle = document.getElementById("dark-mode-toggle");
@@ -204,4 +227,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     </script>
 </body>
+<footer class="footer">
+    <p>Artist Finder &copy; All rights reserved</p>
+</footer>
 </html>

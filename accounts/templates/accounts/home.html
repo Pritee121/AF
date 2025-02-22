@@ -396,6 +396,18 @@ body.dark-mode .dropdown-content a:hover {
     text-align: center;
     margin-top: 20px;
 }
+/* Fix footer at the bottom */
+.footer {
+    background: rgba(216, 100, 140, 0.2);
+    color: #D8648C;
+    text-align: center;
+    padding: 15px;
+    border-top: 2px solid #D8648C;
+    backdrop-filter: blur(10px);
+    width: 100%;
+    position: relative; /* Use relative positioning */
+    bottom: 0;
+}
 
     </style>
 </head>
@@ -519,7 +531,7 @@ body.dark-mode .dropdown-content a:hover {
     <!-- ✅ Display Artist Reply -->
     {% if review.artist_reply %}
         <div class="artist-reply">
-            <strong>🎤 Artist's Reply:</strong>
+            <strong>Artist  Replied:</strong>
             <p>{{ review.artist_reply }}</p>
         </div>
     {% elif request.user == review.artist %}
@@ -624,4 +636,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
  
 </body>
+<footer class="footer">
+    <p>Artist Finder &copy; All rights reserved</p>
+</footer>
 </html>

@@ -143,8 +143,8 @@ header a:hover {
 
 /* ✅ Work Image (Fix for full image visibility) */
 .work-card img {
-    width: 100%; /* Ensure it fills the card */
-    height: 500px; /* Adjust height */
+    width: 1cqw; /* Ensure it fills the card */
+    height: 700px; /* Adjust height */
     object-fit: cover; /* Cover without stretching */
     border-bottom: 3px solid #D8648C; /* Optional: Add a nice bottom border */
 }

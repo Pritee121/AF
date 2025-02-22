@@ -66,7 +66,18 @@ body.dark-mode {
     background: #f8f9fa;
     color: #222;
 }
-
+/* Fix footer at the bottom */
+.footer {
+    background: rgba(216, 100, 140, 0.2);
+    color: #D8648C;
+    text-align: center;
+    padding: 15px;
+    border-top: 2px solid #D8648C;
+    backdrop-filter: blur(10px);
+    width: 100%;
+    position: relative; /* Use relative positioning */
+    bottom: 0;
+}
     </style>
 </head>
 <body>
@@ -112,7 +123,7 @@ body.dark-mode {
             <div class="back-home">
                 <a href="{% url 'home' %}" class="back-btn">← Back to Home</a>
             </div>
-            <button id="dark-mode-toggle">🌙 Dark Mode</button>
+            <!-- <button id="dark-mode-toggle">🌙 Dark Mode</button> -->
 
         </div>
     </div>
@@ -143,7 +154,8 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 </script>
-
-    
 </body>
+<footer class="footer">
+    <p>Artist Finder &copy; All rights reserved</p>
+</footer>
 </html>

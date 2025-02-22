@@ -18,7 +18,32 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
     <link rel="stylesheet" href="{% static 'css/book_artist.css' %}">
-    <style>#map { height: 300px; width: 100%; }</style>
+    <style>
+        /* Ensure the map container is positioned relative for the spinner */
+        #map { 
+            height: 300px; 
+            width: 100%; 
+            position: relative;
+        }
+        /* Spinner styling */
+        #spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            width: 50px;
+            height: 50px;
+            border: 8px solid #f3f3f3; /* Light grey */
+            border-top: 8px solid #3498db; /* Blue */
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -36,7 +61,7 @@
                 <option value="" disabled selected>Choose a service</option>
                 {% for service in services %}
                     <option value="{{ service.id }}" data-duration="{{ service.duration }}">
-                        {{ service.service_name }} - Rs.{{ service.price }} - {{service.description}}
+                        {{ service.service_name }} - Rs.{{ service.price }} - {{ service.description }}
                     </option>
                 {% endfor %}
             </select>
@@ -53,7 +78,10 @@
             </select>
 
             <label for="map">Select Location:</label>
-            <div id="map"></div>
+            <div id="map">
+                <!-- Loading spinner overlay -->
+                <div id="spinner"></div>
+            </div>
             <input type="hidden" id="latitude" name="latitude">
             <input type="hidden" id="longitude" name="longitude">
 
@@ -77,21 +105,27 @@
 
             var map, marker;
 
-            // ✅ Function to Initialize Map
+            // Function to Initialize Map
             function initMap(lat, lng) {
                 map = L.map('map').setView([lat, lng], 13);
 
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                // Add tile layer and attach a load event listener to hide the spinner
+                var tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '© OpenStreetMap'
                 }).addTo(map);
 
+                tileLayer.on('load', function() {
+                    // Hide the spinner once the map tiles have loaded
+                    document.getElementById("spinner").style.display = "none";
+                });
+
                 marker = L.marker([lat, lng], { draggable: true }).addTo(map);
 
-                // ✅ Update Input Fields
+                // Update Input Fields with initial location
                 document.getElementById("latitude").value = lat;
                 document.getElementById("longitude").value = lng;
 
-                // ✅ Update Coordinates on Drag
+                // Update Coordinates on Drag End
                 marker.on('dragend', function () {
                     var position = marker.getLatLng();
                     document.getElementById("latitude").value = position.lat.toFixed(6);
@@ -99,36 +133,31 @@
                 });
             }
 
-            // ✅ Try Getting User's Current Location Immediately
+            // Try getting the user's current location immediately
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     function (position) {
                         var userLat = position.coords.latitude;
                         var userLng = position.coords.longitude;
-                        initMap(userLat, userLng); // ✅ Load map at user's actual location
+                        initMap(userLat, userLng);
                     },
                     function (error) {
                         console.error("Geolocation Error:", error);
                         alert("Location access denied. Using default location.");
-                        initMap(27.7172, 85.3240); // ✅ Kathmandu as fallback
+                        initMap(27.7172, 85.3240); // Fallback to Kathmandu
                     }
                 );
             } else {
                 alert("Geolocation not supported by this browser.");
-                initMap(27.7172, 85.3240); // ✅ Kathmandu as fallback
+                initMap(27.7172, 85.3240); // Fallback to Kathmandu
             }
 
-            // ✅ Service Duration Auto-Update
+            // Service Duration Auto-Update
             serviceSelect.addEventListener("change", function () {
                 let selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
                 let duration = selectedOption.getAttribute("data-duration");
 
-                if (duration) {
-                    durationField.value = duration;
-                } else {
-                    durationField.value = "";
-                }
-
+                durationField.value = duration ? duration : "";
                 dateInput.value = "";
                 timeInput.innerHTML = "<option value='' disabled selected>Select time</option>";
                 timeInput.disabled = true;
@@ -138,7 +167,7 @@
                 }
             });
 
-            // ✅ Fetch Available Dates
+            // Fetch Available Dates
             function fetchAvailableDates(serviceId) {
                 fetch(`/get-available-dates/{{ artist.id }}/?service_id=${serviceId}`)
                     .then(response => response.json())
@@ -159,7 +188,7 @@
                     .catch(error => console.error("Error fetching available dates:", error));
             }
 
-            // ✅ Fetch Available Times
+            // Fetch Available Times
             function fetchAvailableTimes(serviceId, date) {
                 fetch(`/get-available-times/{{ artist.id }}/?service_id=${serviceId}&date=${date}`)
                     .then(response => response.json())
@@ -189,7 +218,7 @@
                 }
             });
 
-            // ✅ Success Message on Form Submission
+            // Success Message on Form Submission
             bookingForm.addEventListener("submit", function (event) {
                 event.preventDefault();
 
@@ -209,7 +238,6 @@
                 })
                 .catch(error => console.error("Error:", error));
             });
-
         });
     </script>
 </body>

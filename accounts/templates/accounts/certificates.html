@@ -9,161 +9,194 @@
     <style>
         /* ✅ General Page Styles */
 /* ✅ General Page Styles */
+/* General Page Styles */
 body {
-    font-family: Arial, sans-serif;
-    background-color: #fdf2f6;
-    color: #333;
-    margin: 0;
-    padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f4f6f8;
+  color: #333;
+  margin: 0;
+  padding: 0;
 }
 
-/* ✅ Container */
+/* Container */
 .container {
-    max-width: 800px;
-    margin: 40px auto;
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    overflow: hidden; /* ✅ Prevents content from being cut off */
+  max-width: 900px;
+  margin: 40px auto;
+  background: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  border-top: 5px solid #D8648C; /* Accent using theme color */
 }
 
-/* ✅ Certificates Grid */
+/* Form Upload Styles */
+form {
+  margin-bottom: 20px;
+}
+input[type="file"] {
+  margin: 10px 0;
+}
+button[type="submit"] {
+  background-color: #D8648C;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+button[type="submit"]:hover {
+  background-color: #C25A7E;
+}
+
+/* Certificates Grid */
 .certificates-grid {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 15px;
-    margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 20px;
 }
 
-/* ✅ Certificate Card */
+/* Certificate Card */
 .certificate-card {
-    background: white;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    width: 100%; /* ✅ Ensures proper width */
-    max-width: 350px; /* ✅ Limits max width for proper spacing */
-    overflow: hidden;
+  background: #fff;
+  border: 1px solid #e3e3e3;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+.certificate-card:hover {
+  transform: translateY(-5px);
 }
 
-/* ✅ Fix Certificate Image */
-.certificate-image {
-    width: 100%;
-    max-height: 250px; /* ✅ Prevents image from overflowing */
-    object-fit: cover; /* ✅ Keeps image properly sized */
-    border-radius: 5px;
-}
-
-/* ✅ Fix for Iframe (PDF View) */
+/* Certificate Image & Iframe */
+.certificate-image,
 iframe {
-    width: 100%;
-    height: 250px; /* ✅ Adjust to fit properly */
-    border: none;
+  width: 100%;
+  max-height:500px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: none;
 }
 
-/* ✅ Certificate Actions (Button Container) */
-.certificate-actions {
-    margin-top: 10px;
-    display: flex;
-    justify-content: center;
-    gap: 8px; /* ✅ Equal spacing */
+/* General Button Styles */
+.certificate-actions a,
+.certificate-actions button {
+  flex: 1; /* Make buttons equal in size */
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+  transition: all 0.3s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px; /* Space between text and icons */
+  border: none;
+  cursor: pointer;
 }
 
-/* ✅ Standard Button Styling */
-.view-btn, .edit-btn{
-    display: inline-block;
-    width: 90px; /* ✅ Ensures all buttons have the same width */
-    height: 20px; /* ✅ Ensures same height */
-    padding: 10px 0; /* ✅ Same vertical padding */
-    font-size: 14px;
-    font-weight: bold;
-    margin-top: 10px;
-    border-radius: 6px;
-    text-align: center;
-    transition: all 0.3s ease-in-out;
-    text-decoration: none;
-    line-height: 20px; /* ✅ Centers text properly */
-    border: none;
+/* Icons inside buttons */
+.certificate-actions a i,
+.certificate-actions button i {
+  font-size: 18px;
 }
 
-/* ✅ Fix Delete Button (Since it's a <button> not <a>) */
+/* View & Edit Buttons */
+.view-btn,
+.edit-btn {
+  background-color: #D8648C;
+  color: white;
+  box-shadow: 0 4px 6px rgba(216, 100, 140, 0.2);
+}
+
+.view-btn:hover,
+.edit-btn:hover {
+  background-color: #C25A7E;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 10px rgba(216, 100, 140, 0.3);
+}
+
+/* Delete Button */
 .delete-btn {
-    background-color: #dc3545;
-    color: white;
-    cursor: pointer;
-    text-align: center;
-    height: 40px;
-    margin-top:  px;
+  background-color: #dc3545;
+  color: white;
+  box-shadow: 0 4px 6px rgba(220, 53, 69, 0.2);
 }
 
-/* ✅ Ensure Delete Button Matches Other Buttons */
-.delete-btn form {
-    display: inline-block;
+.delete-btn:hover {
+  background-color: #c82333;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 10px rgba(220, 53, 69, 0.3);
 }
 
-.delete-btn button {
-    width: 100px; /* ✅ Match width */
-    height: 60px; /* ✅ Match height */
-    padding: 10px 0;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: bold;
-    text-align: center;
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    cursor: pointer;
+/* Improved Delete Button inside Card */
+.certificate-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
 }
 
-/* ✅ Button Colors */
-.view-btn { background-color: #007bff; color: white; }
-.edit-btn { background-color: #ffc107; color: white; }
-.delete-btn:hover, .view-btn:hover, .edit-btn:hover {
-    transform: scale(1.05);
-    opacity: 0.9;
+.certificate-actions form {
+  width: 100%;
 }
 
+.certificate-actions button {
+  width: 100%;
+}
 
+/* Ensure Buttons Are Well-Spaced in Different Screens */
+@media (max-width: 500px) {
+  .certificate-actions {
+    flex-direction: column;
+  }
+}
 
-/* ✅ No Certificates Message */
+/* No Certificates Message */
 .no-certificates {
-    font-size: 16px;
-    color: #888;
-    text-align: center;
-    margin-top: 20px;
+  font-size: 16px;
+  color: #777;
+  text-align: center;
+  margin-top: 20px;
 }
 
-/* ✅ Back Button */
-.back-container { margin-top: 20px; }
-
+/* Back Button */
+.back-container {
+  margin-top: 30px;
+  text-align: center;
+}
 .back-btn {
-    padding: 10px 15px;
-    background-color: #444;
-    color: white;
-    border-radius: 5px;
-    text-decoration: none;
-    transition: all 0.3s ease-in-out;
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #D8648C;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background-color 0.3s, transform 0.3s;
 }
-
 .back-btn:hover {
-    background-color: #222;
-    transform: scale(1.05);
+  background-color: #C25A7E;
+  transform: scale(1.05);
 }
 
-/* ✅ Footer */
+/* Footer */
+
+
+
 .footer {
+    background: rgba(216, 100, 140, 0.2);
+    color: #D8648C;
     text-align: center;
-    margin-top: 40px;
-    padding: 10px;
-    background-color: #222;
-    color: white;
-    font-size: 14px;
+    padding: 15px;
+    margin-top: auto;
+    border-top: 2px solid #D8648C;
+    backdrop-filter: blur(10px);
 }
-
 
     </style>
 </head>
@@ -217,4 +250,7 @@ iframe {
    
 
 </body>
+<footer class="footer">
+    <p>Artist Finder &copy; All rights reserved</p>
+</footer>
 </html>

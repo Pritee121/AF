@@ -236,7 +236,7 @@ JAZZMIN_SETTINGS = {
         {"name": "Home", "url": "admin:index", "permissions": ["auth.view_user"]},
         {"name": "View Site", "url": "/", "new_window": True},
         {"name": "Users", "url": "admin:accounts_user_changelist"},
-      {"name": "Bookings", "url": "admin:accounts_booking_changelist"}, 
+        {"name": "Bookings", "url": "admin:accounts_booking_changelist"}, 
     ],
 
     # ✅ SIDEBAR MENU SETTINGS

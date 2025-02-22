@@ -103,7 +103,7 @@ def artist_login(request):
                     return render(request, "accounts/artist_login.html", {'form': form})
 
                 if not user.is_approved:  # ✅ Check if admin has approved the artist
-                    form.add_error(None, 'Your account is pending admin approval.')
+                    form.add_error(None, 'Your account is not approved yet.')
                     return render(request, "accounts/artist_login.html", {'form': form})
 
                 login(request, user)
@@ -578,13 +578,13 @@ def get_available_times(request, artist_id):
 
 
 
-from django.shortcuts import render
-from .models import User  # Assuming User model is used for artists
+# from django.shortcuts import render
+# from .models import User  # Assuming User model is used for artists
 
-def artist_list(request):
-    artists = User.objects.filter(is_artist=True)  # ✅ Only show users who are artists
-    cities = User.objects.filter(is_artist=True).values_list('city', flat=True).distinct()  # ✅ Get cities for artists only
-    return render(request, "accounts/artist_list.html", {"artists": artists, "cities": cities})
+# def artist_list(request):
+#     artists = User.objects.filter(is_artist=True)  # ✅ Only show users who are artists
+#     cities = User.objects.filter(is_artist=True).values_list('city', flat=True).distinct()  # ✅ Get cities for artists only
+#     return render(request, "accounts/artist_list.html", {"artists": artists, "cities": cities})
 
 
 
@@ -606,6 +606,50 @@ def artist_detail(request, artist_id):
 
 
 
+from django.shortcuts import render
+from .models import User, Service  # Ensure Service model exists
+
+def artist_list(request):
+    # ✅ Fetch all artists with services
+    artists = User.objects.filter(is_artist=True).prefetch_related('services')
+
+    # ✅ Get distinct cities for filtering
+    cities = artists.values_list('city', flat=True).distinct()
+
+    # ✅ Extract unique prices from services
+    prices = list(Service.objects.filter(artist__in=artists).values_list('price', flat=True))
+
+    price_ranges = []
+    
+    if prices:
+        min_price = min(prices)
+        max_price = max(prices)
+
+        # ✅ Dynamically set step based on price spread
+        price_spread = max_price - min_price
+        if price_spread <= 1000:
+            step = 500  # Smaller spread → Smaller steps
+        elif price_spread <= 5000:
+            step = 1000  # Medium spread → Medium steps
+        else:
+            step = 2000  # Large spread → Wider steps
+
+        # ✅ Generate price ranges
+        start = min_price
+        while start < max_price:
+            end = start + step
+            if end >= max_price:
+                price_ranges.append(f"{start}+")
+                break
+            else:
+                price_ranges.append(f"{start}-{end}")
+            start = end
+
+    return render(request, "accounts/artist_list.html", {
+        "artists": artists,
+        "cities": cities,
+        "price_ranges": price_ranges,  # ✅ Smarter ranges
+    })
 
 
 
@@ -707,7 +751,7 @@ def book_artist(request, artist_id):
         # ✅ Send confirmation email
         try:
             send_mail(
-                "Booking Confirmation - Artist Finder",
+                "Booking Received - Artist Finder",
                 f"Dear {user.first_name},\n\nYour booking for {selected_service.service_name} with {artist.first_name} {artist.last_name} on {date_selected} at {time_selected} has been received.\n\nYou will get a confirmation mail soon!\n\nThank you for using Artist Finder!",
                 "no-reply@artistfinder.com",
                 [user.email],

@@ -181,6 +181,40 @@ body {
         padding: 10px 12px;
     }
 }
+/* Ensure the entire page takes full height */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column; /* Stack content vertically */
+    align-items: center;
+}
+
+/* Adjust the container */
+.container {
+    flex-grow: 1; /* Pushes footer down */
+}
+
+/* Fix footer at the bottom */
+.footer {
+    background: rgba(216, 100, 140, 0.2);
+    color: #D8648C;
+    text-align: center;
+    padding: 15px;
+    border-top: 2px solid #D8648C;
+    backdrop-filter: blur(10px);
+    width: 100%;
+    position: relative; /* Use relative positioning */
+    bottom: 0;
+}
+
+/* Ensure footer is sticky when content is small */
+@media (min-height: 600px) {
+    .footer {
+        position: absolute;
+    }
+}
 
     </style>
 </head>
@@ -257,4 +291,5 @@ body {
         }
     </script>
 </body>
+
 </html>
