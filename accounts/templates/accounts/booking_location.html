@@ -1,0 +1,59 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Booking Location</title>
+    <!-- Leaflet.js for Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <style>
+        /* Full-screen map */
+        html, body, #map {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        /* Back button styling */
+        .back-button {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: #fff;
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-decoration: none;
+            color: #333;
+            border-radius: 5px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <!-- Back button to return to the bookings page -->
+    <a href="/bookings/" class="back-button">← Back to Bookings</a>
+
+    <div id="map"></div>
+    <script>
+        // Utility to get query parameters from the URL
+        function getQueryParams() {
+            let params = {};
+            location.search.substring(1).split("&").forEach(function(param) {
+                let [key, value] = param.split("=");
+                params[key] = decodeURIComponent(value);
+            });
+            return params;
+        }
+        const params = getQueryParams();
+        const lat = parseFloat(params.lat) || 27.7172;  // Default to Kathmandu latitude
+        const lng = parseFloat(params.lng) || 85.3240;   // Default to Kathmandu longitude
+
+        // Initialize the map centered at the provided coordinates
+        var map = L.map('map').setView([lat, lng], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+        L.marker([lat, lng]).addTo(map);
+    </script>
+</body>
+</html>

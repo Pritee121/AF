@@ -1344,3 +1344,7 @@ def delete_certificate(request, certificate_id):
     return render(request, "delete_certificate.html", {"certificate": certificate})
 
 
+from django.shortcuts import render
+
+def booking_location(request):
+    return render(request, 'accounts/booking_location.html')

@@ -106,7 +106,7 @@ urlpatterns = [
     path("edit-review/<int:review_id>/", edit_review, name="edit_review"),
       path('customize-booking/', views.customize_booking, name='customize_booking'),
       path('process-booking/', views.process_booking, name='process_booking'),
-     
+       path('booking-location/', views.booking_location, name='booking_location'),
 ]
 
 #Serve media files during development only

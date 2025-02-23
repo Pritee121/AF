@@ -6,17 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Bookings</title>
 
-    <!-- ✅ Load CSS -->
+    <!-- Load CSS -->
     <link rel="stylesheet" href="{% static 'css/bookings2.css' %}">
 
-    <!-- ✅ Leaflet.js for Maps -->
+    <!-- Leaflet.js for Maps -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-    <!-- ✅ SweetAlert2 for Alerts -->
+    <!-- SweetAlert2 for Alerts -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
+        /* Optional styling if you want to keep a map container here */
         #map-container {
             margin-top: 20px;
             width: 100%;
@@ -27,16 +28,15 @@
             width: 80%;
             margin: auto;
         }
-
         .footer {
-    background: rgba(216, 100, 140, 0.2);
-    color: #D8648C;
-    text-align: center;
-    padding: 15px;
-    margin-top: auto;
-    border-top: 2px solid #D8648C;
-    backdrop-filter: blur(10px);
-}
+            background: rgba(216, 100, 140, 0.2);
+            color: #D8648C;
+            text-align: center;
+            padding: 15px;
+            margin-top: auto;
+            border-top: 2px solid #D8648C;
+            backdrop-filter: blur(10px);
+        }
     </style>
 </head>
 <body>
@@ -80,6 +80,7 @@
                             {% else %}
                                 {{ booking.status }}
                             {% endif %}
+                            <!-- Open map in new page -->
                             <button onclick="viewLocation({{ booking.latitude }}, {{ booking.longitude }})">📍 View Location</button>
                         </td>
                     </tr>
@@ -89,95 +90,73 @@
         {% else %}
             <p>No bookings found.</p>
         {% endif %}
-
-        <!-- ✅ Map Container -->
-        <div id="map-container">
-            <h3>Booking Location</h3>
-            <div id="map"></div>
-        </div>
-   <!-- Footer -->
-    
-
     </div>
-   <!-- Footer -->
-   <footer class="footer">
-    <p>Artist Finder &copy; All rights reserved</p>
-</footer>
+
+    <footer class="footer">
+        <p>Artist Finder &copy; All rights reserved</p>
+    </footer>
 
     <script>
-        // ✅ Initialize Leaflet Map
-        var map = L.map('map').setView([27.7172, 85.3240], 13); // Default center (Kathmandu)
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
-
-        var marker = L.marker([27.7172, 85.3240]).addTo(map);
-
-        // ✅ Function to Show Booking Location on Map
+        // Open the booking location on a new page
         function viewLocation(lat, lng) {
             if (!lat || !lng) {
                 Swal.fire("Location Not Available", "This booking does not have a saved location.", "info");
                 return;
             }
-
-            var userLocation = new L.LatLng(lat, lng);
-            map.setView(userLocation, 13);
-            marker.setLatLng(userLocation);
-
-            Swal.fire("Location Loaded", "Map updated with the selected booking location.", "success");
+            const mapUrl = `/booking-location/?lat=${lat}&lng=${lng}`;
+            window.open(mapUrl, '_blank');
         }
 
+        // Function to update the booking status using fetch API and SweetAlert2
         function updateBookingStatus(bookingId, status) {
-    Swal.fire({
-        title: `Are you sure?`,
-        text: `Do you want to ${status.toLowerCase()} this booking?`,
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Yes, proceed!",
-        cancelButtonText: "No, cancel"
-    }).then((result) => {
-        if (!result.isConfirmed) {
-            return;
-        }
-
-        fetch(`/update-booking-status/${bookingId}/`, {
-            method: "POST",
-            headers: {
-                "X-CSRFToken": "{{ csrf_token }}",
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ status: status })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                Swal.fire({
-                    title: "Success!",
-                    text: data.message + " A confirmation email has been sent.",
-                    icon: "success",
-                    confirmButtonText: "OK"
-                }).then(() => {
-                    location.reload(); // Refresh the page after confirmation
-                });
-            } else {
-                Swal.fire({
-                    title: "Error!",
-                    text: data.error || "Could not update booking. Try again later.",
-                    icon: "error"
-                });
-            }
-        })
-        .catch(error => {
-            console.error("Error:", error);
             Swal.fire({
-                title: "Error!",
-                text: "Something went wrong! Please try again later.",
-                icon: "error"
+                title: `Are you sure?`,
+                text: `Do you want to ${status.toLowerCase()} this booking?`,
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Yes, proceed!",
+                cancelButtonText: "No, cancel"
+            }).then((result) => {
+                if (!result.isConfirmed) {
+                    return;
+                }
+                fetch(`/update-booking-status/${bookingId}/`, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": "{{ csrf_token }}",
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ status: status })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: "Success!",
+                            text: data.message + " A confirmation email has been sent.",
+                            icon: "success",
+                            confirmButtonText: "OK"
+                        }).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            title: "Error!",
+                            text: data.error || "Could not update booking. Try again later.",
+                            icon: "error"
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    Swal.fire({
+                        title: "Error!",
+                        text: "Something went wrong! Please try again later.",
+                        icon: "error"
+                    });
+                });
             });
-        });
-    });
-}
-
+        }
     </script>
 </body>
 </html>
