@@ -27,24 +27,34 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from .models import ChatRoom, ChatMessage
 
+# @login_required
+# def chat_room(request, room_id):
+#     """ ✅ Renders chat messages and handles new messages """
+#     chat_room = get_object_or_404(ChatRoom, id=room_id)
+#     messages = ChatMessage.objects.filter(chat_room=chat_room).order_by("timestamp")
+
+#     if request.method == "POST":
+#         message_text = request.POST.get("message")
+#         if message_text:
+#             new_message = ChatMessage.objects.create(
+#                 chat_room=chat_room,
+#                 sender=request.user,
+#                 message=message_text
+#             )
+#             return JsonResponse({"success": True, "message": new_message.message})
+
+#     return render(request, "chat/chat_room.html", {"chat_room": chat_room, "messages": messages})
+
 @login_required
 def chat_room(request, room_id):
-    """ ✅ Renders chat messages and handles new messages """
+    """ ✅ Renders chat messages and marks them as read """
     chat_room = get_object_or_404(ChatRoom, id=room_id)
     messages = ChatMessage.objects.filter(chat_room=chat_room).order_by("timestamp")
 
-    if request.method == "POST":
-        message_text = request.POST.get("message")
-        if message_text:
-            new_message = ChatMessage.objects.create(
-                chat_room=chat_room,
-                sender=request.user,
-                message=message_text
-            )
-            return JsonResponse({"success": True, "message": new_message.message})
+    # ✅ Mark all messages as read when opening the chat
+    messages.exclude(sender=request.user).update(is_read=True)
 
     return render(request, "chat/chat_room.html", {"chat_room": chat_room, "messages": messages})
-
 
 
 from django.shortcuts import render, get_object_or_404, redirect
@@ -101,3 +111,70 @@ def chat_view(request, room_id):
         message.timestamp = localtime(message.timestamp, timezone='Asia/Kathmandu')
 
     return render(request, 'chat/chat_room.html', {'messages': messages})
+
+
+
+# from django.http import JsonResponse
+# from django.contrib.auth.decorators import login_required
+
+
+# @login_required
+# def get_chat_notifications(request):
+#     """ ✅ Fetch the count of unread messages for the logged-in user """
+#     unread_count = ChatMessage.objects.filter(
+#         chat_room__artist=request.user, is_read=False
+#     ).exclude(sender=request.user).count()
+
+#     return JsonResponse({"unread_chats": unread_count})
+
+
+# @login_required
+# def mark_chat_notifications_read(request):
+#     """ ✅ Mark all unread messages as read when user clicks on chat """
+#     ChatMessage.objects.filter(chat_room__artist=request.user, is_read=False).exclude(sender=request.user).update(is_read=True)
+    
+#     return JsonResponse({"success": True})
+
+
+@login_required
+def get_user_chat_notifications(request):
+    """ Fetch unread messages for a user (client) sent by artists """
+    unread_count = ChatMessage.objects.filter(
+        chat_room__user=request.user,  # User is the client
+        is_read=False
+    ).exclude(sender=request.user).count()
+
+    return JsonResponse({"unread_chats": unread_count})
+
+
+@login_required
+def get_artist_chat_notifications(request):
+    """ Fetch unread messages for an artist sent by users (clients) """
+    unread_count = ChatMessage.objects.filter(
+        chat_room__artist=request.user,  # User is the artist
+        is_read=False
+    ).exclude(sender=request.user).count()
+
+    return JsonResponse({"unread_chats": unread_count})
+
+
+@login_required
+def mark_user_chat_notifications_read(request):
+    """ Mark all unread messages as read for a user (client) """
+    ChatMessage.objects.filter(
+        chat_room__user=request.user,  # User is the receiver
+        is_read=False
+    ).exclude(sender=request.user).update(is_read=True)
+
+    return JsonResponse({"success": True})
+
+
+@login_required
+def mark_artist_chat_notifications_read(request):
+    """ Mark all unread messages as read for an artist """
+    ChatMessage.objects.filter(
+        chat_room__artist=request.user,  # Artist is the receiver
+        is_read=False
+    ).exclude(sender=request.user).update(is_read=True)
+
+    return JsonResponse({"success": True})

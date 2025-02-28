@@ -7,117 +7,82 @@
     <title>Artist Dashboard</title>
     <link rel="stylesheet" href="{% static 'css/artist_dashboard.css' %}">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <style>
-      /* 🖼️ Work Showcase Section */
-.works-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); /* ✅ Increased image size */
-    gap: 30px;
-    margin-top: 30px;
-    justify-content: center;
-}
+        /* ✅ Stylish Notification Badge */
+        .badge {
+            position: absolute;
+            top: -5px;
+            right: -10px;
+            background: red;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 5px 8px;
+            border-radius: 50%;
+            display: none;
+            animation: bounce 1s infinite;
+        }
 
-/* 🎨 Work Card */
-.card {
-    background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    transition: transform 0.3s ease-in-out;
-    box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.15);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 15px;
-}
+        /* ✅ Bounce Animation */
+        @keyframes bounce {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+        }
 
-/* 📷 Work Image */
-.card img {
-    width: 100%;
-    height: 500px; /* ✅ Increased height */
-    object-fit: cover; /* ✅ Ensures full image visibility */
-    border-radius: 10px;
-    transition: transform 0.3s ease-in-out;
-}
+        /* ✅ Positioning for Notification */
+        .nav-item {
+            position: relative;
+            text-decoration: none;
+            color: black;
+            font-weight: bold;
+            padding: 10px;
+        }
 
-.card img:hover {
-    transform: scale(1.05);
-}
-
-/* ℹ️ Work Content */
-.card-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    padding: 15px;
-    text-align: center;
-}
-
-.card h3 {
-    font-size: 22px;
-    color: #D8648C;
-    margin-top: 12px;
-}
-
-.card p {
-    font-size: 16px;
-    color: #555;
-    margin-top: 8px;
-}
-
-/* ❌ No Works */
-.no-works {
-    font-size: 18px;
-    color: #777;
-    margin-top: 20px;
-}
-
-/* 🖥️ Responsive Design */
-@media (max-width: 1024px) {
-    .works-grid {
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* ✅ Adjust for tablets */
-    }
-
-    .card img {
-        height: 320px; /* ✅ Adjust for tablets */
-    }
-}
-
-@media (max-width: 768px) {
-    .works-grid {
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* ✅ Adjust for mobile */
-    }
-
-    .card img {
-        height: 280px; /* ✅ Adjust for mobile */
-    }
-}
-
-
+        /* ✅ Responsive Design */
+        @media (max-width: 768px) {
+            .badge {
+                font-size: 10px;
+                padding: 3px 5px;
+                top: -3px;
+                right: -8px;
+            }
+        }
     </style> 
 </head>
 <body>
     <!-- Header -->
     <header class="header">
         <div class="logo">
-            <img src="{% static 'imagess/logo.png' %}" alt="Artist Finder Logo">
+            <img src="{% static 'images/logo.png' %}" alt="Artist Finder Logo">
         </div>
         <nav class="navbar">
             <a href="{% url 'artist_dashboard' %}" class="nav-item active">Dashboard</a>
             
-            <a href="{% url 'chat_list' %}" class="nav-item">Chats</a>
-
-            
+            <!-- Chats with Notification Badge -->
+            <a href="{% url 'chat_list' %}" class="nav-item" onclick="clearArtistChatNotifications()">
+                Chats <span id="artist-chat-badge" class="badge">0</span>
+            </a>
             
             <a href="{% url 'services' %}" class="nav-item">Services</a>
-            <a href="{% url 'bookings' %}" class="nav-item">Bookings</a>
+
+            <!-- ✅ BOOKINGS with Notification Badge -->
+            <a href="{% url 'bookings' %}" class="nav-item" onclick="clearNotifications()">
+                Bookings <span id="booking-badge" class="badge">0</span>
+            </a>
+            
             <a href="{% url 'certificates' %}" class="nav-item">Certificates</a>
-            <a href="{% url 'availability_status' %}" class="nav-item">Availability Status</a>
+            <a href="{% url 'availability_status' %}" class="nav-item">Availability</a>
+
             <a href="{% url 'artist_profile' %}" class="nav-item profile-link">
                 {% if user.profile_image %}
                     <img src="{{ user.profile_image.url }}" alt="Profile Image" class="profile-img">
                 {% else %}
-                    <img src="{% static 'images/default_profile.png' %}" alt="Default Profile Image" class="profile-img">
+                    <img src="{% static 'images/default_profile.png' %}" alt="Default Profile" class="profile-img">
                 {% endif %}
             </a>
             <a href="{% url 'artist_logout' %}" class="nav-item logout">Logout</a>
@@ -144,10 +109,8 @@
                         <h3>{{ work.title }}</h3>
                         <p>{{ work.description }}</p>
 
-                        <!-- ✅ Update Button -->
                         <a href="{% url 'update_work' work.id %}" class="update-btn">✏️ Edit</a>
 
-                        <!-- ✅ Delete Button with SweetAlert Confirmation -->
                         <form id="delete-form-{{ work.id }}" action="{% url 'delete_work' work.id %}" method="POST">
                             {% csrf_token %}
                             <button type="button" class="delete-btn" onclick="confirmDelete('{{ work.id }}')">
@@ -168,7 +131,7 @@
         <p>Artist Finder &copy; All rights reserved</p>
     </footer>
 
-    <!-- ✅ SweetAlert Delete Confirmation Script -->
+    <!-- ✅ JavaScript for Notifications -->
     <script>
         function confirmDelete(workId) {
             Swal.fire({
@@ -186,6 +149,75 @@
                 }
             });
         }
+
+        // ✅ Fetch New Notifications Every 10 Seconds
+        function fetchNotifications() {
+            fetch("{% url 'get_notifications' %}")  // Backend URL for new notifications
+                .then(response => response.json())
+                .then(data => {
+                    let newBookings = data.new_bookings || 0;
+                    let bookingBadge = document.getElementById("booking-badge");
+
+                    if (newBookings > 0) {
+                        bookingBadge.style.display = "inline-block";
+                        bookingBadge.innerText = `+${newBookings}`;
+                    } else {
+                        bookingBadge.style.display = "none";
+                    }
+                })
+                .catch(error => console.error("Error fetching notifications:", error));
+        }
+
+        // ✅ Clear Notifications on Click
+        function clearNotifications() {
+            fetch("{% url 'mark_notifications_read' %}")  // Mark notifications as read
+                .then(() => {
+                    document.getElementById("booking-badge").style.display = "none";  // Hide badge
+                })
+                .catch(error => console.error("Error marking notifications as read:", error));
+        }
+
+        // ✅ Run Notification Fetch Every 10 Seconds
+        setInterval(fetchNotifications, 10000);
+
+        // ✅ Fetch Notifications on Page Load
+        fetchNotifications();
+
+
+    
+        
+        
+    
+    function fetchArtistChatNotifications() {
+    fetch("{% url 'get_artist_chat_notifications' %}")  // Fetch unread messages for artists
+        .then(response => response.json())
+        .then(data => {
+            let unreadChats = data.unread_chats || 0;
+            let chatBadge = document.getElementById("artist-chat-badge");
+
+            if (unreadChats > 0) {
+                chatBadge.style.display = "inline-block";
+                chatBadge.innerText = unreadChats;
+            } else {
+                chatBadge.style.display = "none";
+            }
+        })
+        .catch(error => console.error("Error fetching chat notifications:", error));
+}
+
+function clearArtistChatNotifications() {
+    fetch("{% url 'mark_artist_chat_notifications_read' %}")  // Mark messages as read
+        .then(() => {
+            document.getElementById("artist-chat-badge").style.display = "none";  // Hide badge
+        })
+        .catch(error => console.error("Error marking chat notifications as read:", error));
+}
+
+// ✅ Run Notification Fetch Every 10 Seconds
+setInterval(fetchArtistChatNotifications, 10000);
+fetchArtistChatNotifications();
+
+
     </script>
 
 </body>

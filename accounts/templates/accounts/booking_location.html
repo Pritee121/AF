@@ -3,57 +3,166 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Booking Location</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bookings</title>
+
+    <!-- Load CSS -->
+    <link rel="stylesheet" href="{% static 'css/bookings2.css' %}">
+
     <!-- Leaflet.js for Maps -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <!-- SweetAlert2 for Alerts -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <style>
-        /* Full-screen map */
-        html, body, #map {
-            height: 100%;
-            margin: 0;
-            padding: 0;
+        #map-container {
+            margin-top: 20px;
+            width: 100%;
+            text-align: center;
         }
-        /* Back button styling */
-        .back-button {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: #fff;
-            padding: 10px;
-            border: 1px solid #ccc;
-            text-decoration: none;
-            color: #333;
-            border-radius: 5px;
-            z-index: 1000;
+        #map {
+            height: 400px;
+            width: 80%;
+            margin: auto;
+        }
+        .footer {
+            background: rgba(216, 100, 140, 0.2);
+            color: #D8648C;
+            text-align: center;
+            padding: 15px;
+            margin-top: auto;
+            border-top: 2px solid #D8648C;
+            backdrop-filter: blur(10px);
         }
     </style>
 </head>
 <body>
-    <!-- Back button to return to the bookings page -->
-    <a href="/bookings/" class="back-button">← Back to Bookings</a>
+    <header>
+        <a href="{% url 'artist_dashboard' %}">← Back to Home</a>
+    </header>
 
-    <div id="map"></div>
+    <div class="bookings-container">
+        <h2>My Bookings</h2>
+
+        {% if user_bookings %}
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Artist</th>
+                        <th>Client</th>
+                        <th>Service</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Payment</th>
+                        <th>Duration</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in user_bookings %}
+                    <tr>
+                        <td>{{ booking.artist.first_name }} {{ booking.artist.last_name }}</td>
+                        <td>{{ booking.client.first_name }} {{ booking.client.last_name }}</td>
+                        <td>{{ booking.service.service_name }} - Rs.{{ booking.service.price }}</td>
+                        <td>{{ booking.date }}</td>
+                        <td>{{ booking.time }}</td>
+                        <td>{{ booking.payment_method|title }}</td>
+                        <td>{{ booking.service.total_duration }}</td>
+                        <td id="status-{{ booking.id }}">
+                            {{ booking.status }}  <!-- Debugging: Show actual status -->
+                        </td>
+                        <td>
+                            {% if booking.status|lower == "pending" %}
+                            <button onclick="updateBookingStatus({{ booking.id }}, 'Confirmed')">Confirm</button>
+                            <button onclick="updateBookingStatus({{ booking.id }}, 'Cancelled')">Cancel</button>
+                        {% else %}
+                            <span>No actions available</span>
+                        {% endif %}
+                        <button onclick="viewLocation({{ booking.latitude|default:0 }}, {{ booking.longitude|default:0 }})">
+                            📍 View Location
+                        </button>
+                        
+</td>
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No bookings found.</p>
+        {% endif %}
+    </div>
+
+    <footer class="footer">
+        <p>Artist Finder &copy; All rights reserved</p>
+    </footer>
+
     <script>
-        // Utility to get query parameters from the URL
-        function getQueryParams() {
-            let params = {};
-            location.search.substring(1).split("&").forEach(function(param) {
-                let [key, value] = param.split("=");
-                params[key] = decodeURIComponent(value);
-            });
-            return params;
+        function viewLocation(lat, lng) {
+            if (!lat || !lng || lat === 0 || lng === 0) {
+                Swal.fire("Location Not Available", "This booking does not have a saved location.", "info");
+                return;
+            }
+            const mapUrl = `/booking-location/?lat=${lat}&lng=${lng}`;
+            window.open(mapUrl, '_blank');
         }
-        const params = getQueryParams();
-        const lat = parseFloat(params.lat) || 27.7172;  // Default to Kathmandu latitude
-        const lng = parseFloat(params.lng) || 85.3240;   // Default to Kathmandu longitude
 
-        // Initialize the map centered at the provided coordinates
-        var map = L.map('map').setView([lat, lng], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
-        L.marker([lat, lng]).addTo(map);
+        function updateBookingStatus(bookingId, status) {
+    Swal.fire({
+        title: `Are you sure?`,
+        text: `Do you want to ${status.toLowerCase()} this booking?`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, proceed!",
+        cancelButtonText: "No, cancel"
+    }).then((result) => {
+        if (!result.isConfirmed) return;
+
+        fetch(`/update-booking-status/${bookingId}/`, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": getCSRFToken(), // Get CSRF Token dynamically
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ status: status })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    title: "Success!",
+                    text: `Booking status has been ${status.toLowerCase()}.`,
+                    icon: "success",
+                    confirmButtonText: "OK"
+                }).then(() => {
+                    location.reload(); // Reload the page to reflect the new status
+                });
+            } else {
+                Swal.fire({
+                    title: "Error!",
+                    text: data.error || "Could not update booking. Try again later.",
+                    icon: "error"
+                });
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            Swal.fire({
+                title: "Error!",
+                text: "Something went wrong! Please try again later.",
+                icon: "error"
+            });
+        });
+    });
+}
+
+        function getCSRFToken() {
+            let csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]');
+            return csrfToken ? csrfToken.value : "";
+        }
     </script>
 </body>
 </html>

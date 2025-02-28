@@ -6,95 +6,111 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Service</title>
 
-    <!-- ✅ Stylesheets -->
-    <link rel="stylesheet" href="{% static 'css/add_service2.css' %}">
+    <!-- ✅ Bootstrap for Styling -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
-    <!-- ✅ Flatpickr for Date & Time Pickers -->
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 </head>
 <body>
-    <h1 class="text-center">Add a New Service</h1>
 
-    <div class="container">
-        <form method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
+    <div class="container mt-5">
+        <h1 class="text-center">Add a New Service</h1>
 
-            <h3>Service Details</h3>
-            {{ service_form.as_p }}
-
-            <h3>Availability Slots</h3>
-            <div id="availability-formset">
-                {{ formset.management_form }}
-                {% for form in formset %}
-                    <div class="availability-entry">
-                        <label>Date:</label>
-                        {{ form.available_date }}
-                        <label>Time:</label>
-                        {{ form.available_time }}
-                        <button type="button" class="remove-slot">❌ Remove</button>
-                    </div>
+        <!-- ✅ Display Form Errors -->
+        {% if form.errors %}
+        <div class="alert alert-danger">
+            <strong>There were errors in the form:</strong>
+            <ul>
+                {% for field, errors in form.errors.items %}
+                    <li>{{ field|title }}: {{ errors.0 }}</li>
                 {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+        
+            <div class="mb-3">
+                <label for="id_service_name">Service Name</label>
+                {{ form.service_name }}
+            </div>
+        
+            <div class="mb-3">
+                <label for="id_price">Price</label>
+                {{ form.price }}
+            </div>
+        
+            <div class="row">
+                <div class="col-md-6">
+                    <label for="id_duration_hours">Duration (Hours)</label>
+                    {{ form.duration_hours }}
+                </div>
+                <div class="col-md-6">
+                    <label for="id_duration_minutes">Duration (Minutes)</label>
+                    {{ form.duration_minutes }}
+                </div>
+            </div>
+        
+            <div class="row">
+                <div class="col-md-6">
+                    <label for="id_travel_time_hours">Travel Time (Hours)</label>
+                    {{ form.travel_time_hours }}
+                </div>
+                <div class="col-md-6">
+                    <label for="id_travel_time_minutes">Travel Time (Minutes)</label>
+                    {{ form.travel_time_minutes }}
+                </div>
             </div>
 
-            <!-- ✅ Add More Slots Button -->
-            <button type="button" id="add-slot" class="add-btn">➕ Add More Slots</button>
-
-            <button type="submit" class="submit-btn">Submit Service</button>
+            <!-- ✅ Display total duration dynamically -->
+            <div class="mb-3">
+                <label>Total Duration: <span id="total_duration_display">0h 0m</span></label>
+            </div>
+        
+            <div class="mb-3">
+                <label for="id_description">Description</label>
+                {{ form.description }}
+            </div>
+        
+            <div class="mb-3">
+                <label>Work Days</label>
+                {{ form.work_days }}
+            </div>
+        
+            <button type="submit" class="btn btn-primary w-100">Submit</button>
         </form>
 
-        <!-- ✅ Back to Services Button -->
-        <div class="text-center">
-            <a href="{% url 'services' %}" class="back-btn">⬅ Back to Services</a>
+        <div class="text-center mt-3">
+            <a href="{% url 'services' %}" class="btn btn-secondary">⬅ Back to Services</a>
         </div>
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            flatpickr(".datepicker", { dateFormat: "Y-m-d" });
-            flatpickr(".timepicker", { enableTime: true, noCalendar: true, dateFormat: "H:i" });
-        });
+            function updateTotalDuration() {
+                let durationHours = parseInt(document.getElementById("id_duration_hours").value) || 0;
+                let durationMinutes = parseInt(document.getElementById("id_duration_minutes").value) || 0;
+                let travelHours = parseInt(document.getElementById("id_travel_time_hours").value) || 0;
+                let travelMinutes = parseInt(document.getElementById("id_travel_time_minutes").value) || 0;
 
-        $(document).ready(function () {
-            let formsetDiv = $("#availability-formset");
-            let totalForms = $("#id_availability-TOTAL_FORMS");  // ✅ Corrected ID
-            let formNum = parseInt(totalForms.val());
+                let totalHours = durationHours + travelHours;
+                let totalMinutes = durationMinutes + travelMinutes;
 
-            // ✅ Add new slot dynamically
-            $("#add-slot").click(function () {
-                let newForm = $(".availability-entry:first").clone();
-                
-                // ✅ Clear input values
-                newForm.find("input").each(function () {
-                    let name = $(this).attr("name").replace(/-\d+-/, `-${formNum}-`);
-                    let id = $(this).attr("id").replace(/-\d+-/, `-${formNum}-`);
-                    $(this).attr({ name: name, id: id }).val("");
-                });
-
-                // ✅ Append the new form
-                formsetDiv.append(newForm);
-                totalForms.val(formNum + 1);
-
-                // ✅ Reinitialize Flatpickr for new fields
-                newForm.find(".datepicker").flatpickr({ dateFormat: "Y-m-d" });
-                newForm.find(".timepicker").flatpickr({ enableTime: true, noCalendar: true, dateFormat: "H:i" });
-
-                formNum++;
-            });
-
-            // ✅ Remove slot dynamically
-            $(document).on("click", ".remove-slot", function () {
-                if ($(".availability-entry").length > 1) {  // Prevent removing all slots
-                    $(this).closest(".availability-entry").remove();
-                    formNum--;
-                    totalForms.val(formNum);
-                } else {
-                    alert("You must have at least one availability slot.");
+                // Handle minute overflow
+                if (totalMinutes >= 60) {
+                    totalHours += Math.floor(totalMinutes / 60);
+                    totalMinutes = totalMinutes % 60;
                 }
-            });
+
+                document.getElementById("total_duration_display").innerText = `${totalHours}h ${totalMinutes}m`;
+            }
+
+            document.getElementById("id_duration_hours").addEventListener("input", updateTotalDuration);
+            document.getElementById("id_duration_minutes").addEventListener("input", updateTotalDuration);
+            document.getElementById("id_travel_time_hours").addEventListener("input", updateTotalDuration);
+            document.getElementById("id_travel_time_minutes").addEventListener("input", updateTotalDuration);
         });
     </script>
-    
+
 </body>
 </html>

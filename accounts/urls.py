@@ -22,7 +22,7 @@ from django.urls import path
 from django.urls import path
 from .views import update_work
 from django.urls import path
-from .views import get_available_slots
+# from .views import get_available_slots
 from .views import get_available_dates, get_available_times
 from .views import user_profile
 from .views import artist_profile
@@ -30,8 +30,16 @@ from .views import edit_review
 from .views import reply_to_review
 from .views import edit_review_reply, delete_review_reply
 from .views import artist_certificates, edit_certificate, delete_certificate
+from .views import service_schedule 
+from .views import get_notifications
+from .views import get_notifications, mark_notifications_read
+
+
 urlpatterns = [
-    
+     path('service-schedule/', service_schedule, name='service_schedule'),
+    path('delete-schedule/<int:schedule_id>/', views.delete_schedule, name='delete_schedule'),
+    path('service-schedule/', service_schedule, name='service_schedule'),  # ✅ Define the URL
+       path('week-schedule/', views.week_schedule_view, name='week_schedule'),
     # User Authentication
     path("certificates/", artist_certificates, name="artist_certificates"),
     path("certificates/edit/<int:certificate_id>/", edit_certificate, name="edit_certificate"),
@@ -66,7 +74,7 @@ urlpatterns = [
     path('delete-review/<int:review_id>/', views.delete_review, name='delete_review'),
     path('work/delete/<int:work_id>/', delete_work, name='delete_work'),  # New URL pattern
     path("service/<int:service_id>/delete/", delete_service, name="delete_service"),
-    path("services/edit/<int:service_id>/", edit_service, name="edit_service"),  
+    path("services/edit/<int:service_id>/", views.edit_service, name="edit_service"),  
     path("availability/", availability_status, name="availability_status"),  # New URL
     path("cancel-booking/<int:booking_id>/",cancel_booking, name="cancel_booking"),
     path("availability/toggle/", toggle_availability, name="toggle_availability"),
@@ -96,7 +104,7 @@ urlpatterns = [
     path('artist/reset/done/', 
          auth_views.PasswordResetCompleteView.as_view(template_name="accounts/artist_password_reset_complete.html"), 
          name='artist_password_reset_complete'),
-    path("get-available-slots/<int:artist_id>/", get_available_slots, name="get_available_slots"),
+#     path("get-available-slots/<int:artist_id>/", get_available_slots, name="get_available_slots"),
           path('update-work/<int:work_id>/', update_work, name='update_work'),
     path("get-available-dates/<int:artist_id>/", get_available_dates, name="get_available_dates"),
     path("get-available-times/<int:artist_id>/", views.get_available_times, name="get_available_times"),
@@ -107,6 +115,8 @@ urlpatterns = [
       path('customize-booking/', views.customize_booking, name='customize_booking'),
       path('process-booking/', views.process_booking, name='process_booking'),
        path('booking-location/', views.booking_location, name='booking_location'),
+         path('get-notifications/', get_notifications, name='get_notifications'),
+         path("mark-notifications-read/", mark_notifications_read, name="mark_notifications_read"),
 ]
 
 #Serve media files during development only

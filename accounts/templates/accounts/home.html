@@ -408,7 +408,49 @@ body.dark-mode .dropdown-content a:hover {
     position: relative; /* Use relative positioning */
     bottom: 0;
 }
+/* ✅ Stylish Notification Badge */
+        .badge {
+            position: absolute;
+            top: -5px;
+            right: -10px;
+            background: red;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 5px 8px;
+            border-radius: 50%;
+            display: none;
+            animation: bounce 1s infinite;
+        }
 
+        /* ✅ Bounce Animation */
+        @keyframes bounce {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+        }
+
+        /* ✅ Positioning for Notification */
+        .nav-item {
+            position: relative;
+            text-decoration: none;
+            color: black;
+            font-weight: bold;
+            padding: 10px;
+        }
+
+        /* ✅ Responsive Design */
+        @media (max-width: 768px) {
+            .badge {
+                font-size: 10px;
+                padding: 3px 5px;
+                top: -3px;
+                right: -8px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -421,7 +463,10 @@ body.dark-mode .dropdown-content a:hover {
             <a href="{% url 'booking_history' %}" class="nav-link">Booking History</a>
             <a href="{% url 'aboutus' %}" class="nav-link">About Us</a>
             <a href="{% url 'contactus' %}" class="nav-link">Contact Us</a>
-            <a href="{% url 'chat_list' %}" class="nav-link">Chats</a>
+            <a href="{% url 'chat_list' %}" class="nav-item" onclick="clearUserChatNotifications()">
+                Chats <span id="chat-badge" class="badge">0</span>
+            </a>
+            
             <a href="{% url 'artist_list' %}" class="nav-link">View Artists</a>
         
             <!-- ✅ Settings Dropdown -->
@@ -632,6 +677,39 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 });
+
+
+function fetchUserChatNotifications() {
+    fetch("{% url 'get_user_chat_notifications' %}")  // Fetch unread messages for users
+        .then(response => response.json())
+        .then(data => {
+            let unreadChats = data.unread_chats || 0;
+            let chatBadge = document.getElementById("chat-badge");
+
+            if (unreadChats > 0) {
+                chatBadge.style.display = "inline-block";
+                chatBadge.innerText = unreadChats;
+            } else {
+                chatBadge.style.display = "none";
+            }
+        })
+        .catch(error => console.error("Error fetching chat notifications:", error));
+}
+
+function clearUserChatNotifications() {
+    fetch("{% url 'mark_user_chat_notifications_read' %}")  // Mark messages as read
+        .then(() => {
+            document.getElementById("chat-badge").style.display = "none";  // Hide badge
+        })
+        .catch(error => console.error("Error marking chat notifications as read:", error));
+}
+
+// ✅ Run Notification Fetch Every 10 Seconds
+setInterval(fetchUserChatNotifications, 10000);
+fetchUserChatNotifications();
+
+
+
 </script>
 
  

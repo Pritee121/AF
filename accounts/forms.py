@@ -102,32 +102,91 @@ from django.forms import inlineformset_factory
 from datetime import date
 from django.core.exceptions import ValidationError
 
+# class ServiceForm(forms.ModelForm):
+#     class Meta:
+#         model = Service
+#         fields = ['service_name', 'price', 'duration', 'description']
+# from django import forms
+# from .models import Service
+
+# class ServiceForm(forms.ModelForm):
+#     class Meta:
+#         model = Service
+#         fields = ['service_name', 'price', 'duration', 'travel_time', 'description', 'work_days']
+#         widgets = {
+#             'service_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter service name'}),
+#             'price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Enter price'}),
+#             'duration': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
+#             'travel_time': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
+#             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+#             'work_days': forms.CheckboxSelectMultiple(),
+#         }
+from django import forms
+from .models import Service
+from datetime import timedelta
+
 class ServiceForm(forms.ModelForm):
+    duration_hours = forms.IntegerField(
+        required=True, 
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
+        label="Duration (Hours)"
+    )
+    duration_minutes = forms.IntegerField(
+        required=True, 
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'min': 0, 'max': 59}),
+        label="Duration (Minutes)"
+    )
+    travel_time_hours = forms.IntegerField(
+        required=True, 
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
+        label="Travel Time (Hours)"
+    )
+    travel_time_minutes = forms.IntegerField(
+        required=True, 
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'min': 0, 'max': 59}),
+        label="Travel Time (Minutes)"
+    )
+
     class Meta:
         model = Service
-        fields = ['service_name', 'price', 'duration', 'description']
+        fields = ['service_name', 'price', 'description', 'work_days']
+
+    def clean(self):
+        cleaned_data = super().clean()
+        duration_hours = cleaned_data.get("duration_hours", 0)
+        duration_minutes = cleaned_data.get("duration_minutes", 0)
+        travel_time_hours = cleaned_data.get("travel_time_hours", 0)
+        travel_time_minutes = cleaned_data.get("travel_time_minutes", 0)
+
+        cleaned_data['duration'] = timedelta(hours=duration_hours, minutes=duration_minutes)
+        cleaned_data['travel_time'] = timedelta(hours=travel_time_hours, minutes=travel_time_minutes)
+        
+        return cleaned_data
+
+    def save(self, commit=True):
+        service = super().save(commit=False)
+        service.duration = timedelta(
+            hours=self.cleaned_data["duration_hours"], 
+            minutes=self.cleaned_data["duration_minutes"]
+        )
+        service.travel_time = timedelta(
+            hours=self.cleaned_data["travel_time_hours"], 
+            minutes=self.cleaned_data["travel_time_minutes"]
+        )
+        if commit:
+            service.save()
+        return service
+
+
+from django import forms
+from .models import ServiceAvailability
 
 class ServiceAvailabilityForm(forms.ModelForm):
     class Meta:
         model = ServiceAvailability
-        fields = ['available_date', 'available_time']
-        widgets = {
-            'available_date': forms.DateInput(attrs={'type': 'date'}),
-            'available_time': forms.TimeInput(attrs={'type': 'time'}),
-        }
+        fields = ['available_date', 'start_time', 'end_time']
 
-    def clean_available_date(self):
-        """ Ensure available date is not in the past """
-        available_date = self.cleaned_data.get('available_date')
-        if available_date and available_date < date.today():
-            raise ValidationError("Available date cannot be in the past.")
-        return available_date
 
-# ✅ Create Formset for Multiple Date & Time
-ServiceAvailabilityFormSet = inlineformset_factory(
-    Service, ServiceAvailability, form=ServiceAvailabilityForm,
-    extra=1, can_delete=True
-)
 
 from django import forms
 from .models import Booking
@@ -174,3 +233,43 @@ class ReviewReplyForm(forms.ModelForm):
         widgets = {
             "artist_reply": forms.Textarea(attrs={"rows": 2, "placeholder": "Write a reply..."}),
         }
+from django import forms
+from .models import WeekSchedule
+
+class WeekScheduleForm(forms.ModelForm):
+    class Meta:
+        model = WeekSchedule
+        fields = ['weekdays', 'start_time', 'end_time']
+        widgets = {
+            'weekdays': forms.CheckboxSelectMultiple(),  # Show checkboxes for weekdays
+            'start_time': forms.TimeInput(attrs={'type': 'time'}),
+            'end_time': forms.TimeInput(attrs={'type': 'time'}),
+        }
+from django import forms
+from .models import ServiceSchedule, Service
+
+# class ServiceScheduleForm(forms.ModelForm):
+#     service = forms.ModelChoiceField(
+#         queryset=Service.objects.all(),
+#         widget=forms.Select(attrs={'class': 'form-control'})
+#     )
+#     start_time = forms.TimeField(
+#         widget=forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'})
+#     )
+
+#     class Meta:
+#         model = ServiceSchedule
+#         fields = ['service', 'start_time']
+
+from django import forms
+from .models import ServiceSchedule
+
+from django import forms
+from .models import ServiceSchedule
+
+class ServiceScheduleForm(forms.ModelForm):
+    start_time = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time'}))
+
+    class Meta:
+        model = ServiceSchedule
+        fields = ['service', 'start_time']
