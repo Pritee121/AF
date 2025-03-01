@@ -259,46 +259,65 @@ def approve_artist(request, artist_id):
 
 
 
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
-from .models import Booking, ServiceAvailability
+from .models import Booking, ServiceSchedule
+import logging
+
+# ✅ Setup logging for debugging
+logger = logging.getLogger(__name__)
 
 @login_required
 def cancel_booking(request, booking_id):
     """ ✅ Cancel a booking and make the time slot available again """
-    booking = get_object_or_404(Booking, id=booking_id, client=request.user)
+    if request.method != "POST":
+        return JsonResponse({"success": False, "message": "Invalid request method."}, status=405)
 
-    if booking.status in ["Pending", "Confirmed"]:
-        # ✅ Find the corresponding service slot
-        slot = ServiceAvailability.objects.filter(
+    try:
+        # ✅ Retrieve the booking for the logged-in user
+        booking = get_object_or_404(Booking, id=booking_id, client=request.user)
+
+        if booking.status not in ["Pending", "Confirmed"]:
+            return JsonResponse({"success": False, "message": "Cannot cancel this booking."}, status=400)
+
+        # ✅ Get the weekday from the booking date
+        weekday = booking.date.strftime("%A")  # Example: "Monday"
+
+        # ✅ Retrieve the corresponding service schedule
+        schedule = ServiceSchedule.objects.filter(
             service=booking.service,
-            available_date=booking.date,
-            available_time=booking.time
+            weekday=weekday,
+            start_time=booking.time  # ✅ Using `start_time`
         ).first()
 
-        if slot:
-            slot.is_booked = False  # ✅ Mark the slot as available again
-            slot.save()
-            print(f"✅ Slot {booking.time} on {booking.date} is now available again.")  # Debugging
+        if schedule:
+            logger.info(f"✅ Schedule found: {schedule.service.service_name} on {weekday} at {schedule.start_time}")
 
         # ✅ Update booking status
         booking.status = "Cancelled"
         booking.save()
-        print(f"✅ Booking {booking.id} successfully cancelled.")  # Debugging
+        logger.info(f"✅ Booking {booking.id} successfully cancelled.")
 
-        messages.success(request, "Your booking has been canceled. The slot is now available.")
+        messages.success(request, "Your booking has been canceled.")
 
         return JsonResponse({
             "success": True,
-            "message": "Booking canceled and slot is now available.",
+            "message": "Booking canceled.",
             "booking_id": booking.id,
             "service_id": booking.service.id,
-            "date": booking.date.strftime("%Y-%m-%d")
+            "date": booking.date.strftime("%Y-%m-%d"),
+            "weekday": weekday
         })
 
-    return JsonResponse({"success": False, "message": "Cannot cancel this booking."}, status=400)
+    except Booking.DoesNotExist:
+        return JsonResponse({"success": False, "message": "Booking not found."}, status=404)
+    
+    except Exception as e:
+        logger.error(f"❌ Error cancelling booking: {e}")
+        return JsonResponse({"success": False, "message": "An error occurred while cancelling the booking."}, status=500)
+
 
 
 from django.shortcuts import render, get_object_or_404, redirect

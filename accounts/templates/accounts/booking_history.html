@@ -264,16 +264,17 @@ body.dark-mode .dropdown-content a:hover {
                         {% if booking.status == "Pending" or booking.status == "Confirmed" %}
                             {% if booking.time_left > 24 %}
                                 <button type="button" class="cancel-btn"
-                                        onclick="confirmCancel('{{ booking.id }}', '{{ booking.service.id }}', '{{ booking.date }}')">
+                                        onclick="confirmCancel('{{ booking.id }}')">
                                     ❌ Cancel
                                 </button>
                             {% else %}
                                 <span class="disabled-text">❌ Cannot Cancel</span>
                             {% endif %}
                         {% else %}
-                            <span class="cancelled-text">N/A</span>
+                            <span class="cancelled-text">Cancelled</span>
                         {% endif %}
                     </td>
+                    
 
                     <!-- ✅ Payment Status -->
                     <td>
@@ -315,23 +316,69 @@ body.dark-mode .dropdown-content a:hover {
                 }
             });
         });
+        function confirmCancel(bookingId) {
+    Swal.fire({
+        title: "Cancel Booking?",
+        text: "Are you sure you want to cancel this booking?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#D8648C",
+        cancelButtonColor: "#6c757d",
+        confirmButtonText: "Yes, cancel it!",
+        cancelButtonText: "No, keep it"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/cancel-booking/${bookingId}/`, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken"), // Include CSRF token for security
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ status: "Cancelled" })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // ✅ Update UI
+                    document.getElementById(`status-${bookingId}`).textContent = "Cancelled";
+                    document.getElementById(`status-${bookingId}`).style.color = "red";
 
-        function confirmCancel(bookingId, serviceId, date) {
-            Swal.fire({
-                title: "Cancel Booking?",
-                text: "Are you sure you want to cancel this booking?",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#D8648C",
-                cancelButtonColor: "#6c757d",
-                confirmButtonText: "Yes, cancel it!",
-                cancelButtonText: "No, keep it"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    document.getElementById(`booking-row-${bookingId}`).remove();
+                    // ✅ Disable Cancel Button
+                    let cancelBtn = document.querySelector(`#booking-row-${bookingId} .cancel-btn`);
+                    if (cancelBtn) {
+                        cancelBtn.outerHTML = "<span class='cancelled-text'>Cancelled</span>";
+                    }
+
+                    Swal.fire("Cancelled!", "Your booking has been cancelled.", "success");
+                } else {
+                    Swal.fire("Error!", "Something went wrong.", "error");
                 }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                Swal.fire("Error!", "Something went wrong.", "error");
             });
-        }document.addEventListener("DOMContentLoaded", function () {
+        }
+    });
+}
+
+// ✅ Function to Get CSRF Token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+        document.addEventListener("DOMContentLoaded", function () {
     const darkModeToggle = document.getElementById("dark-mode-toggle");
     const body = document.body;
     const settingsBtn = document.getElementById("settings-btn");
