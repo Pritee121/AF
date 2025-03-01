@@ -1,0 +1,41 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Set Weekly Schedule</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+    <h2>Set Your Weekly Availability</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        
+        <label>Select Weekdays:</label>
+        {{ form.weekdays }}  <!-- ✅ Displays checkboxes for weekdays -->
+
+        <label for="start_time">Start Time:</label>
+        {{ form.start_time }}
+
+        <label for="end_time">End Time:</label>
+        {{ form.end_time }}
+
+        <button type="submit">Save Schedule</button>
+    </form>
+
+    <h3>Your Weekly Schedule:</h3>
+    <ul>
+        {% for schedule in schedules %}
+            <li>{{ schedule.weekdays }}: {{ schedule.start_time }} - {{ schedule.end_time }}</li>
+        {% empty %}
+            <li>No schedule set yet.</li>
+        {% endfor %}
+    </ul>
+
+    <a href="{% url 'services' %}">Back to Services</a>
+
+</body>
+</html>

@@ -1,0 +1,187 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Schedule</title>
+
+    <!-- ✅ Bootstrap for Styling -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+    <div class="container mt-5">
+        <h1 class="text-center">📅 Service Schedule</h1>
+
+        <!-- ✅ Display Success Messages -->
+        {% if messages %}
+            <div class="alert alert-success">
+                {% for message in messages %}
+                    {{ message }}
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- ✅ Service Schedule Form -->
+        <form method="POST">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="serviceSelect" class="form-label">Select a Service:</label>
+                <select id="serviceSelect" class="form-control" name="service" required>
+                    <option value="">-- Choose a Service --</option>
+                    {% for service in services %}
+                    <option value="{{ service.id }}" 
+                            data-price="{{ service.price }}" 
+                            data-duration="{{ service.get_total_duration_display }}"
+                            data-duration-minutes="{{ service.total_duration.total_seconds|floatformat:0 }}"
+                            data-description="{{ service.description }}"
+                            data-workdays="{{ service.work_days }}">
+                        {{ service.service_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        
+            <!-- ✅ Start Time Input -->
+            <div class="mt-3">
+                <label for="startTime" class="form-label">Start Time:</label>
+                <input type="time" id="startTime" name="start_time" class="form-control" required>
+            </div>
+        
+            <!-- ✅ Auto-Calculated End Time -->
+            <div class="mt-3">
+                <label for="endTime" class="form-label">End Time:</label>
+                <input type="time" id="endTime" class="form-control" readonly>
+            </div>
+        
+            <!-- ✅ Button to Add Schedule -->
+            <button type="submit" class="btn btn-primary mt-3">➕ Add Schedule</button>
+        </form>
+        
+        <!-- ✅ List of Scheduled Services -->
+        <div class="mt-5">
+            <h3>Scheduled Services</h3>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Service Name</th>
+                        <th>Weekday</th>
+                        <th>Start Time</th>
+                        <th>End Time</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for schedule in schedules %}
+                    <tr>
+                        <td>{{ schedule.service.service_name }}</td>
+                        <td>{{ schedule.weekday }}</td>
+                        <td>{{ schedule.start_time }}</td>
+                        <td>{{ schedule.end_time }}</td>
+                        <td>
+                            <form method="POST" action="{% url 'delete_schedule' schedule.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger btn-sm">❌ Remove</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">No schedules added yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        
+
+        <div class="text-center mt-3">
+            <a href="{% url 'services' %}" class="btn btn-secondary">⬅ Back to Services</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("serviceSelect").addEventListener("change", function () {
+            let selectedOption = this.options[this.selectedIndex];
+
+            if (selectedOption.value) {
+                document.getElementById("serviceDetails").style.display = "block";
+
+                document.getElementById("serviceName").innerText = selectedOption.text;
+                document.getElementById("servicePrice").innerText = selectedOption.getAttribute("data-price");
+                document.getElementById("serviceDuration").innerText = selectedOption.getAttribute("data-duration");
+                document.getElementById("serviceDescription").innerText = selectedOption.getAttribute("data-description");
+                document.getElementById("serviceWorkDays").innerText = selectedOption.getAttribute("data-workdays").replace(/[\[\]']/g, "");
+
+                document.getElementById("startTime").setAttribute("data-duration-minutes", selectedOption.getAttribute("data-duration-minutes"));
+                document.getElementById("startTime").value = "";
+                document.getElementById("endTime").value = "";
+            } else {
+                document.getElementById("serviceDetails").style.display = "none";
+            }
+        });
+
+        document.getElementById("startTime").addEventListener("input", function () {
+            let startTime = this.value;
+            let durationMinutes = parseInt(this.getAttribute("data-duration-minutes")) || 0;
+
+            if (startTime && durationMinutes > 0) {
+                let [hours, minutes] = startTime.split(":").map(Number);
+                let totalMinutes = hours * 60 + minutes + (durationMinutes / 60);
+
+                let endHours = Math.floor(totalMinutes / 60) % 24;  // Ensure 24-hour format
+                let endMinutes = Math.floor(totalMinutes % 60);
+
+                let formattedEndTime = `${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')}`;
+                document.getElementById("endTime").value = formattedEndTime;
+            } else {
+                document.getElementById("endTime").value = "";
+            }
+        });
+
+        document.getElementById("addSchedule").addEventListener("click", function () {
+            let serviceName = document.getElementById("serviceName").innerText;
+            let startTime = document.getElementById("startTime").value;
+            let endTime = document.getElementById("endTime").value;
+
+            if (!serviceName || !startTime || !endTime) {
+                alert("Please select a service and enter a valid start time.");
+                return;
+            }
+
+            let table = document.getElementById("scheduleTable");
+
+            if (document.getElementById("noSchedules")) {
+                document.getElementById("noSchedules").remove(); // Remove "No schedules added" message
+            }
+
+            let newRow = document.createElement("tr");
+            newRow.innerHTML = `
+                <td>${serviceName}</td>
+                <td>${startTime}</td>
+                <td>${endTime}</td>
+                <td><button class="btn btn-danger btn-sm removeSchedule">❌ Remove</button></td>
+            `;
+
+            table.appendChild(newRow);
+        });
+
+        // Remove schedule event delegation
+        document.getElementById("scheduleTable").addEventListener("click", function (event) {
+            if (event.target.classList.contains("removeSchedule")) {
+                event.target.closest("tr").remove();
+
+                if (document.getElementById("scheduleTable").children.length === 0) {
+                    document.getElementById("scheduleTable").innerHTML = `<tr id="noSchedules">
+                        <td colspan="4" class="text-center">No schedules added yet.</td>
+                    </tr>`;
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>

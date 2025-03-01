@@ -5,158 +5,150 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Our Services</title>
+
+    <!-- ✅ Bootstrap for Styling -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- ✅ Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/artist_dashboard.css' %}">
     <link rel="stylesheet" href="{% static 'css/services2.css' %}">
+    
+    <!-- ✅ SweetAlert for Confirmations -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <style>
+        /* Footer Styling */
         .footer {
-    background: rgba(216, 100, 140, 0.2);
-    color: #D8648C;
-    text-align: center;
-    padding: 15px;
-    margin-top: auto;
-    border-top: 2px solid #D8648C;
-    backdrop-filter: blur(10px);
-}/* Base styling for both buttons */
-/* Container & Grid Layout */
-.services-container {
-  padding: 2rem;
-}
+            background: rgba(216, 100, 140, 0.2);
+            color: #D8648C;
+            text-align: center;
+            padding: 15px;
+            margin-top: auto;
+            border-top: 2px solid #D8648C;
+            backdrop-filter: blur(10px);
+        }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-}
+        /* Services Layout */
+        .services-container {
+            padding: 2rem;
+        }
 
-/* Service Card */
-.service-card {
-  background-color: #fff;
-  border: 1px solid #dee2e6; /* Bootstrap border color */
-  border-radius: 0.25rem;
-  padding: 1.5rem;
-  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-}
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
 
-.service-card h3 {
-  margin-bottom: 1rem;
-  font-size: 1.5rem;
-}
+        .service-card {
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            padding: 1.5rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
 
-.price,
-.description,
-.availability {
-  margin-bottom: 0.75rem;
-}
+        .service-card h3 {
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
 
-/* Reviews Section */
-.reviews-section {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #dee2e6;
-}
+        .price, .description, .availability {
+            margin-bottom: 0.75rem;
+        }
 
-.reviews-section h4 {
-  margin-bottom: 0.75rem;
-}
+        /* Buttons */
+        .edit-btn, .delete-btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            margin: 0.25rem 0.5rem 0.25rem 0;
+            font-size: 1rem;
+            border: none;
+            border-radius: 0.25rem;
+            text-decoration: none;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
 
-/* Artist Reply Box */
-.artist-reply {
-  background-color: #f8f9fa;
-  border-left: 4px solid #0d6efd;
-  padding: 0.5rem 1rem;
-  margin-top: 0.5rem;
-}
+        .edit-btn {
+            background-color: #0d6efd;
+            color: #fff;
+        }
 
-/* Edit & Delete Service Buttons */
-.edit-btn,
-.delete-btn {
-  display: inline-block;
-  padding: 0.5rem 1rem;
-  margin: 0.25rem 0.5rem 0.25rem 0;
-  font-size: 1rem;
-  border: none;
-  border-radius: 0.25rem;
-  text-decoration: none;
-  transition: background-color 0.3s ease, transform 0.3s ease;
-}
+        .edit-btn:hover {
+            background-color: #0b5ed7;
+            transform: translateY(-2px);
+        }
 
-/* Edit Service uses Bootstrap primary */
-.edit-btn {
-  background-color: #0d6efd;
-  color: #fff;
-}
+        .delete-btn {
+            background-color: #dc3545;
+            color: #fff;
+        }
 
-.edit-btn:hover {
-  background-color: #0b5ed7;
-  transform: translateY(-2px);
-}
+        .delete-btn:hover {
+            background-color: #c82333;
+            transform: translateY(-2px);
+        }
+        
+  /* ✅ Stylish Notification Badge */
+  .badge {
+            position: absolute;
+            top: -5px;
+            right: -10px;
+            background: red;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 5px 8px;
+            border-radius: 50%;
+            display: none;
+            animation: bounce 1s infinite;
+        }
 
-/* Delete Service uses Bootstrap danger */
-.delete-btn {
-  background-color: #dc3545;
-  color: #fff;
-}
+        /* ✅ Bounce Animation */
+        @keyframes bounce {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+        }
 
-.delete-btn:hover {
-  background-color: #c82333;
-  transform: translateY(-2px);
-}
+        /* ✅ Positioning for Notification */
+        .nav-item {
+            position: relative;
+            text-decoration: none;
+            color: black;
+            font-weight: bold;
+            padding: 10px;
+        }
 
-/* Review Reply Buttons */
-.edit-reply-btn,
-.reply-btn {
-  display: inline-block;
-  color: #fff;
-  background-color: #198754; /* Bootstrap success */
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.25rem;
-  text-decoration: none;
-  font-size: 0.875rem;
-  margin-right: 0.5rem;
-  transition: background-color 0.3s ease, transform 0.3s ease;
-}
-
-.edit-reply-btn:hover,
-.reply-btn:hover {
-  background-color: #157347;
-  transform: translateY(-1px);
-}
-
-/* Delete Reply Button */
-.delete-reply-btn {
-  display: inline-block;
-  color: #fff;
-  background-color: #dc3545;
-  padding: 0.25rem 0.5rem;
-  border: none;
-  border-radius: 0.25rem;
-  font-size: 0.875rem;
-  transition: background-color 0.3s ease, transform 0.3s ease;
-}
-
-.delete-reply-btn:hover {
-  background-color: #c82333;
-  transform: translateY(-1px);
-}
-
-        </style>
+        /* ✅ Responsive Design */
+        @media (max-width: 768px) {
+            .badge {
+                font-size: 10px;
+                padding: 3px 5px;
+                top: -3px;
+                right: -8px;
+            }
+        }
+    </style>
 </head>
 <body>
+
     <!-- Header -->
     <header class="header">
         <div class="logo">
-            <img src="{% static 'imagess/logo.png' %}" alt="Artist Finder Logo">
+            <img src="{% static 'images/logo.png' %}" alt="Artist Finder Logo">
         </div>
         <nav class="navbar">
             <a href="{% url 'artist_dashboard' %}" class="nav-item">Dashboard</a>
-            
             <a href="{% url 'chat_list' %}" class="nav-item">Chats</a>
-
-            
-            
             <a href="{% url 'services' %}" class="nav-item active">Services</a>
-            <a href="{% url 'bookings' %}" class="nav-item">Bookings</a>
+             <!-- ✅ BOOKINGS with Notification Badge -->
+             <a href="{% url 'bookings' %}" class="nav-item" onclick="clearNotifications()">
+                Bookings <span id="booking-badge" class="badge">0</span>
+            </a>
             <a href="{% url 'certificates' %}" class="nav-item">Certificates</a>
             <a href="{% url 'availability_status' %}" class="nav-item">Availability Status</a>
             <a href="{% url 'artist_profile' %}" class="nav-item profile-link">
@@ -169,13 +161,14 @@
             <a href="{% url 'artist_logout' %}" class="nav-item logout">Logout</a>
         </nav>
     </header>
+
     <!-- Services Section -->
-    <section class="services-container text-center mt-10">
+    <section class="services-container text-center mt-5">
         <h1 class="text-3xl font-bold text-gray-800">Our Services</h1>
 
-        <a href="{% url 'add_service' %}" class="add-service-btn">
-            <i class="fas fa-plus-circle"></i> Add Service
-        </a>
+        <a href="{% url 'add_service' %}" class="btn btn-success">➕ Add Service</a>
+        <a href="{% url 'week_schedule' %}" class="btn btn-primary">📅 Set Week Schedule</a>
+        <a href="{% url 'service_schedule' %}" class="btn btn-primary">📅 Service Schedule</a>
 
         <div class="services-container">
             <div class="grid">
@@ -183,56 +176,27 @@
                 <div class="service-card">
                     <h3>{{ service.service_name }}</h3>
                     <p class="price">Price: Rs.{{ service.price }}</p>
-                    <p class="description">Duration: {{ service.duration }}</p>
-                    <p class="description">{{ service.description }}</p>
+                    <p class="description">Duration: {{ service.total_duration }} min</p>
+                    <p class="description">Description: {{ service.description }}</p>
+                    <!-- <p class="description">Days: {{ service.work_days }}</p> -->
 
-                    <p class="availability">
-                        <strong>Available Slots:</strong>
-                        {% for slot in service.availability.all %}
-  <!-- ✅ FIX: Ensure correct related name -->
-                            <br> 📅 {{ slot.available_date }} ⏰ {{ slot.available_time }}
+                    <!-- Display Schedules (Start and End Times) -->
+                    <div class="schedule-list mt-3">
+                        <h5>Service Schedule:</h5>
+                        {% for schedule in service.schedules.all %}
+                            <p>{{ schedule.weekday }}: {{ schedule.start_time }} - {{ schedule.end_time }}</p>
                         {% empty %}
-                            <br> No availability set yet.
-                        {% endfor %}
-                    </p>
-                    
-                    
-                    <div class="reviews-section">
-                        <h4>Customer Reviews:</h4>
-                        {% for review in service.service_reviews.all %}
-                            <p>⭐ {{ review.rating }}/5 - {{ review.user.first_name }}: {{ review.comment }}</p>
-                            <small>🕒 {{ review.created_at|date:"F d, Y h:i A" }}</small> 
-                    
-                            <!-- ✅ Artist Reply Section -->
-                            {% if review.artist_reply %}
-                                <div class="artist-reply">
-                                    <strong>🎤 Artist's Reply:</strong>
-                                    <p>{{ review.artist_reply }}</p>
-                                    
-                                    {% if request.user == review.artist %}
-                                        <a href="{% url 'edit_review_reply' review.id %}" class="edit-reply-btn">✏ Edit</a>
-                                        <button onclick="deleteReply('{{ review.id }}')" class="delete-reply-btn">❌ Delete</button>
-                                    {% endif %}
-                                </div>
-                            {% elif request.user == review.artist %}
-                                <a href="{% url 'edit_review_reply' review.id %}" class="reply-btn">💬 Reply</a>
-                            {% endif %}
-                        {% empty %}
-                            <p>No reviews yet for this service.</p>
+                            <p>No schedule added yet for this service.</p>
                         {% endfor %}
                     </div>
-                    
-                    
 
-
-                    <!-- ✅ Edit & Delete Buttons -->
+                    <!-- Edit & Delete Buttons -->
                     <a href="{% url 'edit_service' service.id %}" class="edit-btn">Edit Service</a>
                     <form id="delete-service-{{ service.id }}" action="{% url 'delete_service' service.id %}" method="POST" style="display:inline;">
                         {% csrf_token %}
                         <button type="button" class="delete-btn" onclick="confirmDeleteService('{{ service.id }}')">Delete Service</button>
                     </form>
                 </div>
-                
                 {% empty %}
                 <p class="no-services">No services available yet.</p>
                 {% endfor %}
@@ -241,57 +205,61 @@
     </section>
 
     <!-- Footer -->
-       <!-- Footer -->
-       <footer class="footer">
+    <footer class="footer">
         <p>Artist Finder &copy; All rights reserved</p>
     </footer>
 
-
     <!-- JavaScript for Delete Confirmation -->
     <script>
-    function confirmDeleteService(serviceId) {
-        Swal.fire({
-            title: "Are you sure?",
-            text: "You won't be able to undo this action!",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#D8648C",
-            cancelButtonColor: "#6c757d",
-            confirmButtonText: "Yes, delete it!",
-            cancelButtonText: "Cancel"
-        }).then((result) => {
-            if (result.isConfirmed) {
-                document.getElementById(`delete-service-${serviceId}`).submit();
-            }
-        });
-    }
-    function deleteReply(reviewId) {
-    Swal.fire({
-        title: "Are you sure?",
-        text: "You want to delete this reply?",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#D8648C",
-        cancelButtonColor: "#6c757d",
-        confirmButtonText: "Yes, delete it!",
-        cancelButtonText: "Cancel"
-    }).then((result) => {
-        if (result.isConfirmed) {
-            fetch(`/delete-review-reply/${reviewId}/`, { method: "POST", headers: { "X-CSRFToken": "{{ csrf_token }}" } })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    Swal.fire("Deleted!", "Reply has been deleted.", "success").then(() => {
-                        location.reload();
-                    });
-                } else {
-                    Swal.fire("Error!", data.message, "error");
+        function confirmDeleteService(serviceId) {
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You won't be able to undo this action!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#D8648C",
+                cancelButtonColor: "#6c757d",
+                confirmButtonText: "Yes, delete it!",
+                cancelButtonText: "Cancel"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById(`delete-service-${serviceId}`).submit();
                 }
-            })
-            .catch(error => console.error("Error:", error));
+            });
         }
-    });
-}
+        // ✅ Fetch New Notifications Every 10 Seconds
+        function fetchNotifications() {
+            fetch("{% url 'get_notifications' %}")  // Backend URL for new notifications
+                .then(response => response.json())
+                .then(data => {
+                    let newBookings = data.new_bookings || 0;
+                    let bookingBadge = document.getElementById("booking-badge");
+
+                    if (newBookings > 0) {
+                        bookingBadge.style.display = "inline-block";
+                        bookingBadge.innerText = `+${newBookings}`;
+                    } else {
+                        bookingBadge.style.display = "none";
+                    }
+                })
+                .catch(error => console.error("Error fetching notifications:", error));
+        }
+
+        // ✅ Clear Notifications on Click
+        function clearNotifications() {
+            fetch("{% url 'mark_notifications_read' %}")  // Mark notifications as read
+                .then(() => {
+                    document.getElementById("booking-badge").style.display = "none";  // Hide badge
+                })
+                .catch(error => console.error("Error marking notifications as read:", error));
+        }
+
+        // ✅ Run Notification Fetch Every 10 Seconds
+        setInterval(fetchNotifications, 10000);
+
+        // ✅ Fetch Notifications on Page Load
+        fetchNotifications();
+
     </script>
 
 </body>
