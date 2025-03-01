@@ -137,39 +137,32 @@
 <body>
 
     <!-- Header -->
-  <!-- Header -->
-  <header class="header">
-    <div class="logo">
-        <img src="{% static 'imagess/logo.png' %}" alt="Artist Finder Logo">
-    </div>
-    <nav class="navbar">
-        <a href="{% url 'artist_dashboard' %}" class="nav-item">Dashboard</a>
-        
-        <!-- Chats with Notification Badge -->
-        <a href="{% url 'chat_list' %}" class="nav-item" onclick="clearArtistChatNotifications()">
-            Chats <span id="artist-chat-badge" class="badge">0</span>
-        </a>
-        
-        <a href="{% url 'services' %}" class="nav-item active">Services</a>
-
-        <!-- ✅ BOOKINGS with Notification Badge -->
-        <a href="{% url 'bookings' %}" class="nav-item" onclick="clearNotifications()">
-            Bookings <span id="booking-badge" class="badge">0</span>
-        </a>
-        
-        <a href="{% url 'certificates' %}" class="nav-item">Certificates</a>
-        <a href="{% url 'availability_status' %}" class="nav-item">Availability</a>
-
-        <a href="{% url 'artist_profile' %}" class="nav-item profile-link">
-            {% if user.profile_image %}
-                <img src="{{ user.profile_image.url }}" alt="Profile Image" class="profile-img">
-            {% else %}
-                <img src="{% static 'images/default_profile.png' %}" alt="Default Profile" class="profile-img">
-            {% endif %}
-        </a>
-        <a href="{% url 'artist_logout' %}" class="nav-item logout">Logout</a>
-    </nav>
-</header>
+    <header class="header">
+        <div class="logo">
+            <img src="{% static 'imagess/logo.png' %}" alt="Artist Finder Logo">
+        </div>
+        <nav class="navbar">
+            <a href="{% url 'artist_dashboard' %}" class="nav-item">Dashboard</a>
+            <a href="{% url 'chat_list' %}" class="nav-item" onclick="clearArtistChatNotifications()">
+                Chats <span id="artist-chat-badge" class="badge">0</span>
+            </a>
+            <a href="{% url 'services' %}" class="nav-item active">Services</a>
+             <!-- ✅ BOOKINGS with Notification Badge -->
+             <a href="{% url 'bookings' %}" class="nav-item" onclick="clearNotifications()">
+                Bookings <span id="booking-badge" class="badge">0</span>
+            </a>
+            <a href="{% url 'certificates' %}" class="nav-item">Certificates</a>
+            <a href="{% url 'availability_status' %}" class="nav-item">Availability Status</a>
+            <a href="{% url 'artist_profile' %}" class="nav-item profile-link">
+                {% if user.profile_image %}
+                    <img src="{{ user.profile_image.url }}" alt="Profile Image" class="profile-img">
+                {% else %}
+                    <img src="{% static 'images/default_profile.png' %}" alt="Default Profile Image" class="profile-img">
+                {% endif %}
+            </a>
+            <a href="{% url 'artist_logout' %}" class="nav-item logout">Logout</a>
+        </nav>
+    </header>
 
     <!-- Services Section -->
     <section class="services-container text-center mt-5">
@@ -188,7 +181,7 @@
                     <p class="description">Duration: {{ service.total_duration }} min</p>
                     <p class="description">Description: {{ service.description }}</p>
                     <!-- <p class="description">Days: {{ service.work_days }}</p> -->
-                    
+
                     <!-- Display Schedules (Start and End Times) -->
                     <div class="schedule-list mt-3">
                         <h5>Service Schedule:</h5>
@@ -198,16 +191,7 @@
                             <p>No schedule added yet for this service.</p>
                         {% endfor %}
                     </div>
-                     <h5>Service Reviews:</h5>
-            {% for review in service.service_reviews.all %}
-                <div class="review-card">
-                    <p>⭐ {{ review.rating }}/5 - <strong>{{ review.user.first_name }}</strong></p>
-                    <p>{{ review.comment }}</p>
-                    <small>🕒 {{ review.created_at|date:"F d, Y h:i A" }}</small>
-                </div>
-            {% empty %}
-                <p>No reviews yet for this service.</p>
-            {% endfor %}
+
                     <!-- Edit & Delete Buttons -->
                     <a href="{% url 'edit_service' service.id %}" class="edit-btn">Edit Service</a>
                     <form id="delete-service-{{ service.id }}" action="{% url 'delete_service' service.id %}" method="POST" style="display:inline;">
@@ -219,7 +203,6 @@
                 <p class="no-services">No services available yet.</p>
                 {% endfor %}
             </div>
-            
         </div>
     </section>
 
@@ -278,7 +261,36 @@
 
         // ✅ Fetch Notifications on Page Load
         fetchNotifications();
+    
+    
+        function fetchArtistChatNotifications() {
+    fetch("{% url 'get_artist_chat_notifications' %}")  // Fetch unread messages for artists
+        .then(response => response.json())
+        .then(data => {
+            let unreadChats = data.unread_chats || 0;
+            let chatBadge = document.getElementById("artist-chat-badge");
 
+            if (unreadChats > 0) {
+                chatBadge.style.display = "inline-block";
+                chatBadge.innerText = unreadChats;
+            } else {
+                chatBadge.style.display = "none";
+            }
+        })
+        .catch(error => console.error("Error fetching chat notifications:", error));
+}
+
+function clearArtistChatNotifications() {
+    fetch("{% url 'mark_artist_chat_notifications_read' %}")  // Mark messages as read
+        .then(() => {
+            document.getElementById("artist-chat-badge").style.display = "none";  // Hide badge
+        })
+        .catch(error => console.error("Error marking chat notifications as read:", error));
+}
+
+// ✅ Run Notification Fetch Every 10 Seconds
+setInterval(fetchArtistChatNotifications, 10000);
+fetchArtistChatNotifications();
     </script>
 
 </body>
