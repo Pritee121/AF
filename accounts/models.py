@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.utils.timezone import now
 
+
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
@@ -63,7 +64,60 @@ class Work(models.Model):
 
     def __str__(self):
         return f"{self.title} by {self.artist.first_name}"
+    
+from django.db import models
+from django.contrib.auth import get_user_model
 
+User = get_user_model()
+
+class WorkingTime(models.Model):
+    artist = models.ForeignKey(User, on_delete=models.CASCADE, default=1)  # ✅ Set default user ID
+    day = models.CharField(max_length=10, choices=[
+        ('Monday', 'Monday'),
+        ('Tuesday', 'Tuesday'),
+        ('Wednesday', 'Wednesday'),
+        ('Thursday', 'Thursday'),
+        ('Friday', 'Friday'),
+        ('Saturday', 'Saturday'),
+        ('Sunday', 'Sunday'),
+    ], unique=True)
+    opening_time = models.TimeField()
+    closing_time = models.TimeField()
+
+    def __str__(self):
+        return f"{self.day}: {self.opening_time} to {self.closing_time}"
+from datetime import timedelta
+class Service(models.Model):
+    artist = models.ForeignKey(User, related_name="services", on_delete=models.CASCADE)
+    service_name = models.CharField(max_length=255)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    duration = models.DurationField()
+    travel_time = models.DurationField(default=timedelta(minutes=30))
+    total_duration = models.DurationField(blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    work_days = models.ManyToManyField(WorkingTime, blank=True, related_name="services")  # ✅ Correct Many-to-Many
+
+    def get_work_days(self):
+        """Fetch all working days for this service."""
+        return list(self.work_days.values_list("day", flat=True))
+
+    def save(self, *args, **kwargs):
+        if self.duration and self.travel_time:
+            self.total_duration = self.duration + self.travel_time
+        super().save(*args, **kwargs)
+
+    def get_total_duration_hms(self):
+        if self.total_duration:
+            seconds = int(self.total_duration.total_seconds())
+            hours, remainder = divmod(seconds, 3600)
+            minutes, seconds = divmod(remainder, 60)
+            return f"{hours:02}:{minutes:02}:{seconds:02}"
+        return "00:00:00"
+
+    def __str__(self):
+        return f"{self.service_name} ({self.get_total_duration_hms()}) - {self.artist.first_name}"
 
 # from django.db import models
 # from django.contrib.auth import get_user_model
@@ -109,10 +163,16 @@ class Work(models.Model):
 
 #     work_days = MultiSelectField(choices=WEEKDAYS, max_length=100, blank=True, default=['Monday'])
 
+#     def __str__(self):
+#         return f"{self.service_name} ({self.price} Rs.) - {self.artist.first_name}"
+from datetime import timedelta
+
 #     def save(self, *args, **kwargs):
 #         self.total_duration = self.duration + self.travel_time
 #         super().save(*args, **kwargs)
 from django.db import models
+from multiselectfield import MultiSelectField
+
 # from django.contrib.auth import get_user_model
 # from multiselectfield import MultiSelectField
 # from datetime import timedelta
@@ -207,46 +267,42 @@ from django.db import models
 #             self.total_duration = self.duration + self.travel_time
 #         super().save(*args, **kwargs)
 
-#     def __str__(self):
-#         return f"{self.service_name} ({self.price} Rs.) - {self.artist.first_name}"
-from datetime import timedelta
-from multiselectfield import MultiSelectField
 
-class Service(models.Model):
-    artist = models.ForeignKey(User, related_name='services', on_delete=models.CASCADE)
-    service_name = models.CharField(max_length=255)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    duration = models.DurationField()
-    travel_time = models.DurationField(default=timedelta(minutes=30))
-    total_duration = models.DurationField(blank=True, null=True)
-    description = models.TextField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+# class Service(models.Model):
+#     artist = models.ForeignKey(User, related_name='services', on_delete=models.CASCADE)
+#     service_name = models.CharField(max_length=255)
+#     price = models.DecimalField(max_digits=10, decimal_places=2)
+#     duration = models.DurationField()
+#     travel_time = models.DurationField(default=timedelta(minutes=30))
+#     total_duration = models.DurationField(blank=True, null=True)
+#     description = models.TextField(blank=True, null=True)
+#     created_at = models.DateTimeField(auto_now_add=True)
 
-    WEEKDAYS = [
-        ('Monday', 'Monday'),
-        ('Tuesday', 'Tuesday'),
-        ('Wednesday', 'Wednesday'),
-        ('Thursday', 'Thursday'),
-        ('Friday', 'Friday'),
-        ('Saturday', 'Saturday'),
-        ('Sunday', 'Sunday'),
-    ]
+#     WEEKDAYS = [
+#         ('Monday', 'Monday'),
+#         ('Tuesday', 'Tuesday'),
+#         ('Wednesday', 'Wednesday'),
+#         ('Thursday', 'Thursday'),
+#         ('Friday', 'Friday'),
+#         ('Saturday', 'Saturday'),
+#         ('Sunday', 'Sunday'),
+#     ]
 
-    work_days = MultiSelectField(choices=WEEKDAYS, max_length=100, blank=True, default=['Monday'])
+#     work_days = MultiSelectField(choices=WEEKDAYS, max_length=100, blank=True, default=['Monday'])
 
-    def save(self, *args, **kwargs):
-        if self.duration and self.travel_time:
-            self.total_duration = self.duration + self.travel_time
-        super().save(*args, **kwargs)
+#     def save(self, *args, **kwargs):
+#         if self.duration and self.travel_time:
+#             self.total_duration = self.duration + self.travel_time
+#         super().save(*args, **kwargs)
 
-    def get_total_duration_hms(self):
-        """Returns duration in HH:MM:SS format"""
-        if self.total_duration:
-            seconds = int(self.total_duration.total_seconds())
-            hours, remainder = divmod(seconds, 3600)
-            minutes, seconds = divmod(remainder, 60)
-            return f"{hours:02}:{minutes:02}:{seconds:02}"  # Ensure two-digit format
-        return "00:00:00"
+#     def get_total_duration_hms(self):
+#         """Returns duration in HH:MM:SS format"""
+#         if self.total_duration:
+#             seconds = int(self.total_duration.total_seconds())
+#             hours, remainder = divmod(seconds, 3600)
+#             minutes, seconds = divmod(remainder, 60)
+#             return f"{hours:02}:{minutes:02}:{seconds:02}"  # Ensure two-digit format
+#         return "00:00:00"
 
 # class ServiceSchedule(models.Model):
 #     service = models.ForeignKey(Service, related_name='schedules', on_delete=models.CASCADE)
@@ -256,18 +312,18 @@ class Service(models.Model):
 
 #     class Meta:
 #         unique_together = ('service', 'weekday', 'start_time')
-class ServiceSchedule(models.Model):
-    service = models.ForeignKey(Service, related_name='schedules', on_delete=models.CASCADE)
-    start_time = models.TimeField()
-    end_time = models.TimeField()
-    weekday = models.CharField(max_length=10, choices=Service.WEEKDAYS, default='Monday')  # Default to Monday
+# class ServiceSchedule(models.Model):
+#     service = models.ForeignKey(Service, related_name='schedules', on_delete=models.CASCADE)
+#     start_time = models.TimeField()
+#     end_time = models.TimeField()
+#     weekday = models.CharField(max_length=10, choices=Service.WEEKDAYS, default='Monday')  # Default to Monday
 
-    class Meta:
-        unique_together = ('service', 'weekday', 'start_time')
+#     class Meta:
+#         unique_together = ('service', 'weekday', 'start_time')
 
 
-    def __str__(self):
-        return f"{self.service.service_name} - {self.weekday} {self.start_time} - {self.end_time}"
+#     def __str__(self):
+#         return f"{self.service.service_name} - {self.weekday} {self.start_time} - {self.end_time}"
 
 # from django.db import models
 # from django.contrib.auth import get_user_model
@@ -357,10 +413,11 @@ class ServiceSchedule(models.Model):
 #                 f"{self.service.service_name} on {self.date} from {self.start_time} to {self.end_time} "
 #                 f"using {self.payment_method}")
 from datetime import datetime, timedelta
+
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
-from django.core.exceptions import ValidationError
-from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
@@ -466,6 +523,7 @@ class Notification(models.Model):
 
 from django.db import models
 
+
 class AboutUs(models.Model):
     title = models.CharField(max_length=255, default="About Us")
     content = models.TextField()  # stores the about us content
@@ -474,6 +532,7 @@ class AboutUs(models.Model):
         return self.title  # Display title in admin panel
 
 from django.db import models
+
 
 class ContactUsPage(models.Model):
     title = models.CharField(max_length=255, default="Contact Us")
@@ -508,8 +567,8 @@ class Review(models.Model):
         return f"{self.user.first_name} reviewed {self.artist.first_name} - {self.rating} Stars"
 
 
-from django.db import models
 from django.contrib.auth import get_user_model
+from django.db import models
 from multiselectfield import MultiSelectField  # Import MultiSelectField
 
 User = get_user_model()
@@ -548,22 +607,29 @@ class WeekSchedule(models.Model):
 #         return f"{self.service.service_name}: {self.start_time} - {self.end_time}"
 
 
-from django.db import models
+# from django.db import models
 
-class WorkingTime(models.Model):
-    DAY_CHOICES = [
-        ('Monday', 'Monday'),
-        ('Tuesday', 'Tuesday'),
-        ('Wednesday', 'Wednesday'),
-        ('Thursday', 'Thursday'),
-        ('Friday', 'Friday'),
-        ('Saturday', 'Saturday'),
-        ('Sunday', 'Sunday'),
-    ]
+
+# class WorkingTime(models.Model):
+#     DAY_CHOICES = [
+#         ('Monday', 'Monday'),
+#         ('Tuesday', 'Tuesday'),
+#         ('Wednesday', 'Wednesday'),
+#         ('Thursday', 'Thursday'),
+#         ('Friday', 'Friday'),
+#         ('Saturday', 'Saturday'),
+#         ('Sunday', 'Sunday'),
+#     ]
     
-    day = models.CharField(max_length=10, choices=DAY_CHOICES, unique=True)
-    opening_time = models.TimeField()
-    closing_time = models.TimeField()
+#     day = models.CharField(max_length=10, choices=DAY_CHOICES, unique=True)
+#     opening_time = models.TimeField()
+#     closing_time = models.TimeField()
 
-    def __str__(self):
-        return f"{self.day}: {self.opening_time} - {self.closing_time}"
+#     def __str__(self):
+#         return f"{self.day}: {self.opening_time} - {self.closing_time}"
+
+
+
+
+
+

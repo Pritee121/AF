@@ -263,7 +263,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
-from .models import Booking, ServiceSchedule
+from .models import Booking
 import logging
 
 # ✅ Setup logging for debugging
@@ -595,7 +595,7 @@ def get_available_dates(request, artist_id):
 
 from django.http import JsonResponse
 from datetime import datetime
-from .models import ServiceSchedule
+# from .models import ServiceSchedule
 
 def get_available_times(request, artist_id):
     service_id = request.GET.get('service_id')
@@ -2120,26 +2120,44 @@ def week_schedule_view(request):
     return render(request, 'accounts/week_schedule.html', {'form': form, 'schedules': schedules})
 
 
-from django.shortcuts import render, redirect
-from .forms import ServiceForm
-from .models import Service
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
+# from django.shortcuts import render, redirect
+# from .forms import ServiceForm
+# from .models import Service
+# from django.contrib.auth.decorators import login_required
+# from django.contrib import messages
 
-@login_required
+# @login_required
+# def add_service(request):
+#     if request.method == "POST":
+#         form = ServiceForm(request.POST)
+#         if form.is_valid():
+#             service = form.save(commit=False)
+#             service.artist = request.user
+#             service.save()
+#             messages.success(request, "Service added successfully!")
+#             return redirect('services')
+#     else:
+#         form = ServiceForm()
+
+#     return render(request, 'accounts/add_service.html', {'form': form})
+from django.shortcuts import render, redirect
+from .models import Service, WorkingTime
+from .forms import ServiceForm
+
 def add_service(request):
     if request.method == "POST":
         form = ServiceForm(request.POST)
         if form.is_valid():
             service = form.save(commit=False)
-            service.artist = request.user
+            service.artist = request.user  # ✅ Assign the logged-in artist
             service.save()
-            messages.success(request, "Service added successfully!")
-            return redirect('services')
+            form.save_m2m()  # ✅ Save ManyToManyField
+            return redirect('services')  # ✅ Redirect to services list
     else:
         form = ServiceForm()
 
-    return render(request, 'accounts/add_service.html', {'form': form})
+    return render(request, "accounts/add_service.html", {"form": form})
+
 
 
 # from django.shortcuts import render
@@ -2193,88 +2211,14 @@ def add_service(request):
 #         'schedules': schedules,
 #         'form': form
 #     })
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from .models import Service, ServiceSchedule
-from .forms import ServiceScheduleForm
-from datetime import datetime, timedelta
 
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from .models import Service, ServiceSchedule
-from .forms import ServiceScheduleForm
-from datetime import datetime, timedelta
 
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from .models import Service, ServiceSchedule
-from .forms import ServiceScheduleForm
-from datetime import datetime, timedelta
-
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from .models import Service, ServiceSchedule
-from .forms import ServiceScheduleForm
-from datetime import datetime, timedelta
-
-@login_required
-def service_schedule(request):
-    services = Service.objects.all()
-    schedules = ServiceSchedule.objects.all()
-
-    if request.method == "POST":
-        form = ServiceScheduleForm(request.POST)
-        if form.is_valid():
-            service = form.cleaned_data['service']
-            start_time = form.cleaned_data['start_time']
-
-            # Convert start time to datetime object for calculations
-            total_duration = service.total_duration
-            start_datetime = datetime.strptime(str(start_time), "%H:%M:%S")
-            end_datetime = start_datetime + total_duration
-
-            # Loop through all workdays and create schedules
-            for weekday in service.work_days:
-                existing_schedules = ServiceSchedule.objects.filter(
-                    service=service,
-                    weekday=weekday,
-                    start_time__lt=end_datetime.time(),
-                    end_time__gt=start_time
-                )
-
-                if existing_schedules.exists():
-                    messages.error(request, f"Another service is already scheduled at this time on {weekday}.")
-                    return redirect('service_schedule')
-
-                # ✅ Create schedule for each workday
-                ServiceSchedule.objects.create(
-                    service=service,
-                    weekday=weekday,
-                    start_time=start_datetime.time(),
-                    end_time=end_datetime.time()
-                )
-
-            messages.success(request, f"Service schedule added successfully for {', '.join(service.work_days)}!")
-            return redirect('service_schedule')
-
-    else:
-        form = ServiceScheduleForm()
-
-    return render(request, 'accounts/service_schedule.html', {
-        'services': services,
-        'schedules': schedules,
-        'form': form
-    })
 
 
 
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
-from .models import ServiceSchedule
+# from .models import ServiceSchedule
 
 def delete_schedule(request, schedule_id):
     schedule = get_object_or_404(ServiceSchedule, id=schedule_id)

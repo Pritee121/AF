@@ -73,9 +73,19 @@
             </div>
         
             <div class="mb-3">
-                <label>Work Days</label>
-                {{ form.work_days }}
+                <label>Work Days:</label>
+                <div class="row">
+                    {% for choice in form.work_days %}
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                {{ choice.tag }}
+                                <label class="form-check-label">{{ choice.choice_label }}</label>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
             </div>
+            
         
             <button type="submit" class="btn btn-primary w-100">Submit</button>
         </form>

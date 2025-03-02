@@ -30,7 +30,7 @@ from .views import edit_review
 from .views import reply_to_review
 from .views import edit_review_reply, delete_review_reply
 from .views import artist_certificates, edit_certificate, delete_certificate
-from .views import service_schedule 
+
 from .views import get_notifications
 from .views import get_notifications, mark_notifications_read
 from .views import working_time_view, delete_working_time 
@@ -42,9 +42,9 @@ urlpatterns = [
     path('get_service_workdays/<int:service_id>/', get_service_workdays, name='get_service_workdays'),
     path('delete-working-time/<int:time_id>/', delete_working_time, name='delete_working_time'),
      path('working-time/', working_time_view, name='working_time'),
-     path('service-schedule/', service_schedule, name='service_schedule'),
+     
     path('delete-schedule/<int:schedule_id>/', views.delete_schedule, name='delete_schedule'),
-    path('service-schedule/', service_schedule, name='service_schedule'),  # ✅ Define the URL
+   
        path('week-schedule/', views.week_schedule_view, name='week_schedule'),
     # User Authentication
     path("certificates/", artist_certificates, name="artist_certificates"),

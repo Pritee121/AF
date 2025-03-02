@@ -121,30 +121,35 @@ from django.core.exceptions import ValidationError
 #             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
 #             'work_days': forms.CheckboxSelectMultiple(),
 #         }
+
 from django import forms
-from .models import Service
+from .models import Service, WorkingTime
 from datetime import timedelta
 
 class ServiceForm(forms.ModelForm):
     duration_hours = forms.IntegerField(
-        required=True, 
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
+        required=True, widget=forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
         label="Duration (Hours)"
     )
     duration_minutes = forms.IntegerField(
-        required=True, 
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'min': 0, 'max': 59}),
+        required=True, widget=forms.NumberInput(attrs={'class': 'form-control', 'min': 0, 'max': 59}),
         label="Duration (Minutes)"
     )
     travel_time_hours = forms.IntegerField(
-        required=True, 
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
+        required=True, widget=forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
         label="Travel Time (Hours)"
     )
     travel_time_minutes = forms.IntegerField(
-        required=True, 
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'min': 0, 'max': 59}),
+        required=True, widget=forms.NumberInput(attrs={'class': 'form-control', 'min': 0, 'max': 59}),
         label="Travel Time (Minutes)"
+    )
+
+    # ✅ Update Work Days Field
+    work_days = forms.ModelMultipleChoiceField(
+        queryset=WorkingTime.objects.all(), 
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        label="Select Work Days"
     )
 
     class Meta:
@@ -175,7 +180,66 @@ class ServiceForm(forms.ModelForm):
         )
         if commit:
             service.save()
+            self.save_m2m()  # ✅ Save ManyToMany relationships
         return service
+
+
+
+# from django import forms
+# from .models import Service
+# from datetime import timedelta
+
+# class ServiceForm(forms.ModelForm):
+#     duration_hours = forms.IntegerField(
+#         required=True, 
+#         widget=forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
+#         label="Duration (Hours)"
+#     )
+#     duration_minutes = forms.IntegerField(
+#         required=True, 
+#         widget=forms.NumberInput(attrs={'class': 'form-control', 'min': 0, 'max': 59}),
+#         label="Duration (Minutes)"
+#     )
+#     travel_time_hours = forms.IntegerField(
+#         required=True, 
+#         widget=forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
+#         label="Travel Time (Hours)"
+#     )
+#     travel_time_minutes = forms.IntegerField(
+#         required=True, 
+#         widget=forms.NumberInput(attrs={'class': 'form-control', 'min': 0, 'max': 59}),
+#         label="Travel Time (Minutes)"
+#     )
+
+#     class Meta:
+#         model = Service
+#         fields = ['service_name', 'price', 'description', 'work_days']
+
+#     def clean(self):
+#         cleaned_data = super().clean()
+#         duration_hours = cleaned_data.get("duration_hours", 0)
+#         duration_minutes = cleaned_data.get("duration_minutes", 0)
+#         travel_time_hours = cleaned_data.get("travel_time_hours", 0)
+#         travel_time_minutes = cleaned_data.get("travel_time_minutes", 0)
+
+#         cleaned_data['duration'] = timedelta(hours=duration_hours, minutes=duration_minutes)
+#         cleaned_data['travel_time'] = timedelta(hours=travel_time_hours, minutes=travel_time_minutes)
+        
+#         return cleaned_data
+
+#     def save(self, commit=True):
+#         service = super().save(commit=False)
+#         service.duration = timedelta(
+#             hours=self.cleaned_data["duration_hours"], 
+#             minutes=self.cleaned_data["duration_minutes"]
+#         )
+#         service.travel_time = timedelta(
+#             hours=self.cleaned_data["travel_time_hours"], 
+#             minutes=self.cleaned_data["travel_time_minutes"]
+#         )
+#         if commit:
+#             service.save()
+#         return service
 
 
 from django import forms
@@ -287,34 +351,8 @@ class WeekScheduleForm(forms.ModelForm):
             'start_time': forms.TimeInput(attrs={'type': 'time'}),
             'end_time': forms.TimeInput(attrs={'type': 'time'}),
         }
-from django import forms
-from .models import ServiceSchedule, Service
 
-# class ServiceScheduleForm(forms.ModelForm):
-#     service = forms.ModelChoiceField(
-#         queryset=Service.objects.all(),
-#         widget=forms.Select(attrs={'class': 'form-control'})
-#     )
-#     start_time = forms.TimeField(
-#         widget=forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'})
-#     )
 
-#     class Meta:
-#         model = ServiceSchedule
-#         fields = ['service', 'start_time']
-
-from django import forms
-from .models import ServiceSchedule
-
-from django import forms
-from .models import ServiceSchedule
-
-class ServiceScheduleForm(forms.ModelForm):
-    start_time = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time'}))
-
-    class Meta:
-        model = ServiceSchedule
-        fields = ['service', 'start_time']
 from django import forms
 from .models import WorkingTime
 
