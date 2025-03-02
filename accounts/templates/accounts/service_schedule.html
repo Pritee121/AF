@@ -4,184 +4,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Service Schedule</title>
+    <title>Book {{ artist.first_name }} {{ artist.last_name }}</title>
 
-    <!-- ✅ Bootstrap for Styling -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Flatpickr for Date Selection -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <!-- SweetAlert2 for Alerts -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Leaflet.js for Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <link rel="stylesheet" href="{% static 'css/book_artist.css' %}">
+    <style>
+        /* Ensure the map container is positioned relative for the spinner */
+        #map { height: 300px; width: 100%; position: relative; }
+        /* Spinner styling */
+        #spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            width: 50px;
+            height: 50px;
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
+    <header>
+        <a href="{% url 'home' %}">← Home</a>
+    </header>
 
-    <div class="container mt-5">
-        <h1 class="text-center">📅 Service Schedule</h1>
+    <div class="booking-container">
+        <h2>Book {{ artist.first_name }} {{ artist.last_name }}</h2>
 
-        <!-- ✅ Display Success Messages -->
-        {% if messages %}
-            <div class="alert alert-success">
-                {% for message in messages %}
-                    {{ message }}
-                {% endfor %}
-            </div>
-        {% endif %}
-
-        <!-- ✅ Service Schedule Form -->
-        <form method="POST">
+        <form id="booking-form" method="POST" action="{% url 'book_artist' artist.id %}">
             {% csrf_token %}
-            <div class="mb-3">
-                <label for="serviceSelect" class="form-label">Select a Service:</label>
-                <select id="serviceSelect" class="form-control" name="service" required>
-                    <option value="">-- Choose a Service --</option>
-                    {% for service in services %}
-                    <option value="{{ service.id }}" 
-                            data-price="{{ service.price }}" 
-                            data-duration="{{ service.get_total_duration_display }}"
-                            data-duration-minutes="{{ service.total_duration.total_seconds|floatformat:0 }}"
-                            data-description="{{ service.description }}"
-                            data-workdays="{{ service.work_days }}">
-                        {{ service.service_name }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-        
-            <!-- ✅ Start Time Input -->
-            <div class="mt-3">
-                <label for="startTime" class="form-label">Start Time:</label>
-                <input type="time" id="startTime" name="start_time" class="form-control" required>
-            </div>
-        
-            <!-- ✅ Auto-Calculated End Time -->
-            <div class="mt-3">
-                <label for="endTime" class="form-label">End Time:</label>
-                <input type="time" id="endTime" class="form-control" readonly>
-            </div>
-        
-            <!-- ✅ Button to Add Schedule -->
-            <button type="submit" class="btn btn-primary mt-3">➕ Add Schedule</button>
-        </form>
-        
-        <!-- ✅ List of Scheduled Services -->
-        <div class="mt-5">
-            <h3>Scheduled Services</h3>
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>Service Name</th>
-                        <th>Weekday</th>
-                        <th>Start Time</th>
-                        <th>End Time</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for schedule in schedules %}
-                    <tr>
-                        <td>{{ schedule.service.service_name }}</td>
-                        <td>{{ schedule.weekday }}</td>
-                        <td>{{ schedule.start_time }}</td>
-                        <td>{{ schedule.end_time }}</td>
-                        <td>
-                            <form method="POST" action="{% url 'delete_schedule' schedule.id %}">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-danger btn-sm">❌ Remove</button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5" class="text-center">No schedules added yet.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        
-        
 
-        <div class="text-center mt-3">
-            <a href="{% url 'services' %}" class="btn btn-secondary">⬅ Back to Services</a>
-        </div>
+            <label for="service">Select Service:</label>
+            <select id="service" name="service" required>
+                <option value="" disabled selected>Choose a service</option>
+                {% for service in services %}
+                <option 
+                    value="{{ service.id }}" 
+                    data-duration="{{ service.get_total_duration_hms }}" 
+                    data-workdays="{{ service.work_days|join:',' }}">
+                    {{ service.service_name }} - Rs.{{ service.price }} - {{ service.description }}
+                </option>
+                {% endfor %}
+            </select>
+
+            <label for="duration">Duration:</label>
+            <input type="text" id="duration" name="duration" readonly placeholder="Select a service first">
+
+            <label for="date">Select Date:</label>
+            <input type="text" id="date" name="date" required placeholder="Choose a date" disabled>
+
+            <label for="start_time">Select Start Time:</label>
+            <input type="time" id="start_time" name="start_time" required disabled>
+
+            <label for="end_time">End Time:</label>
+            <input type="text" id="end_time" name="end_time" readonly>
+
+            <button type="submit">Confirm Booking</button>
+        </form>
     </div>
 
     <script>
-        document.getElementById("serviceSelect").addEventListener("change", function () {
-            let selectedOption = this.options[this.selectedIndex];
+        document.addEventListener("DOMContentLoaded", function () {
+            let serviceSelect = document.getElementById("service");
+            let durationField = document.getElementById("duration");
+            let dateInput = document.getElementById("date");
+            let startTimeInput = document.getElementById("start_time");
+            let endTimeInput = document.getElementById("end_time");
 
-            if (selectedOption.value) {
-                document.getElementById("serviceDetails").style.display = "block";
+            let flatpickrInstance;
 
-                document.getElementById("serviceName").innerText = selectedOption.text;
-                document.getElementById("servicePrice").innerText = selectedOption.getAttribute("data-price");
-                document.getElementById("serviceDuration").innerText = selectedOption.getAttribute("data-duration");
-                document.getElementById("serviceDescription").innerText = selectedOption.getAttribute("data-description");
-                document.getElementById("serviceWorkDays").innerText = selectedOption.getAttribute("data-workdays").replace(/[\[\]']/g, "");
+            // 🎯 Enable Date & Start Time Inputs When a Service is Selected
+            serviceSelect.addEventListener("change", function () {
+                let selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
 
-                document.getElementById("startTime").setAttribute("data-duration-minutes", selectedOption.getAttribute("data-duration-minutes"));
-                document.getElementById("startTime").value = "";
-                document.getElementById("endTime").value = "";
-            } else {
-                document.getElementById("serviceDetails").style.display = "none";
-            }
-        });
+                if (!selectedOption.value) return;
 
-        document.getElementById("startTime").addEventListener("input", function () {
-            let startTime = this.value;
-            let durationMinutes = parseInt(this.getAttribute("data-duration-minutes")) || 0;
+                let durationHMS = selectedOption.getAttribute("data-duration") || "00:00:00";
+                let workDaysString = selectedOption.getAttribute("data-workdays") || "";
+                let workDays = workDaysString.split(",").map(day => day.trim());
 
-            if (startTime && durationMinutes > 0) {
-                let [hours, minutes] = startTime.split(":").map(Number);
-                let totalMinutes = hours * 60 + minutes + (durationMinutes / 60);
+                // ✅ Convert Work Days to JavaScript Format
+                const dayMapping = { "Sunday": 0, "Monday": 1, "Tuesday": 2, "Wednesday": 3, "Thursday": 4, "Friday": 5, "Saturday": 6 };
+                let allowedDays = workDays.map(day => dayMapping[day]).filter(day => day !== undefined);
 
-                let endHours = Math.floor(totalMinutes / 60) % 24;  // Ensure 24-hour format
-                let endMinutes = Math.floor(totalMinutes % 60);
+                // ✅ Display correct duration
+                durationField.value = durationHMS;
+                dateInput.disabled = false;
+                startTimeInput.disabled = false;
 
-                let formattedEndTime = `${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')}`;
-                document.getElementById("endTime").value = formattedEndTime;
-            } else {
-                document.getElementById("endTime").value = "";
-            }
-        });
+                // ✅ Update Date Picker with Available Work Days
+                if (flatpickrInstance) flatpickrInstance.destroy();
 
-        document.getElementById("addSchedule").addEventListener("click", function () {
-            let serviceName = document.getElementById("serviceName").innerText;
-            let startTime = document.getElementById("startTime").value;
-            let endTime = document.getElementById("endTime").value;
+                flatpickrInstance = flatpickr("#date", {
+                    dateFormat: "Y-m-d",
+                    enableTime: false,
+                    disableMobile: true,
+                    disable: [function (date) { return !allowedDays.includes(date.getDay()); }]
+                });
 
-            if (!serviceName || !startTime || !endTime) {
-                alert("Please select a service and enter a valid start time.");
-                return;
-            }
+                startTimeInput.value = "";
+                endTimeInput.value = "";
+            });
 
-            let table = document.getElementById("scheduleTable");
+            // ⏳ **Calculate End Time Based on HH:MM:SS Format**
+            startTimeInput.addEventListener("change", function () {
+                let selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
 
-            if (document.getElementById("noSchedules")) {
-                document.getElementById("noSchedules").remove(); // Remove "No schedules added" message
-            }
-
-            let newRow = document.createElement("tr");
-            newRow.innerHTML = `
-                <td>${serviceName}</td>
-                <td>${startTime}</td>
-                <td>${endTime}</td>
-                <td><button class="btn btn-danger btn-sm removeSchedule">❌ Remove</button></td>
-            `;
-
-            table.appendChild(newRow);
-        });
-
-        // Remove schedule event delegation
-        document.getElementById("scheduleTable").addEventListener("click", function (event) {
-            if (event.target.classList.contains("removeSchedule")) {
-                event.target.closest("tr").remove();
-
-                if (document.getElementById("scheduleTable").children.length === 0) {
-                    document.getElementById("scheduleTable").innerHTML = `<tr id="noSchedules">
-                        <td colspan="4" class="text-center">No schedules added yet.</td>
-                    </tr>`;
+                if (!selectedOption.value || !startTimeInput.value) {
+                    endTimeInput.value = "";
+                    return;
                 }
-            }
+
+                let durationHMS = selectedOption.getAttribute("data-duration") || "00:00:00";
+                let [durationHours, durationMinutes, durationSeconds] = durationHMS.split(":").map(Number);
+
+                // Convert duration to total minutes
+                let durationInMinutes = (durationHours * 60) + durationMinutes + (durationSeconds / 60);
+
+                if (durationInMinutes === 0) {
+                    endTimeInput.value = "";
+                    return;
+                }
+
+                // ⏳ Add Duration to Start Time
+                let [startHours, startMinutes] = startTimeInput.value.split(":").map(Number);
+                let totalMinutes = startMinutes + durationInMinutes;
+                let endHours = startHours + Math.floor(totalMinutes / 60);
+                let endMinutes = totalMinutes % 60;
+
+                // Ensure valid format
+                endHours = String(endHours % 24).padStart(2, "0");
+                endMinutes = String(Math.round(endMinutes)).padStart(2, "0");
+
+                endTimeInput.value = `${endHours}:${endMinutes}`;
+            });
         });
     </script>
-
 </body>
 </html>

@@ -33,9 +33,15 @@ from .views import artist_certificates, edit_certificate, delete_certificate
 from .views import service_schedule 
 from .views import get_notifications
 from .views import get_notifications, mark_notifications_read
+from .views import working_time_view, delete_working_time 
+from .views import get_service_workdays
+ # Import the correct view
 
 
 urlpatterns = [
+    path('get_service_workdays/<int:service_id>/', get_service_workdays, name='get_service_workdays'),
+    path('delete-working-time/<int:time_id>/', delete_working_time, name='delete_working_time'),
+     path('working-time/', working_time_view, name='working_time'),
      path('service-schedule/', service_schedule, name='service_schedule'),
     path('delete-schedule/<int:schedule_id>/', views.delete_schedule, name='delete_schedule'),
     path('service-schedule/', service_schedule, name='service_schedule'),  # ✅ Define the URL

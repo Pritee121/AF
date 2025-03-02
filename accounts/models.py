@@ -170,25 +170,57 @@ from django.db import models
 
 #     def __str__(self):
 #         return f"{self.service_name} ({self.get_duration_display()}) - {self.artist.first_name}"
-from django.db import models
-from django.contrib.auth import get_user_model
-from datetime import timedelta, datetime
-from multiselectfield import MultiSelectField
+# from django.db import models
+# from django.contrib.auth import get_user_model
+# from datetime import timedelta, datetime
+# from multiselectfield import MultiSelectField
 
-User = get_user_model()
+# User = get_user_model()
 
+# from datetime import timedelta
+
+# class Service(models.Model):
+#     artist = models.ForeignKey(User, related_name='services', on_delete=models.CASCADE)
+#     service_name = models.CharField(max_length=255)
+#     price = models.DecimalField(max_digits=10, decimal_places=2)
+#     duration = models.DurationField()
+#     travel_time = models.DurationField(default=timedelta(minutes=30))  # Set a default value
+#     total_duration = models.DurationField(blank=True, null=True)
+#     description = models.TextField(blank=True, null=True)
+#     created_at = models.DateTimeField(auto_now_add=True)
+
+
+#     WEEKDAYS = [
+#         ('Monday', 'Monday'),
+#         ('Tuesday', 'Tuesday'),
+#         ('Wednesday', 'Wednesday'),
+#         ('Thursday', 'Thursday'),
+#         ('Friday', 'Friday'),
+#         ('Saturday', 'Saturday'),
+#         ('Sunday', 'Sunday'),
+#     ]
+
+#     work_days = MultiSelectField(choices=WEEKDAYS, max_length=100, blank=True, default=['Monday'])
+
+#     def save(self, *args, **kwargs):
+#         if self.duration and self.travel_time:
+#             self.total_duration = self.duration + self.travel_time
+#         super().save(*args, **kwargs)
+
+#     def __str__(self):
+#         return f"{self.service_name} ({self.price} Rs.) - {self.artist.first_name}"
 from datetime import timedelta
+from multiselectfield import MultiSelectField
 
 class Service(models.Model):
     artist = models.ForeignKey(User, related_name='services', on_delete=models.CASCADE)
     service_name = models.CharField(max_length=255)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     duration = models.DurationField()
-    travel_time = models.DurationField(default=timedelta(minutes=30))  # Set a default value
+    travel_time = models.DurationField(default=timedelta(minutes=30))
     total_duration = models.DurationField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-
 
     WEEKDAYS = [
         ('Monday', 'Monday'),
@@ -207,8 +239,14 @@ class Service(models.Model):
             self.total_duration = self.duration + self.travel_time
         super().save(*args, **kwargs)
 
-    def __str__(self):
-        return f"{self.service_name} ({self.price} Rs.) - {self.artist.first_name}"
+    def get_total_duration_hms(self):
+        """Returns duration in HH:MM:SS format"""
+        if self.total_duration:
+            seconds = int(self.total_duration.total_seconds())
+            hours, remainder = divmod(seconds, 3600)
+            minutes, seconds = divmod(remainder, 60)
+            return f"{hours:02}:{minutes:02}:{seconds:02}"  # Ensure two-digit format
+        return "00:00:00"
 
 # class ServiceSchedule(models.Model):
 #     service = models.ForeignKey(Service, related_name='schedules', on_delete=models.CASCADE)
@@ -231,6 +269,94 @@ class ServiceSchedule(models.Model):
     def __str__(self):
         return f"{self.service.service_name} - {self.weekday} {self.start_time} - {self.end_time}"
 
+# from django.db import models
+# from django.contrib.auth import get_user_model
+
+# User = get_user_model()
+
+# class Booking(models.Model):
+#     PAYMENT_CHOICES = [
+#         ("khalti", "Khalti"),
+#         ("cod", "Cash on Delivery"),
+#     ]
+#     STATUS_CHOICES = [
+#         ("Pending", "Pending"),
+#         ("Confirmed", "Confirmed"),
+#         ("Cancelled", "Cancelled"),
+#     ]
+    
+#     artist = models.ForeignKey(User, on_delete=models.CASCADE, related_name="bookings")
+#     client = models.ForeignKey(User, on_delete=models.CASCADE, related_name="client_bookings")
+#     service = models.ForeignKey("Service", on_delete=models.CASCADE, null=True, blank=True)
+#     date = models.DateField()
+#     time = models.TimeField()
+#     payment_method = models.CharField(max_length=10, choices=PAYMENT_CHOICES, default="cod")
+#     payment_status = models.CharField(max_length=20, default="Pending")
+#     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="Pending")
+#     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)  # Allow 6 decimal places
+#     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)  # Allow 6 decimal places
+#     created_at = models.DateTimeField(auto_now_add=True)
+
+#     class Meta:
+#         unique_together = ('artist', 'date', 'time')  # Prevent duplicate bookings
+
+#     def __str__(self):
+#         return f"{self.client.first_name} booked {self.artist.first_name} for {self.service.service_name} on {self.date} using {self.payment_method}"
+# from django.db import models
+# from django.contrib.auth import get_user_model
+# from datetime import timedelta
+
+# User = get_user_model()
+
+# class Booking(models.Model):
+#     PAYMENT_CHOICES = [
+#         ("khalti", "Khalti"),
+#         ("cod", "Cash on Delivery"),
+#     ]
+#     STATUS_CHOICES = [
+#         ("Pending", "Pending"),
+#         ("Confirmed", "Confirmed"),
+#         ("Cancelled", "Cancelled"),
+#     ]
+    
+#     artist = models.ForeignKey(User, on_delete=models.CASCADE, related_name="bookings")
+#     client = models.ForeignKey(User, on_delete=models.CASCADE, related_name="client_bookings")
+#     service = models.ForeignKey("Service", on_delete=models.CASCADE, null=True, blank=True)
+    
+#     date = models.DateField()
+#     start_time = models.TimeField()
+#     end_time = models.TimeField(null=True, blank=True)  # Auto-calculated
+    
+#     payment_method = models.CharField(max_length=10, choices=PAYMENT_CHOICES, default="cod")
+#     payment_status = models.CharField(max_length=20, default="Pending")
+#     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="Pending")
+    
+#     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+#     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    
+#     created_at = models.DateTimeField(auto_now_add=True)
+
+#     class Meta:
+#         unique_together = ('artist', 'date', 'start_time', 'end_time')  # Prevent overlapping bookings
+
+#     def calculate_end_time(self):
+#         """Calculate and update end_time based on service duration."""
+#         if self.service and self.start_time:
+#             start_datetime = datetime.combine(self.date, self.start_time)
+#             end_datetime = start_datetime + timedelta(minutes=self.service.duration)
+#             self.end_time = end_datetime.time()
+
+#     def save(self, *args, **kwargs):
+#         """Auto-calculate end_time before saving the model."""
+#         if not self.end_time:
+#             self.calculate_end_time()
+#         super().save(*args, **kwargs)
+
+#     def __str__(self):
+#         return (f"{self.client.first_name} booked {self.artist.first_name} for "
+#                 f"{self.service.service_name} on {self.date} from {self.start_time} to {self.end_time} "
+#                 f"using {self.payment_method}")
+from datetime import datetime, timedelta
 from django.db import models
 from django.contrib.auth import get_user_model
 
@@ -250,20 +376,41 @@ class Booking(models.Model):
     artist = models.ForeignKey(User, on_delete=models.CASCADE, related_name="bookings")
     client = models.ForeignKey(User, on_delete=models.CASCADE, related_name="client_bookings")
     service = models.ForeignKey("Service", on_delete=models.CASCADE, null=True, blank=True)
+    
     date = models.DateField()
-    time = models.TimeField()
+    start_time = models.TimeField()
+    end_time = models.TimeField(null=True, blank=True)  # ✅ Ensure end_time can be saved
+    
     payment_method = models.CharField(max_length=10, choices=PAYMENT_CHOICES, default="cod")
     payment_status = models.CharField(max_length=20, default="Pending")
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="Pending")
-    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)  # Allow 6 decimal places
-    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)  # Allow 6 decimal places
+    
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('artist', 'date', 'time')  # Prevent duplicate bookings
+        unique_together = ('artist', 'date', 'start_time', 'end_time')  # Prevent overlapping bookings
+
+    def calculate_end_time(self):
+        """✅ Ensure end_time is calculated correctly."""
+        if self.service and self.start_time:
+            start_datetime = datetime.combine(self.date, self.start_time)
+            total_minutes = int(self.service.duration.total_seconds() / 60) + int(self.service.travel_time.total_seconds() / 60)
+            end_datetime = start_datetime + timedelta(minutes=total_minutes)
+            self.end_time = end_datetime.time()
+
+    def save(self, *args, **kwargs):
+        """✅ Ensure end_time is set before saving the model."""
+        if not self.end_time:
+            self.calculate_end_time()
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.client.first_name} booked {self.artist.first_name} for {self.service.service_name} on {self.date} using {self.payment_method}"
+        return (f"{self.client.first_name} booked {self.artist.first_name} for "
+                f"{self.service.service_name} on {self.date} from {self.start_time} to {self.end_time} "
+                f"using {self.payment_method}")
 
 
 class ServiceAvailability(models.Model):
@@ -381,3 +528,24 @@ class WeekSchedule(models.Model):
 
 #     def __str__(self):
 #         return f"{self.service.service_name}: {self.start_time} - {self.end_time}"
+
+
+from django.db import models
+
+class WorkingTime(models.Model):
+    DAY_CHOICES = [
+        ('Monday', 'Monday'),
+        ('Tuesday', 'Tuesday'),
+        ('Wednesday', 'Wednesday'),
+        ('Thursday', 'Thursday'),
+        ('Friday', 'Friday'),
+        ('Saturday', 'Saturday'),
+        ('Sunday', 'Sunday'),
+    ]
+    
+    day = models.CharField(max_length=10, choices=DAY_CHOICES, unique=True)
+    opening_time = models.TimeField()
+    closing_time = models.TimeField()
+
+    def __str__(self):
+        return f"{self.day}: {self.opening_time} - {self.closing_time}"

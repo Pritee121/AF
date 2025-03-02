@@ -188,8 +188,31 @@ class ServiceAvailabilityForm(forms.ModelForm):
 
 
 
+# from django import forms
+# from .models import Booking
+
+# class BookingForm(forms.ModelForm):
+#     latitude = forms.FloatField(widget=forms.HiddenInput(), required=False)
+#     longitude = forms.FloatField(widget=forms.HiddenInput(), required=False)
+
+#     class Meta:
+#         model = Booking
+#         fields = ['service', 'date', 'time', 'payment_method', 'latitude', 'longitude']
+
+#     def clean(self):
+#         cleaned_data = super().clean()
+#         artist = cleaned_data.get("service").artist
+#         date = cleaned_data.get("date")
+#         time = cleaned_data.get("time")
+
+#         # Prevent duplicate booking for same artist, date, and time
+#         if Booking.objects.filter(artist=artist, date=date, time=time).exists():
+#             raise forms.ValidationError("This time slot is already booked. Please select another.")
+
+#         return cleaned_data
 from django import forms
 from .models import Booking
+from datetime import datetime, timedelta
 
 class BookingForm(forms.ModelForm):
     latitude = forms.FloatField(widget=forms.HiddenInput(), required=False)
@@ -197,17 +220,36 @@ class BookingForm(forms.ModelForm):
 
     class Meta:
         model = Booking
-        fields = ['service', 'date', 'time', 'payment_method', 'latitude', 'longitude']
+        fields = ['service', 'date', 'start_time', 'payment_method', 'latitude', 'longitude']
 
     def clean(self):
         cleaned_data = super().clean()
-        artist = cleaned_data.get("service").artist
+        service = cleaned_data.get("service")
         date = cleaned_data.get("date")
-        time = cleaned_data.get("time")
+        start_time = cleaned_data.get("start_time")
 
-        # Prevent duplicate booking for same artist, date, and time
-        if Booking.objects.filter(artist=artist, date=date, time=time).exists():
+        if not service or not date or not start_time:
+            raise forms.ValidationError("All fields are required.")
+
+        artist = service.artist
+        service_duration = service.duration  # Duration in minutes
+
+        # Calculate `end_time` based on service duration
+        end_time = (datetime.combine(datetime.today(), start_time) + timedelta(minutes=service_duration)).time()
+
+        # Prevent overlapping bookings
+        overlapping_booking = Booking.objects.filter(
+            artist=artist,
+            date=date,
+            start_time__lte=end_time,  # Prevents start time conflicts
+            end_time__gte=start_time   # Prevents end time conflicts
+        ).exists()
+
+        if overlapping_booking:
             raise forms.ValidationError("This time slot is already booked. Please select another.")
+
+        # Store calculated `end_time` in cleaned data (used in views)
+        cleaned_data["end_time"] = end_time
 
         return cleaned_data
 
@@ -273,3 +315,14 @@ class ServiceScheduleForm(forms.ModelForm):
     class Meta:
         model = ServiceSchedule
         fields = ['service', 'start_time']
+from django import forms
+from .models import WorkingTime
+
+class WorkingTimeForm(forms.ModelForm):
+    class Meta:
+        model = WorkingTime
+        fields = ['day', 'opening_time', 'closing_time']
+        widgets = {
+            'opening_time': forms.TimeInput(attrs={'type': 'time'}),
+            'closing_time': forms.TimeInput(attrs={'type': 'time'}),
+        }

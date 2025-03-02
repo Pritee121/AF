@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Working Time</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <!-- Back Button -->
+        <a href="{% url 'services' %}" class="btn btn-secondary mb-3">← Back to Services</a>
+
+        <h2>Working Time Schedule</h2>
+
+        <!-- Form to Add Working Time -->
+        <form method="POST" class="mb-4">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-3">
+                    {{ form.day.label_tag }}
+                    {{ form.day }}
+                </div>
+                <div class="col-md-3">
+                    {{ form.opening_time.label_tag }}
+                    {{ form.opening_time }}
+                </div>
+                <div class="col-md-3">
+                    {{ form.closing_time.label_tag }}
+                    {{ form.closing_time }}
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-success mt-4">Add Working Time</button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Table to Display Working Time -->
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Day</th>
+                    <th>Opening Time</th>
+                    <th>Closing Time</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for time in working_times %}
+                <tr>
+                    <td>{{ time.day }}</td>
+                    <td>{{ time.opening_time }}</td>
+                    <td>{{ time.closing_time }}</td>
+                    <td>
+                        <a href="{% url 'delete_working_time' time.id %}" class="btn btn-danger btn-sm">Delete</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center">No working times available</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

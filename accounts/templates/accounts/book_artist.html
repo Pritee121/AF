@@ -19,13 +19,8 @@
 
     <link rel="stylesheet" href="{% static 'css/book_artist.css' %}">
     <style>
-        /* Ensure the map container is positioned relative for the spinner */
-        #map { 
-            height: 300px; 
-            width: 100%; 
-            position: relative;
-        }
-        /* Spinner styling */
+        /* Ensure the map container is positioned relative */
+        #map { height: 300px; width: 100%; position: relative; }
         #spinner {
             position: absolute;
             top: 50%;
@@ -34,8 +29,8 @@
             z-index: 1000;
             width: 50px;
             height: 50px;
-            border: 8px solid #f3f3f3; /* Light grey */
-            border-top: 8px solid #3498db; /* Blue */
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -60,7 +55,10 @@
             <select id="service" name="service" required>
                 <option value="" disabled selected>Choose a service</option>
                 {% for service in services %}
-                <option value="{{ service.id }}" data-duration="{{ service.duration }}" data-travel-time="{{ service.travel_time }}" data-total-duration="{{ service.total_duration }}">
+                <option 
+                    value="{{ service.id }}" 
+                    data-duration="{{ service.get_total_duration_hms }}" 
+                    data-workdays="{{ service.work_days|join:',' }}">
                     {{ service.service_name }} - Rs.{{ service.price }} - {{ service.description }}
                 </option>
                 {% endfor %}
@@ -72,15 +70,15 @@
             <label for="date">Select Date:</label>
             <input type="text" id="date" name="date" required placeholder="Choose a date" disabled>
 
-            <label for="time">Select Time:</label>
-            <select id="time" name="time" required disabled>
-                <option value="" disabled selected>Select time</option>
-            </select>
+            <label for="start_time">Select Start Time:</label>
+            <input type="time" id="start_time" name="start_time" required disabled>
 
-            <!-- Map -->
+            <label for="end_time">End Time:</label>
+            <input type="text" id="end_time" name="end_time" readonly>
+
+            <!-- Map Section -->
             <label for="map">Select Location:</label>
             <div id="map">
-                <!-- Loading spinner overlay -->
                 <div id="spinner"></div>
             </div>
             <input type="hidden" id="latitude" name="latitude">
@@ -97,160 +95,108 @@
     </div>
 
     <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        let serviceSelect = document.getElementById("service");
-        let durationField = document.getElementById("duration");
-        let dateInput = document.getElementById("date");
-        let timeInput = document.getElementById("time");
-        let bookingForm = document.getElementById("booking-form");
+        document.addEventListener("DOMContentLoaded", function () {
+            let serviceSelect = document.getElementById("service");
+            let durationField = document.getElementById("duration");
+            let dateInput = document.getElementById("date");
+            let startTimeInput = document.getElementById("start_time");
+            let endTimeInput = document.getElementById("end_time");
 
-        var map, marker;
+            let flatpickrInstance;
 
-        // Function to Initialize Map
-        function initMap(lat, lng) {
-            map = L.map('map').setView([lat, lng], 13);
+            // 🌍 Initialize Map
+            var map, marker;
+            function initMap(lat, lng) {
+                map = L.map("map").setView([lat, lng], 13);
+                var tileLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                    attribution: "© OpenStreetMap",
+                }).addTo(map);
 
-            var tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap'
-            }).addTo(map);
+                tileLayer.on("load", function () {
+                    document.getElementById("spinner").style.display = "none";
+                });
 
-            tileLayer.on('load', function() {
-                document.getElementById("spinner").style.display = "none";
-            });
+                marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+                document.getElementById("latitude").value = lat;
+                document.getElementById("longitude").value = lng;
 
-            marker = L.marker([lat, lng], { draggable: true }).addTo(map);
-
-            // Update Input Fields with initial location
-            document.getElementById("latitude").value = lat;
-            document.getElementById("longitude").value = lng;
-
-            // Update Coordinates on Drag End
-            marker.on('dragend', function () {
-                var position = marker.getLatLng();
-                document.getElementById("latitude").value = position.lat.toFixed(6);
-                document.getElementById("longitude").value = position.lng.toFixed(6);
-            });
-        }
-
-        // Try to get user's current location
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                function (position) {
-                    var userLat = position.coords.latitude;
-                    var userLng = position.coords.longitude;
-                    initMap(userLat, userLng);
-                },
-                function (error) {
-                    console.error("Geolocation Error:", error);
-                    alert("Location access denied. Using default location.");
-                    initMap(27.7172, 85.3240); // Fallback to Kathmandu coordinates
-                }
-            );
-        } else {
-            alert("Geolocation not supported by this browser.");
-            initMap(27.7172, 85.3240); // Fallback to Kathmandu coordinates
-        }
-
-        // Service Duration Auto-Update
-        serviceSelect.addEventListener("change", function () {
-            let selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
-            let duration = selectedOption.getAttribute("data-duration");
-            let travelTime = selectedOption.getAttribute("data-travel-time");
-            let totalDuration = selectedOption.getAttribute("data-total-duration");
-
-            // Display total_duration (total service duration + travel time)
-            if (totalDuration) {
-                durationField.value = totalDuration;
+                marker.on("dragend", function () {
+                    var position = marker.getLatLng();
+                    document.getElementById("latitude").value = position.lat.toFixed(6);
+                    document.getElementById("longitude").value = position.lng.toFixed(6);
+                });
             }
 
-            dateInput.value = "";
-            timeInput.innerHTML = "<option value='' disabled selected>Select time</option>";
-            timeInput.disabled = true;
-
-            if (serviceSelect.value) {
-                fetchAvailableDates(serviceSelect.value);
-            }
-        });
-
-        // Fetch Available Dates (assuming this logic is working on your server)
-        function fetchAvailableDates(serviceId) {
-            fetch(`/get-available-dates/{{ artist.id }}/?service_id=${serviceId}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.available_dates.length === 0) {
-                        Swal.fire("No Available Dates", "Please choose another service.", "info");
-                        dateInput.disabled = true;
-                    } else {
-                        dateInput.disabled = false;
-                        flatpickr("#date", {
-                            dateFormat: "Y-m-d",
-                            enableTime: false,
-                            disableMobile: true,
-                            enable: data.available_dates  // Ensure available dates are passed here
-                        });
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function (position) {
+                        initMap(position.coords.latitude, position.coords.longitude);
+                    },
+                    function () {
+                        initMap(27.7172, 85.3240);
                     }
-                })
-                .catch(error => console.error("Error fetching available dates:", error));
-        }
-
-        // Fetch Available Times for selected service and date
-        function fetchAvailableTimes(serviceId, date) {
-            fetch(`/get-available-times/{{ artist.id }}/?service_id=${serviceId}&date=${date}`)
-                .then(response => response.json())
-                .then(data => {
-                    timeInput.innerHTML = "<option value='' disabled selected>Choose a time</option>";
-                    if (data.available_times.length === 0) {
-                        Swal.fire("No Available Slots", "Please choose another date.", "info");
-                        timeInput.disabled = true;
-                    } else {
-                        timeInput.disabled = false;
-                        data.available_times.forEach(time => {
-                            let option = document.createElement("option");
-                            option.value = time;
-                            option.textContent = time;
-                            timeInput.appendChild(option);
-                        });
-                    }
-                })
-                .catch(error => console.error("Error fetching available times:", error));
-        }
-
-        // Fetch available times based on selected service and date
-        dateInput.addEventListener("change", function () {
-            let selectedServiceId = serviceSelect.value;
-            let selectedDate = dateInput.value;
-            if (selectedServiceId && selectedDate) {
-                fetchAvailableTimes(selectedServiceId, selectedDate);
+                );
+            } else {
+                initMap(27.7172, 85.3240);
             }
-        });
 
-        // Success Message on Form Submission
-        bookingForm.addEventListener("submit", function (event) {
-            event.preventDefault();
+            // 🎯 Enable Date & Start Time Inputs When a Service is Selected
+            serviceSelect.addEventListener("change", function () {
+                let selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
 
-            let formData = new FormData(bookingForm);
-            fetch(bookingForm.action, {
-                method: "POST",
-                body: formData,
-                headers: {
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value  // Make sure CSRF token is included
+                if (!selectedOption.value) return;
+
+                let durationHMS = selectedOption.getAttribute("data-duration") || "00:00:00";
+                let workDaysString = selectedOption.getAttribute("data-workdays") || "";
+                let workDays = workDaysString.split(",").map(day => day.trim());
+
+                // ✅ Convert Work Days to JavaScript Format
+                const dayMapping = { "Sunday": 0, "Monday": 1, "Tuesday": 2, "Wednesday": 3, "Thursday": 4, "Friday": 5, "Saturday": 6 };
+                let allowedDays = workDays.map(day => dayMapping[day]).filter(day => day !== undefined);
+
+                durationField.value = durationHMS;
+                dateInput.disabled = false;
+                startTimeInput.disabled = false;
+
+                if (flatpickrInstance) flatpickrInstance.destroy();
+
+                flatpickrInstance = flatpickr("#date", {
+                    dateFormat: "Y-m-d",
+                    enableTime: false,
+                    disableMobile: true,
+                    disable: [function (date) { return !allowedDays.includes(date.getDay()); }]
+                });
+
+                startTimeInput.value = "";
+                endTimeInput.value = "";
+            });
+
+            // ⏳ Auto-calculate End Time
+            startTimeInput.addEventListener("change", function () {
+                let selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
+
+                if (!selectedOption.value || !startTimeInput.value) {
+                    endTimeInput.value = "";
+                    return;
                 }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === "success") {
-                    Swal.fire("Your booking has been listed!", "You will receive a confirmation soon.", "success")
-                    .then(() => window.location.href = "{% url 'home' %}");
-                } else {
-                    Swal.fire("Booking Failed", data.message || "Try again.", "error");
+
+                let durationHMS = selectedOption.getAttribute("data-duration") || "00:00:00";
+                let [durationHours, durationMinutes, durationSeconds] = durationHMS.split(":").map(Number);
+
+                let durationInMinutes = (durationHours * 60) + durationMinutes + (durationSeconds / 60);
+                if (durationInMinutes === 0) {
+                    endTimeInput.value = "";
+                    return;
                 }
-            })
-            .catch(error => {
-                console.error("Error:", error);
-                Swal.fire("Booking Failed", "An error occurred. Please try again.", "error");
+
+                let [startHours, startMinutes] = startTimeInput.value.split(":").map(Number);
+                let totalMinutes = startMinutes + durationInMinutes;
+                let endHours = startHours + Math.floor(totalMinutes / 60);
+                let endMinutes = totalMinutes % 60;
+
+                endTimeInput.value = `${String(endHours).padStart(2, "0")}:${String(endMinutes).padStart(2, "0")}`;
             });
         });
-    });
-</script>
+    </script>
 </body>
 </html>

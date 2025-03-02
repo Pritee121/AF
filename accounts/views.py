@@ -1093,70 +1093,179 @@ from .models import User, Service, ServiceAvailability, Booking
 #         return JsonResponse({"status": "success", "message": "Booking successfully created!"})
 
 #     return render(request, "accounts/book_artist.html", {"artist": artist, "services": services})
-from django.core.mail import send_mail
-from django.conf import settings
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
-from .models import Booking, Service
-from datetime import datetime
+# from django.core.mail import send_mail
+# from django.conf import settings
+# from django.http import JsonResponse
+# from django.shortcuts import get_object_or_404
+# from .models import Booking, Service
+# from datetime import datetime
 
-@login_required
+# @login_required
+# def book_artist(request, artist_id):
+#     artist = get_object_or_404(User, id=artist_id, is_artist=True)
+#     user = request.user
+#     services = Service.objects.filter(artist=artist)
+
+#     if request.method == "POST":
+#         # Retrieve form data
+#         date_selected = request.POST.get("date")
+#         time_selected = request.POST.get("time")
+#         service_id = request.POST.get("service")
+#         payment_method = request.POST.get("payment_method")
+#         latitude = request.POST.get("latitude")
+#         longitude = request.POST.get("longitude")
+
+#         try:
+#             start_time_str, end_time_str = time_selected.split(" - ")
+#             start_time = datetime.strptime(start_time_str, "%H:%M:%S").time()
+#             end_time = datetime.strptime(end_time_str, "%H:%M:%S").time()
+#         except ValueError:
+#             return JsonResponse({"status": "error", "message": f"Invalid time format: '{time_selected}'. Please use the format HH:MM:SS - HH:MM:SS."})
+
+#         # Check if the selected time slot is available (and prevent duplicate bookings)
+#         service = get_object_or_404(Service, id=service_id)
+#         booking = Booking(
+#             artist=artist,
+#             client=user,
+#             service=service,
+#             date=date_selected,
+#             time=start_time,
+#             payment_method=payment_method,
+#             latitude=latitude,
+#             longitude=longitude
+#         )
+#         booking.save()
+
+#         # Send confirmation email to client (user)
+#         send_mail(
+#             subject=f"Booking Confirmation - {artist.first_name} {artist.last_name}",
+#             message=f"Dear {user.first_name},\n\nYour booking has been confirmed with {artist.first_name} {artist.last_name} for the service: {service.service_name}.\n\nBooking Details:\nDate: {date_selected}\nTime: {start_time}\nService: {service.service_name}\n\nPayment Method: {payment_method}\nLocation: Latitude: {latitude}, Longitude: {longitude}\n\nThank you for using our service!",
+#             from_email=settings.EMAIL_HOST_USER,
+#             recipient_list=[user.email],
+#         )
+
+#         # Send confirmation email to artist
+#         send_mail(
+#             subject=f"New Booking Received - {user.first_name} {user.last_name}",
+#             message=f"Dear {artist.first_name},\n\nYou have received a new booking from {user.first_name} {user.last_name} for the service: {service.service_name}.\n\nBooking Details:\nDate: {date_selected}\nTime: {start_time}\nService: {service.service_name}\nClient: {user.first_name} {user.last_name}\n\nPayment Method: {payment_method}\nLocation: Latitude: {latitude}, Longitude: {longitude}\n\nPlease prepare accordingly.",
+#             from_email=settings.EMAIL_HOST_USER,
+#             recipient_list=[artist.email],
+#         )
+
+#         return JsonResponse({"status": "success", "message": "Booking successfully created and confirmation email sent!"})
+
+#     return render(request, "accounts/book_artist.html", {"artist": artist, "services": services})
+
+# from datetime import datetime, timedelta
+
+# @login_required
+# def book_artist(request, artist_id):
+#     artist = get_object_or_404(User, id=artist_id, is_artist=True)
+#     user = request.user
+#     services = Service.objects.filter(artist=artist)
+
+#     if request.method == "POST":
+#         date_selected = request.POST.get("date")
+#         start_time_str = request.POST.get("start_time")
+#         service_id = request.POST.get("service")
+#         payment_method = request.POST.get("payment_method")
+#         latitude = request.POST.get("latitude")
+#         longitude = request.POST.get("longitude")
+
+#         if not all([date_selected, start_time_str, service_id, payment_method]):
+#             return JsonResponse({"status": "error", "message": "Missing required fields."})
+
+#         try:
+#             start_time = datetime.strptime(start_time_str, "%H:%M").time()
+#         except ValueError:
+#             return JsonResponse({"status": "error", "message": "Invalid time format. Please use HH:MM."})
+
+#         # Get service
+#         service = get_object_or_404(Service, id=service_id)
+
+#         # ✅ Convert duration to minutes correctly
+#         if isinstance(service.duration, timedelta):
+#             service_duration_minutes = service.duration.total_seconds() // 60  # Convert to minutes
+#         else:
+#             service_duration_minutes = int(service.duration)  # If stored as integer
+
+#         # ✅ Calculate end_time correctly
+#         end_datetime = datetime.combine(datetime.today(), start_time) + timedelta(minutes=service_duration_minutes)
+#         end_time = end_datetime.time()
+
+#         # ✅ Prevent overlapping bookings
+#         overlapping_booking = Booking.objects.filter(
+#             artist=artist,
+#             date=date_selected,
+#             start_time__lte=end_time,
+#             end_time__gte=start_time
+#         ).exists()
+
+#         if overlapping_booking:
+#             return JsonResponse({"status": "error", "message": "The selected time slot is already booked. Please choose another time."})
+
+#         # ✅ Create and save the booking
+#         booking = Booking.objects.create(
+#             artist=artist,
+#             client=user,
+#             service=service,
+#             date=date_selected,
+#             start_time=start_time,
+#             end_time=end_time,
+#             payment_method=payment_method,
+#             latitude=latitude,
+#             longitude=longitude
+#         )
+
+#         return JsonResponse({"status": "success", "message": "Booking successfully created!"})
+
+#     return render(request, "accounts/book_artist.html", {"artist": artist, "services": services})
+
+from datetime import datetime, timedelta
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from .models import Booking, Service, User
+
 def book_artist(request, artist_id):
-    artist = get_object_or_404(User, id=artist_id, is_artist=True)
-    user = request.user
+    artist = get_object_or_404(User, id=artist_id)
     services = Service.objects.filter(artist=artist)
 
     if request.method == "POST":
-        # Retrieve form data
-        date_selected = request.POST.get("date")
-        time_selected = request.POST.get("time")
         service_id = request.POST.get("service")
-        payment_method = request.POST.get("payment_method")
+        date_str = request.POST.get("date")
+        start_time_str = request.POST.get("start_time")
         latitude = request.POST.get("latitude")
         longitude = request.POST.get("longitude")
+        payment_method = request.POST.get("payment_method")
 
-        try:
-            start_time_str, end_time_str = time_selected.split(" - ")
-            start_time = datetime.strptime(start_time_str, "%H:%M:%S").time()
-            end_time = datetime.strptime(end_time_str, "%H:%M:%S").time()
-        except ValueError:
-            return JsonResponse({"status": "error", "message": f"Invalid time format: '{time_selected}'. Please use the format HH:MM:SS - HH:MM:SS."})
-
-        # Check if the selected time slot is available (and prevent duplicate bookings)
         service = get_object_or_404(Service, id=service_id)
-        booking = Booking(
+
+        # Convert date and time strings to Python datetime objects
+        date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        start_time = datetime.strptime(start_time_str, "%H:%M").time()
+
+        # ✅ Calculate End Time (Including Service Duration + Travel Time)
+        start_datetime = datetime.combine(date, start_time)
+        total_minutes = int(service.duration.total_seconds() / 60) + int(service.travel_time.total_seconds() / 60)
+        end_datetime = start_datetime + timedelta(minutes=total_minutes)
+        end_time = end_datetime.time()  # Extract only the time
+
+        # ✅ Save booking with calculated end_time
+        booking = Booking.objects.create(
             artist=artist,
-            client=user,
+            client=request.user,
             service=service,
-            date=date_selected,
-            time=start_time,
+            date=date,
+            start_time=start_time,
+            end_time=end_time,  # ✅ Save calculated end_time
+            latitude=latitude if latitude else None,
+            longitude=longitude if longitude else None,
             payment_method=payment_method,
-            latitude=latitude,
-            longitude=longitude
         )
-        booking.save()
-
-        # Send confirmation email to client (user)
-        send_mail(
-            subject=f"Booking Confirmation - {artist.first_name} {artist.last_name}",
-            message=f"Dear {user.first_name},\n\nYour booking has been confirmed with {artist.first_name} {artist.last_name} for the service: {service.service_name}.\n\nBooking Details:\nDate: {date_selected}\nTime: {start_time}\nService: {service.service_name}\n\nPayment Method: {payment_method}\nLocation: Latitude: {latitude}, Longitude: {longitude}\n\nThank you for using our service!",
-            from_email=settings.EMAIL_HOST_USER,
-            recipient_list=[user.email],
-        )
-
-        # Send confirmation email to artist
-        send_mail(
-            subject=f"New Booking Received - {user.first_name} {user.last_name}",
-            message=f"Dear {artist.first_name},\n\nYou have received a new booking from {user.first_name} {user.last_name} for the service: {service.service_name}.\n\nBooking Details:\nDate: {date_selected}\nTime: {start_time}\nService: {service.service_name}\nClient: {user.first_name} {user.last_name}\n\nPayment Method: {payment_method}\nLocation: Latitude: {latitude}, Longitude: {longitude}\n\nPlease prepare accordingly.",
-            from_email=settings.EMAIL_HOST_USER,
-            recipient_list=[artist.email],
-        )
-
-        return JsonResponse({"status": "success", "message": "Booking successfully created and confirmation email sent!"})
+        messages.success(request, "Booking successfully created!")
+        return redirect("booking_history")  # Redirect to booking history page
 
     return render(request, "accounts/book_artist.html", {"artist": artist, "services": services})
-
-
 
 
 
@@ -1353,29 +1462,63 @@ def update_booking_status(request, booking_id):
 
 
 
-from datetime import datetime
-from django.utils.timezone import now, make_aware
-from django.contrib.auth.decorators import login_required
+# from datetime import datetime
+# from django.utils.timezone import now, make_aware
+# from django.contrib.auth.decorators import login_required
+# from django.shortcuts import render
+# from .models import Booking
+
+# @login_required(login_url='login')
+# def booking_history(request):
+#     user = request.user
+#     today = now().date()
+
+#     user_bookings = Booking.objects.filter(client=user).order_by('-date')
+
+#     # Calculate the remaining time for cancellation
+#     for booking in user_bookings:
+#         appointment_datetime = make_aware(datetime.combine(booking.date, booking.time))  # Convert to timezone-aware
+#         remaining_time = (appointment_datetime - now()).total_seconds() / 3600  # Convert to hours
+#         booking.time_left = remaining_time  # Attach to object for template use
+
+#     return render(request, "accounts/booking_history.html", {
+#         "user_bookings": user_bookings,
+#         "today": today,  # Pass today's date for comparison
+#     })
 from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
 from .models import Booking
+from datetime import datetime, timedelta
 
-@login_required(login_url='login')
+@login_required
 def booking_history(request):
-    user = request.user
-    today = now().date()
+    user_bookings = Booking.objects.filter(client=request.user).order_by('-date', '-start_time')
 
-    user_bookings = Booking.objects.filter(client=user).order_by('-date')
-
-    # Calculate the remaining time for cancellation
     for booking in user_bookings:
-        appointment_datetime = make_aware(datetime.combine(booking.date, booking.time))  # Convert to timezone-aware
-        remaining_time = (appointment_datetime - now()).total_seconds() / 3600  # Convert to hours
-        booking.time_left = remaining_time  # Attach to object for template use
+        booking_datetime = datetime.combine(booking.date, booking.start_time)
 
-    return render(request, "accounts/booking_history.html", {
-        "user_bookings": user_bookings,
-        "today": today,  # Pass today's date for comparison
-    })
+        # ✅ Ensure end_time is correctly calculated (including travel time)
+        if not booking.end_time and booking.service:
+            duration_minutes = int(booking.service.duration.total_seconds() / 60)
+            travel_time_minutes = int(booking.service.travel_time.total_seconds() / 60)
+            
+            total_minutes = duration_minutes + travel_time_minutes
+            end_datetime = booking_datetime + timedelta(minutes=total_minutes)
+            booking.end_time = end_datetime.time()
+
+        # ✅ Format duration in HH:MM:SS format
+        if booking.service and booking.service.total_duration:
+            total_seconds = int(booking.service.total_duration.total_seconds())
+            hours, remainder = divmod(total_seconds, 3600)
+            minutes, seconds = divmod(remainder, 60)
+            booking.formatted_duration = f"{hours:02}:{minutes:02}:{seconds:02}"  # Fix format
+
+        # ✅ Ensure time left for cancellation (24-hour rule)
+        now_time = datetime.now()
+        time_left = (booking_datetime - now_time).total_seconds() / 3600
+        booking.time_left = max(0, round(time_left))  # Prevent negative values
+
+    return render(request, 'accounts/booking_history.html', {'user_bookings': user_bookings})
 
 
 from django.shortcuts import render
@@ -2033,3 +2176,38 @@ def mark_notifications_read(request):
 
     return JsonResponse({"new_bookings": new_bookings})
 
+from django.shortcuts import render, redirect
+from .models import WorkingTime
+from .forms import WorkingTimeForm
+
+def working_time_view(request):
+    if request.method == "POST":
+        form = WorkingTimeForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('working_time')  # Refresh the page after adding
+    else:
+        form = WorkingTimeForm()
+
+    working_times = WorkingTime.objects.all()  # Fetch all working times
+
+    return render(request, 'accounts/working_time.html', {'form': form, 'working_times': working_times})
+from django.shortcuts import get_object_or_404
+
+def delete_working_time(request, time_id):
+    time_entry = get_object_or_404(WorkingTime, id=time_id)
+    time_entry.delete()
+    return redirect('working_time')
+
+
+from django.http import JsonResponse
+from .models import Service
+
+def get_service_workdays(request, service_id):
+    """ Fetches available workdays for a selected service. """
+    try:
+        service = Service.objects.get(id=service_id)
+        workdays = list(service.work_days)  # Convert MultiSelectField to list
+        return JsonResponse({"workdays": workdays})
+    except Service.DoesNotExist:
+        return JsonResponse({"error": "Service not found"}, status=404)
