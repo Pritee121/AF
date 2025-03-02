@@ -1221,9 +1221,117 @@ from .models import User, Service, ServiceAvailability, Booking
 
 #     return render(request, "accounts/book_artist.html", {"artist": artist, "services": services})
 
+# from datetime import datetime, timedelta
+# from django.shortcuts import render, get_object_or_404, redirect
+# from django.contrib import messages
+# from .models import Booking, Service, User
+
+# def book_artist(request, artist_id):
+#     artist = get_object_or_404(User, id=artist_id)
+#     services = Service.objects.filter(artist=artist)
+
+#     if request.method == "POST":
+#         service_id = request.POST.get("service")
+#         date_str = request.POST.get("date")
+#         start_time_str = request.POST.get("start_time")
+#         latitude = request.POST.get("latitude")
+#         longitude = request.POST.get("longitude")
+#         payment_method = request.POST.get("payment_method")
+
+#         service = get_object_or_404(Service, id=service_id)
+
+#         # Convert date and time strings to Python datetime objects
+#         date = datetime.strptime(date_str, "%Y-%m-%d").date()
+#         start_time = datetime.strptime(start_time_str, "%H:%M").time()
+
+#         # ✅ Calculate End Time (Including Service Duration + Travel Time)
+#         start_datetime = datetime.combine(date, start_time)
+#         total_minutes = int(service.duration.total_seconds() / 60) + int(service.travel_time.total_seconds() / 60)
+#         end_datetime = start_datetime + timedelta(minutes=total_minutes)
+#         end_time = end_datetime.time()  # Extract only the time
+
+#         # ✅ Save booking with calculated end_time
+#         booking = Booking.objects.create(
+#             artist=artist,
+#             client=request.user,
+#             service=service,
+#             date=date,
+#             start_time=start_time,
+#             end_time=end_time,  # ✅ Save calculated end_time
+#             latitude=latitude if latitude else None,
+#             longitude=longitude if longitude else None,
+#             payment_method=payment_method,
+#         )
+#         messages.success(request, "Booking successfully created!")
+#         return redirect("booking_history")  # Redirect to booking history page
+
+#     return render(request, "accounts/book_artist.html", {"artist": artist, "services": services})
+
+# from datetime import datetime, timedelta
+# from django.shortcuts import render, get_object_or_404, redirect
+# from django.contrib import messages
+# from django.db.models import Q  # ✅ Import Q for filtering overlapping bookings
+# from .models import Booking, Service, User
+
+# def book_artist(request, artist_id):
+#     artist = get_object_or_404(User, id=artist_id)
+#     services = Service.objects.filter(artist=artist)
+
+#     if request.method == "POST":
+#         service_id = request.POST.get("service")
+#         date_str = request.POST.get("date")
+#         start_time_str = request.POST.get("start_time")
+#         latitude = request.POST.get("latitude")
+#         longitude = request.POST.get("longitude")
+#         payment_method = request.POST.get("payment_method")
+
+#         service = get_object_or_404(Service, id=service_id)
+
+#         # Convert date and time strings to Python datetime objects
+#         date = datetime.strptime(date_str, "%Y-%m-%d").date()
+#         start_time = datetime.strptime(start_time_str, "%H:%M").time()
+
+#         # ✅ Calculate End Time (Including Service Duration + Travel Time)
+#         start_datetime = datetime.combine(date, start_time)
+#         total_minutes = int(service.duration.total_seconds() / 60) + int(service.travel_time.total_seconds() / 60)
+#         end_datetime = start_datetime + timedelta(minutes=total_minutes)
+#         end_time = end_datetime.time()  # Extract only the time
+
+#         # ✅ Check for existing overlapping bookings
+#         existing_bookings = Booking.objects.filter(
+#             artist=artist,
+#             date=date
+#         ).filter(
+#             Q(start_time__lt=end_time, end_time__gt=start_time)  # ✅ Check for time conflicts
+#         )
+
+#         if existing_bookings.exists():
+#             messages.error(request, "This time slot is already booked. Please select a different time.")
+#             return redirect("book_artist", artist_id=artist_id)
+
+#         # ✅ Save booking with calculated end_time
+#         booking = Booking.objects.create(
+#             artist=artist,
+#             client=request.user,
+#             service=service,
+#             date=date,
+#             start_time=start_time,
+#             end_time=end_time,  # ✅ Save calculated end_time
+#             latitude=latitude if latitude else None,
+#             longitude=longitude if longitude else None,
+#             payment_method=payment_method,
+#         )
+#         messages.success(request, "Booking successfully created!")
+#         return redirect("booking_history")  # Redirect to booking history page
+
+#     return render(request, "accounts/book_artist.html", {"artist": artist, "services": services})
 from datetime import datetime, timedelta
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
+from django.http import JsonResponse  # ✅ Import JsonResponse for AJAX
+from django.db.models import Q
+from django.core.mail import send_mail  # ✅ Import send_mail
+from django.conf import settings  # ✅ Import settings for email
 from .models import Booking, Service, User
 
 def book_artist(request, artist_id):
@@ -1250,6 +1358,17 @@ def book_artist(request, artist_id):
         end_datetime = start_datetime + timedelta(minutes=total_minutes)
         end_time = end_datetime.time()  # Extract only the time
 
+        # ✅ Check for existing overlapping bookings
+        existing_bookings = Booking.objects.filter(
+            artist=artist,
+            date=date,
+        ).filter(
+            Q(start_time__lt=end_time, end_time__gt=start_time)  # Check for time conflicts
+        )
+
+        if existing_bookings.exists():
+            return JsonResponse({"error": "This time slot is already booked. Please select a different time."}, status=400)
+
         # ✅ Save booking with calculated end_time
         booking = Booking.objects.create(
             artist=artist,
@@ -1262,11 +1381,34 @@ def book_artist(request, artist_id):
             longitude=longitude if longitude else None,
             payment_method=payment_method,
         )
-        messages.success(request, "Booking successfully created!")
-        return redirect("booking_history")  # Redirect to booking history page
+
+        # ✅ Send confirmation email to the user
+        subject = "Booking Confirmation - ArtistFinder"
+        message = f"""
+        Hello {request.user.first_name},
+
+        Your booking has been successfully created!
+
+        📌 Booking Details:
+        - Artist: {artist.first_name} {artist.last_name}
+        - Service: {service.service_name}
+        - Date: {date}
+        - Time: {start_time.strftime('%I:%M %p')} - {end_time.strftime('%I:%M %p')}
+        - Payment Method: {payment_method}
+
+        Thank you for booking with ArtistFinder!
+        """
+        from_email = settings.DEFAULT_FROM_EMAIL  # Use your configured email
+        recipient_list = [request.user.email]
+
+        try:
+            send_mail(subject, message, from_email, recipient_list)
+        except Exception as e:
+            print(f"Email sending failed: {e}")  # Debugging in case of email failure
+
+        return JsonResponse({"success": "Booking successfully created! A confirmation email has been sent."}, status=200)
 
     return render(request, "accounts/book_artist.html", {"artist": artist, "services": services})
-
 
 
 from django.shortcuts import render

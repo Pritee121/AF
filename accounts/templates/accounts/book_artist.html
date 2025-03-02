@@ -197,6 +197,51 @@
                 endTimeInput.value = `${String(endHours).padStart(2, "0")}:${String(endMinutes).padStart(2, "0")}`;
             });
         });
+        
+    document.addEventListener("DOMContentLoaded", function () {
+        let bookingForm = document.getElementById("booking-form");
+
+        bookingForm.addEventListener("submit", function (event) {
+            event.preventDefault();  // ✅ Prevent default form submission
+
+            let formData = new FormData(bookingForm);
+
+            fetch(bookingForm.action, {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}"
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    // ❌ Show error dialog for already booked slot
+                    Swal.fire({
+                        title: "Time Slot Unavailable!",
+                        text: data.error,
+                        icon: "error",
+                        confirmButtonColor: "#d33"
+                    });
+                } else {
+                    // ✅ Show success dialog for successful booking with email confirmation
+                    Swal.fire({
+                        title: "Booking Confirmed!",
+                        text: data.success,
+                        icon: "success",
+                        confirmButtonColor: "#28a745"
+                    }).then(() => {
+                        window.location.href = "{% url 'booking_history' %}"; // Redirect to booking history
+                    });
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                Swal.fire("Error!", "Something went wrong. Please try again.", "error");
+            });
+        });
+    });
+
     </script>
 </body>
 </html>

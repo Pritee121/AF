@@ -169,7 +169,7 @@
         <h1 class="text-3xl font-bold text-gray-800">Our Services</h1>
 
         <a href="{% url 'add_service' %}" class="btn btn-success">➕ Add Service</a>
-        <a href="{% url 'week_schedule' %}" class="btn btn-primary">📅 Set Week Schedule</a>
+        <!-- <a href="{% url 'week_schedule' %}" class="btn btn-primary">📅 Set Week Schedule</a> -->
         <!-- <a href="{% url 'service_schedule' %}" class="btn btn-primary">📅 Service Schedule</a> -->
         <a href="{% url 'working_time' %}" class="btn btn-primary">Working Time</a>
 
@@ -184,7 +184,7 @@
                     <p class="description">Description: {{ service.description }}</p>
                     <!-- <p class="description">Days: {{ service.work_days }}</p> -->
 
-                    <!-- Display Schedules (Start and End Times) -->
+                    <!-- Display Schedules (Start and End Times)
                     <div class="schedule-list mt-3">
                         <h5>Service Schedule:</h5>
                         {% for schedule in service.schedules.all %}
@@ -192,7 +192,7 @@
                         {% empty %}
                             <p>No schedule added yet for this service.</p>
                         {% endfor %}
-                    </div>
+                    </div> -->
 
                     <!-- Edit & Delete Buttons -->
                     <a href="{% url 'edit_service' service.id %}" class="edit-btn">Edit Service</a>

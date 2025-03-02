@@ -358,6 +358,8 @@ class ServiceSchedule(models.Model):
 #                 f"using {self.payment_method}")
 from datetime import datetime, timedelta
 from django.db import models
+from django.db.models import Q
+from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -401,10 +403,26 @@ class Booking(models.Model):
             end_datetime = start_datetime + timedelta(minutes=total_minutes)
             self.end_time = end_datetime.time()
 
+    def clean(self):
+        """✅ Prevent overlapping bookings before saving."""
+        overlapping_bookings = Booking.objects.filter(
+            artist=self.artist,
+            date=self.date
+        ).filter(
+            Q(start_time__lt=self.end_time, end_time__gt=self.start_time)  # Check for overlapping bookings
+        )
+
+        if self.pk:
+            overlapping_bookings = overlapping_bookings.exclude(pk=self.pk)  # Exclude self in case of update
+
+        if overlapping_bookings.exists():
+            raise ValidationError("This time slot is already booked. Please choose a different time.")
+
     def save(self, *args, **kwargs):
-        """✅ Ensure end_time is set before saving the model."""
+        """✅ Ensure end_time is set before saving and check for conflicts."""
         if not self.end_time:
             self.calculate_end_time()
+        self.clean()  # ✅ Check for conflicts before saving
         super().save(*args, **kwargs)
 
     def __str__(self):
