@@ -259,64 +259,57 @@ def approve_artist(request, artist_id):
 
 
 
-from django.shortcuts import get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
+# from django.http import JsonResponse
+# from django.views.decorators.csrf import csrf_exempt
+# import json
+# from datetime import datetime, timedelta
+# from django.shortcuts import get_object_or_404
+# from .models import Booking
+
+# @csrf_exempt
+# def cancel_booking(request, booking_id):
+#     if request.method == "POST":
+#         try:
+#             booking = get_object_or_404(Booking, id=booking_id)
+
+#             # ✅ Prevent cancellation if booking is within 24 hours
+#             time_left = (booking.date - datetime.today().date()).days
+#             if time_left < 1:
+#                 return JsonResponse({"error": "You cannot cancel bookings within 24 hours."}, status=400)
+
+#             # ✅ Change booking status
+#             booking.status = "Cancelled"
+#             booking.save()
+
+#             return JsonResponse({"success": "Booking successfully cancelled."}, status=200)
+#         except Exception as e:
+#             return JsonResponse({"error": f"Something went wrong: {str(e)}"}, status=500)
+
+#     return JsonResponse({"error": "Invalid request method."}, status=400)
+import json
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.views.decorators.csrf import csrf_exempt
 from .models import Booking
-import logging
 
-# ✅ Setup logging for debugging
-logger = logging.getLogger(__name__)
-
-@login_required
+@csrf_exempt  # ✅ Allow AJAX requests
 def cancel_booking(request, booking_id):
-    """ ✅ Cancel a booking and make the time slot available again """
-    if request.method != "POST":
-        return JsonResponse({"success": False, "message": "Invalid request method."}, status=405)
+    if request.method == "POST":
+        try:
+            booking = get_object_or_404(Booking, id=booking_id)
 
-    try:
-        # ✅ Retrieve the booking for the logged-in user
-        booking = get_object_or_404(Booking, id=booking_id, client=request.user)
+            if booking.status == "Cancelled":
+                return JsonResponse({"error": "Booking is already cancelled."}, status=400)
 
-        if booking.status not in ["Pending", "Confirmed"]:
-            return JsonResponse({"success": False, "message": "Cannot cancel this booking."}, status=400)
+            # ✅ Mark the booking as cancelled (or delete it)
+            booking.delete()  # ✅ Remove booking from the database (free the time slot)
 
-        # ✅ Get the weekday from the booking date
-        weekday = booking.date.strftime("%A")  # Example: "Monday"
+            return JsonResponse({"success": "Booking cancelled successfully. The time slot is now available again."})
+        except Exception as e:
+            return JsonResponse({"error": f"Error cancelling booking: {str(e)}"}, status=500)
 
-        # ✅ Retrieve the corresponding service schedule
-        schedule = ServiceSchedule.objects.filter(
-            service=booking.service,
-            weekday=weekday,
-            start_time=booking.time  # ✅ Using `start_time`
-        ).first()
+    return JsonResponse({"error": "Invalid request"}, status=400)
 
-        if schedule:
-            logger.info(f"✅ Schedule found: {schedule.service.service_name} on {weekday} at {schedule.start_time}")
-
-        # ✅ Update booking status
-        booking.status = "Cancelled"
-        booking.save()
-        logger.info(f"✅ Booking {booking.id} successfully cancelled.")
-
-        messages.success(request, "Your booking has been canceled.")
-
-        return JsonResponse({
-            "success": True,
-            "message": "Booking canceled.",
-            "booking_id": booking.id,
-            "service_id": booking.service.id,
-            "date": booking.date.strftime("%Y-%m-%d"),
-            "weekday": weekday
-        })
-
-    except Booking.DoesNotExist:
-        return JsonResponse({"success": False, "message": "Booking not found."}, status=404)
-    
-    except Exception as e:
-        logger.error(f"❌ Error cancelling booking: {e}")
-        return JsonResponse({"success": False, "message": "An error occurred while cancelling the booking."}, status=500)
 
 
 
@@ -1267,6 +1260,14 @@ from .models import User, Service, ServiceAvailability, Booking
 
 #     return render(request, "accounts/book_artist.html", {"artist": artist, "services": services})
 
+
+
+
+
+
+
+
+
 # from datetime import datetime, timedelta
 # from django.shortcuts import render, get_object_or_404, redirect
 # from django.contrib import messages
@@ -1326,19 +1327,281 @@ from .models import User, Service, ServiceAvailability, Booking
 
 #     return render(request, "accounts/book_artist.html", {"artist": artist, "services": services})
 from datetime import datetime, timedelta
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
-from django.http import JsonResponse  # ✅ Import JsonResponse for AJAX
+# from django.shortcuts import render, get_object_or_404, redirect
+# from django.contrib import messages
+# from django.http import JsonResponse  # ✅ Import JsonResponse for AJAX
+# from django.db.models import Q
+# from django.core.mail import send_mail  # ✅ Import send_mail
+# from django.conf import settings  # ✅ Import settings for email
+# from .models import Booking, Service, User
+
+# def book_artist(request, artist_id):
+#     artist = get_object_or_404(User, id=artist_id)
+#     services = Service.objects.filter(artist=artist)
+
+#     if request.method == "POST":
+#         service_id = request.POST.get("service")
+#         date_str = request.POST.get("date")
+#         start_time_str = request.POST.get("start_time")
+#         latitude = request.POST.get("latitude")
+#         longitude = request.POST.get("longitude")
+#         payment_method = request.POST.get("payment_method")
+
+#         service = get_object_or_404(Service, id=service_id)
+
+#         # Convert date and time strings to Python datetime objects
+#         date = datetime.strptime(date_str, "%Y-%m-%d").date()
+#         start_time = datetime.strptime(start_time_str, "%H:%M").time()
+
+#         # ✅ Calculate End Time (Including Service Duration + Travel Time)
+#         start_datetime = datetime.combine(date, start_time)
+#         total_minutes = int(service.duration.total_seconds() / 60) + int(service.travel_time.total_seconds() / 60)
+#         end_datetime = start_datetime + timedelta(minutes=total_minutes)
+#         end_time = end_datetime.time()  # Extract only the time
+
+#         # ✅ Check for existing overlapping bookings
+#         existing_bookings = Booking.objects.filter(
+#             artist=artist,
+#             date=date,
+#         ).filter(
+#             Q(start_time__lt=end_time, end_time__gt=start_time)  # Check for time conflicts
+#         )
+
+#         if existing_bookings.exists():
+#             return JsonResponse({"error": "This time slot is already booked. Please select a different time."}, status=400)
+
+#         # ✅ Save booking with calculated end_time
+#         booking = Booking.objects.create(
+#             artist=artist,
+#             client=request.user,
+#             service=service,
+#             date=date,
+#             start_time=start_time,
+#             end_time=end_time,  # ✅ Save calculated end_time
+#             latitude=latitude if latitude else None,
+#             longitude=longitude if longitude else None,
+#             payment_method=payment_method,
+#         )
+
+#         # ✅ Send confirmation email to the user
+#         subject = "Booking Confirmation - ArtistFinder"
+#         message = f"""
+#         Hello {request.user.first_name},
+
+#         Your booking has been successfully created!
+
+#         📌 Booking Details:
+#         - Artist: {artist.first_name} {artist.last_name}
+#         - Service: {service.service_name}
+#         - Date: {date}
+#         - Time: {start_time.strftime('%I:%M %p')} - {end_time.strftime('%I:%M %p')}
+#         - Payment Method: {payment_method}
+
+#         Thank you for booking with ArtistFinder!
+#         """
+#         from_email = settings.DEFAULT_FROM_EMAIL  # Use your configured email
+#         recipient_list = [request.user.email]
+
+#         try:
+#             send_mail(subject, message, from_email, recipient_list)
+#         except Exception as e:
+#             print(f"Email sending failed: {e}")  # Debugging in case of email failure
+
+#         return JsonResponse({"success": "Booking successfully created! A confirmation email has been sent."}, status=200)
+
+#     return render(request, "accounts/book_artist.html", {"artist": artist, "services": services}) second
+
+# from datetime import datetime, timedelta
+# import logging
+# from django.shortcuts import render, get_object_or_404
+# from django.http import JsonResponse
+# from django.db.models import Q
+# from django.core.mail import send_mail
+# from django.conf import settings
+# from .models import Booking, Service, User, WorkingTime
+
+# logger = logging.getLogger(__name__)
+
+# def book_artist(request, artist_id):
+#     artist = get_object_or_404(User, id=artist_id)
+#     services = Service.objects.filter(artist=artist)
+
+#     # ✅ Prepare service data with correct workdays, opening time, and closing time
+#     service_data = []
+#     for service in services:
+#         work_days = service.work_days.all()
+#         work_days_list = [work_day.day for work_day in work_days]
+
+#         # ✅ Get earliest opening time and latest closing time from WorkingTime model
+#         opening_time = work_days.earliest("opening_time").opening_time if work_days.exists() else None
+#         closing_time = work_days.latest("closing_time").closing_time if work_days.exists() else None
+
+#         service_data.append({
+#             "id": service.id,
+#             "service_name": service.service_name,
+#             "price": service.price,
+#             "duration": service.get_total_duration_hms(),
+#             "work_days": ",".join(work_days_list),
+#             "created_at": service.created_at.strftime("%Y-%m-%d"),
+#             "opening_time": str(opening_time) if opening_time else "08:00",  # ✅ FIXED
+#             "closing_time": str(closing_time) if closing_time else "20:00",  # ✅ FIXED
+#         })
+
+#     return render(request, "accounts/book_artist.html", {
+#         "artist": artist,
+#         "services": service_data
+#     })
+# from datetime import datetime, timedelta
+# import logging
+# from django.shortcuts import render, get_object_or_404
+# from django.http import JsonResponse
+# from django.db.models import Q
+# from django.core.mail import send_mail
+# from django.conf import settings
+# from .models import Booking, Service, User, WorkingTime
+
+# logger = logging.getLogger(__name__)
+
+# def book_artist(request, artist_id):
+#     artist = get_object_or_404(User, id=artist_id)
+#     services = Service.objects.filter(artist=artist)
+
+#     # ✅ Prepare service data with correct workdays, opening time, and closing time
+#     service_data = []
+#     for service in services:
+#         work_days = service.work_days.all()
+#         work_days_list = [work_day.day for work_day in work_days]
+
+#         # ✅ Get earliest opening time and latest closing time from WorkingTime model
+#         opening_time = work_days.order_by("opening_time").first()
+#         closing_time = work_days.order_by("-closing_time").first()
+
+#         service_data.append({
+#             "id": service.id,
+#             "service_name": service.service_name,
+#             "price": service.price,
+#             "duration": service.get_total_duration_hms(),
+#             "work_days": ",".join(work_days_list),
+#             "created_at": service.created_at.strftime("%Y-%m-%d"),
+#             "opening_time": str(opening_time.opening_time) if opening_time else "08:00",  # ✅ FIXED
+#             "closing_time": str(closing_time.closing_time) if closing_time else "20:00",  # ✅ FIXED
+#         })
+
+#     if request.method == "POST":
+#         print("🔍 Booking request received!")  # ✅ Debugging
+#         print("📥 Received POST Data:", request.POST)  # ✅ Debugging
+
+#         service_id = request.POST.get("service")
+#         date_str = request.POST.get("date")
+#         start_time_str = request.POST.get("start_time")
+#         latitude = request.POST.get("latitude")
+#         longitude = request.POST.get("longitude")
+#         payment_method = request.POST.get("payment_method")
+
+#         # ✅ Check if data is missing
+#         if not service_id or not date_str or not start_time_str:
+#             print("❌ Missing required fields!")  # ✅ Debugging
+#             return JsonResponse({"error": "Missing required fields!"}, status=400)
+
+#         service = get_object_or_404(Service, id=service_id, artist=artist)
+
+#         # ✅ Convert date & time to datetime objects
+#         try:
+#             date = datetime.strptime(date_str, "%Y-%m-%d").date()
+#             start_time = datetime.strptime(start_time_str, "%H:%M").time()
+#         except ValueError:
+#             print("❌ Invalid date or time format!")  # ✅ Debugging
+#             return JsonResponse({"error": "Invalid date or time format!"}, status=400)
+
+#         print(f"✅ Booking for {date} at {start_time}")  # ✅ Debugging
+
+#         # ✅ Validate if booking is within working hours
+#         work_day = work_days.filter(day=date.strftime("%A")).first()  # Get the specific day's working hours
+
+#         if not work_day:
+#             print(f"❌ No working hours found for {date.strftime('%A')}!")  # ✅ Debugging
+#             return JsonResponse({"error": f"Service is not available on {date.strftime('%A')}."}, status=400)
+
+#         if start_time < work_day.opening_time or start_time >= work_day.closing_time:
+#             print(f"❌ Booking outside working hours ({work_day.opening_time} - {work_day.closing_time})")  # ✅ Debugging
+#             return JsonResponse({"error": f"Booking must be between {work_day.opening_time} and {work_day.closing_time}."}, status=400)
+
+#         # ✅ Calculate end time
+#         start_datetime = datetime.combine(date, start_time)
+#         total_minutes = int(service.duration.total_seconds() / 60) + int(service.travel_time.total_seconds() / 60)
+#         end_datetime = start_datetime + timedelta(minutes=total_minutes)
+#         end_time = end_datetime.time()
+
+#         # ✅ Check for overlapping bookings
+#         existing_bookings = Booking.objects.filter(
+#             artist=artist, date=date
+#         ).filter(Q(start_time__lt=end_time, end_time__gt=start_time))
+
+#         if existing_bookings.exists():
+#             print("❌ Booking conflict detected!")  # ✅ Debugging
+#             return JsonResponse({"error": "This time slot is already booked. Please select a different time."}, status=400)
+
+#         # ✅ Save booking
+#         booking = Booking.objects.create(
+#             artist=artist,
+#             client=request.user,
+#             service=service,
+#             date=date,
+#             start_time=start_time,
+#             end_time=end_time,
+#             latitude=latitude if latitude else None,
+#             longitude=longitude if longitude else None,
+#             payment_method=payment_method,
+#         )
+
+#         print("✅ Booking successfully created!")  # ✅ Debugging
+
+#         return JsonResponse({"success": "Booking successfully created!"}, status=200)
+
+#     return render(request, "accounts/book_artist.html", {
+#         "artist": artist,
+#         "services": service_data
+#     })
+from datetime import datetime, timedelta
+import logging
+from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse
 from django.db.models import Q
-from django.core.mail import send_mail  # ✅ Import send_mail
-from django.conf import settings  # ✅ Import settings for email
-from .models import Booking, Service, User
+from django.core.mail import send_mail
+from django.conf import settings
+from .models import Booking, Service, User, WorkingTime
+
+logger = logging.getLogger(__name__)
 
 def book_artist(request, artist_id):
     artist = get_object_or_404(User, id=artist_id)
     services = Service.objects.filter(artist=artist)
 
+    # ✅ Prepare service data with correct workdays, opening time, and closing time
+    service_data = []
+    for service in services:
+        work_days = service.work_days.all()
+        work_days_list = [work_day.day for work_day in work_days]
+
+        # ✅ Get earliest opening time and latest closing time from WorkingTime model
+        opening_time = work_days.order_by("opening_time").first()
+        closing_time = work_days.order_by("-closing_time").first()
+
+        service_data.append({
+            "id": service.id,
+            "service_name": service.service_name,
+            "price": service.price,
+            "duration": service.get_total_duration_hms(),
+            "work_days": ",".join(work_days_list),
+            "created_at": service.created_at.strftime("%Y-%m-%d"),
+            "opening_time": str(opening_time.opening_time) if opening_time else "08:00",
+            "closing_time": str(closing_time.closing_time) if closing_time else "20:00",
+        })
+
     if request.method == "POST":
+        print("🔍 Booking request received!")
+        print("📥 Received POST Data:", request.POST)
+
         service_id = request.POST.get("service")
         date_str = request.POST.get("date")
         start_time_str = request.POST.get("start_time")
@@ -1346,69 +1609,101 @@ def book_artist(request, artist_id):
         longitude = request.POST.get("longitude")
         payment_method = request.POST.get("payment_method")
 
-        service = get_object_or_404(Service, id=service_id)
+        # ✅ Check if data is missing
+        if not service_id or not date_str or not start_time_str:
+            print("❌ Missing required fields!")
+            return JsonResponse({"error": "Missing required fields!"}, status=400)
 
-        # Convert date and time strings to Python datetime objects
-        date = datetime.strptime(date_str, "%Y-%m-%d").date()
-        start_time = datetime.strptime(start_time_str, "%H:%M").time()
+        service = get_object_or_404(Service, id=service_id, artist=artist)
 
-        # ✅ Calculate End Time (Including Service Duration + Travel Time)
+        # ✅ Convert date & time to datetime objects
+        try:
+            date = datetime.strptime(date_str, "%Y-%m-%d").date()
+            start_time = datetime.strptime(start_time_str, "%H:%M").time()
+        except ValueError:
+            print("❌ Invalid date or time format!")
+            return JsonResponse({"error": "Invalid date or time format!"}, status=400)
+
+        print(f"✅ Booking for {date} at {start_time}")
+
+        # ✅ Validate if booking is within working hours
+        work_day = work_days.filter(day=date.strftime("%A")).first()
+
+        if not work_day:
+            print(f"❌ No working hours found for {date.strftime('%A')}!")
+            return JsonResponse({"error": f"Service is not available on {date.strftime('%A')}."}, status=400)
+
+        if start_time < work_day.opening_time or start_time >= work_day.closing_time:
+            print(f"❌ Booking outside working hours ({work_day.opening_time} - {work_day.closing_time})")
+            return JsonResponse({"error": f"Booking must be between {work_day.opening_time} and {work_day.closing_time}."}, status=400)
+
+        # ✅ Calculate end time
         start_datetime = datetime.combine(date, start_time)
         total_minutes = int(service.duration.total_seconds() / 60) + int(service.travel_time.total_seconds() / 60)
         end_datetime = start_datetime + timedelta(minutes=total_minutes)
-        end_time = end_datetime.time()  # Extract only the time
+        end_time = end_datetime.time()
 
-        # ✅ Check for existing overlapping bookings
+        # ✅ Check for overlapping bookings
         existing_bookings = Booking.objects.filter(
-            artist=artist,
-            date=date,
-        ).filter(
-            Q(start_time__lt=end_time, end_time__gt=start_time)  # Check for time conflicts
-        )
+            artist=artist, date=date
+        ).filter(Q(start_time__lt=end_time, end_time__gt=start_time))
 
         if existing_bookings.exists():
+            print("❌ Booking conflict detected!")
             return JsonResponse({"error": "This time slot is already booked. Please select a different time."}, status=400)
 
-        # ✅ Save booking with calculated end_time
+        # ✅ Save booking
         booking = Booking.objects.create(
             artist=artist,
             client=request.user,
             service=service,
             date=date,
             start_time=start_time,
-            end_time=end_time,  # ✅ Save calculated end_time
+            end_time=end_time,
             latitude=latitude if latitude else None,
             longitude=longitude if longitude else None,
             payment_method=payment_method,
         )
 
-        # ✅ Send confirmation email to the user
-        subject = "Booking Confirmation - ArtistFinder"
+        print("✅ Booking successfully created!")
+
+        # ✅ Send email to the user
+        subject = "Your Booking is Listed - Confirmation Pending"
         message = f"""
         Hello {request.user.first_name},
 
-        Your booking has been successfully created!
+        Your booking for {service.service_name} has been successfully listed.
 
         📌 Booking Details:
         - Artist: {artist.first_name} {artist.last_name}
         - Service: {service.service_name}
-        - Date: {date}
+        - Date: {date.strftime('%A, %B %d, %Y')}
         - Time: {start_time.strftime('%I:%M %p')} - {end_time.strftime('%I:%M %p')}
         - Payment Method: {payment_method}
 
-        Thank you for booking with ArtistFinder!
+        Your booking is now awaiting confirmation. You will receive a follow-up email once the artist confirms the booking.
+
+        Thank you for using our platform!
+
+        Regards,  
+        ArtistFinder Team
         """
-        from_email = settings.DEFAULT_FROM_EMAIL  # Use your configured email
+        from_email = settings.DEFAULT_FROM_EMAIL
         recipient_list = [request.user.email]
 
         try:
             send_mail(subject, message, from_email, recipient_list)
+            print("📧 Booking acknowledgment email sent successfully!")
         except Exception as e:
-            print(f"Email sending failed: {e}")  # Debugging in case of email failure
+            print(f"❌ Email sending failed: {e}")
 
-        return JsonResponse({"success": "Booking successfully created! A confirmation email has been sent."}, status=200)
+        return JsonResponse({"success": "Booking successfully created! You will receive a confirmation email soon."}, status=200)
 
-    return render(request, "accounts/book_artist.html", {"artist": artist, "services": services})
+    return render(request, "accounts/book_artist.html", {
+        "artist": artist,
+        "services": service_data
+    })
+
 
 
 from django.shortcuts import render
@@ -1521,84 +1816,73 @@ logger = logging.getLogger(__name__)
 
 #     return JsonResponse({"success": False, "error": "Invalid request method"}, status=400)
 
-from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 import json
-from django.core.mail import send_mail
-from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.views.decorators.csrf import csrf_exempt
 from .models import Booking
 
-@login_required
-@csrf_exempt
+@csrf_exempt  # ✅ Allow AJAX requests
 def update_booking_status(request, booking_id):
-    """ Allows an artist to confirm or cancel a booking and send email notifications. """
     if request.method == "POST":
         try:
             data = json.loads(request.body)
-            new_status = data.get("status")
+            new_status = data.get("status", "").lower()
+
+            if new_status not in ["confirmed", "cancelled"]:
+                return JsonResponse({"error": "Invalid status update"}, status=400)
+
             booking = get_object_or_404(Booking, id=booking_id)
-
-            # ✅ Ensure only the assigned artist can update the booking
-            if request.user != booking.artist:
-                return JsonResponse({"success": False, "error": "Only the assigned artist can update this booking."}, status=403)
-
-            # ✅ Update the booking status
-            booking.status = new_status
+            booking.status = new_status.capitalize()
             booking.save()
 
-            # ✅ Construct email details
-            subject = f"Booking {new_status}: {booking.service.service_name}"
-            message = f"""
-                Hello {booking.client.first_name},
+            # ✅ Send notification email (if needed)
+            if new_status == "confirmed":
+                send_confirmation_email(booking)
+            elif new_status == "cancelled":
+                send_cancellation_email(booking)
 
-                Your booking for {booking.service.service_name} with {booking.artist.first_name} {booking.artist.last_name} has been {new_status.lower()}.
+            return JsonResponse({"success": f"Booking {new_status} successfully!"})
+        except Exception as e:
+            return JsonResponse({"error": f"Error updating booking: {str(e)}"}, status=500)
 
-                Booking Details:
-                - Service: {booking.service.service_name}
-                - Artist: {booking.artist.first_name} {booking.artist.last_name}
-                - Date: {booking.date}
-                - Time: {booking.time}
-                - Payment Method: {booking.payment_method}
-                - Price: ${booking.service.price}
+    return JsonResponse({"error": "Invalid request"}, status=400)
 
-                If you have any questions, please contact the artist at {booking.artist.email}.
+def send_confirmation_email(booking):
+    """Send an email when the booking is confirmed."""
+    subject = "Your Booking is Confirmed!"
+    message = f"""
+    Hello {booking.client.first_name},
 
-                Best regards,
-                Artist Finder Team
-            """
+    Your booking for {booking.service.service_name} with {booking.artist.first_name} {booking.artist.last_name} has been confirmed.
 
-            # ✅ Send email to client
-            send_mail(
-                subject,
-                message,
-                "no-reply@artistfinder.com",
-                [booking.client.email],
-                fail_silently=False,
-            )
+    📌 Booking Details:
+    - Date: {booking.date.strftime('%A, %B %d, %Y')}
+    - Time: {booking.start_time.strftime('%I:%M %p')} - {booking.end_time.strftime('%I:%M %p')}
+    - Payment Method: {booking.payment_method}
 
-            # ✅ Send email to artist as well
-            send_mail(
-                f"Booking {new_status} - {booking.client.first_name}",
-                f"Hello {booking.artist.first_name},\n\nYou have {new_status.lower()} a booking.\n\n{message}",
-                "no-reply@artistfinder.com",
-                [booking.artist.email],
-                fail_silently=False,
-            )
+    Thank you for using our platform!
 
-            return JsonResponse({
-                "success": True,
-                "message": f"Booking has been {new_status.lower()}!",
-                "status": booking.status
-            })
+    Regards,
+    ArtistFinder Team
+    """
+    booking.client.email_user(subject, message)
 
-        except Booking.DoesNotExist:
-            return JsonResponse({"success": False, "error": "Booking not found"}, status=404)
+def send_cancellation_email(booking):
+    """Send an email when the booking is cancelled."""
+    subject = "Your Booking Has Been Cancelled"
+    message = f"""
+    Hello {booking.client.first_name},
 
-        except json.JSONDecodeError:
-            return JsonResponse({"success": False, "error": "Invalid JSON request"}, status=400)
+    Unfortunately, your booking for {booking.service.service_name} with {booking.artist.first_name} {booking.artist.last_name} has been cancelled.
 
-    return JsonResponse({"success": False, "error": "Invalid request method"}, status=400)
+    If you have any questions, please contact support.
+
+    Regards,
+    ArtistFinder Team
+    """
+    booking.client.email_user(subject, message)
+
 
 
 

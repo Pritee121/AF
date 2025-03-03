@@ -54,7 +54,8 @@
                         <th>Client</th>
                         <th>Service</th>
                         <th>Date</th>
-                        <th>Time</th>
+                        <th>Start Time</th>
+                        <th>End Time</th>
                         <th>Payment</th>
                         <th>Duration</th>
                         <th>Status</th>
@@ -68,7 +69,8 @@
                         <td>{{ booking.client.first_name }} {{ booking.client.last_name }}</td>
                         <td>{{ booking.service.service_name }} - Rs.{{ booking.service.price }}</td>
                         <td>{{ booking.date }}</td>
-                        <td>{{ booking.time }}</td>
+                        <td>{{ booking.start_time|time:"h:i A" }}</td>
+                        <td>{{ booking.end_time|time:"h:i A" }}</td>
                         <td>{{ booking.payment_method|title }}</td>
                         <td>{{ booking.service.total_duration }}</td>
                         <td id="status-{{ booking.id }}">
@@ -111,13 +113,19 @@
         }
 
         function updateBookingStatus(bookingId, status) {
+    let actionText = status.toLowerCase() === "confirmed" ? "confirm" : "cancel";
+    let successMessage = status.toLowerCase() === "confirmed" ? "Booking has been confirmed!" : "Booking has been cancelled.";
+    let warningText = status.toLowerCase() === "confirmed" 
+        ? "Do you want to confirm this booking? The client will be notified."
+        : "Are you sure you want to cancel this booking? This action cannot be undone.";
+
     Swal.fire({
         title: `Are you sure?`,
-        text: `Do you want to ${status.toLowerCase()} this booking?`,
+        text: warningText,
         icon: "warning",
         showCancelButton: true,
-        confirmButtonText: "Yes, proceed!",
-        cancelButtonText: "No, cancel"
+        confirmButtonText: `Yes, ${actionText} it!`,
+        cancelButtonText: "No, go back"
     }).then((result) => {
         if (!result.isConfirmed) return;
 
@@ -134,11 +142,12 @@
             if (data.success) {
                 Swal.fire({
                     title: "Success!",
-                    text: `Booking status has been ${status.toLowerCase()}.`,
+                    text: successMessage,
                     icon: "success",
                     confirmButtonText: "OK"
                 }).then(() => {
-                    location.reload(); // Reload the page to reflect the new status
+                    document.getElementById(`status-${bookingId}`).textContent = status; // ✅ Update Status Immediately
+                    location.reload(); // ✅ Reload page to reflect changes
                 });
             } else {
                 Swal.fire({
@@ -159,10 +168,11 @@
     });
 }
 
-        function getCSRFToken() {
-            let csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]');
-            return csrfToken ? csrfToken.value : "";
-        }
+function getCSRFToken() {
+    let csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]');
+    return csrfToken ? csrfToken.value : "";
+}
+
     </script>
 </body>
 </html>

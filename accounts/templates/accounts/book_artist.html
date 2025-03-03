@@ -18,27 +18,6 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
     <link rel="stylesheet" href="{% static 'css/book_artist.css' %}">
-    <style>
-        /* Ensure the map container is positioned relative */
-        #map { height: 300px; width: 100%; position: relative; }
-        #spinner {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 1000;
-            width: 50px;
-            height: 50px;
-            border: 8px solid #f3f3f3;
-            border-top: 8px solid #3498db;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
 </head>
 <body>
     <header>
@@ -55,13 +34,21 @@
             <select id="service" name="service" required>
                 <option value="" disabled selected>Choose a service</option>
                 {% for service in services %}
-                <option 
+                <!-- <option 
+                    value="{{ service.id }}" 
+                    data-duration="{{ service.duration }}" 
+                    data-workdays="{{ service.work_days }}" 
+                    data-created="{{ service.created_at }}">
+                    {{ service.service_name }} - Rs.{{ service.price }} - {{ service.description }}
+                </option> --><option 
     value="{{ service.id }}" 
-    data-duration="{{ service.get_total_duration_hms }}" 
-    data-workdays="{% for day in service.work_days.all %}{{ day.day }},{% endfor %}">
+    data-duration="{{ service.duration }}" 
+    data-workdays="{{ service.work_days }}" 
+    data-opening-time="{{ service.opening_time }}"
+    data-closing-time="{{ service.closing_time }}"
+    data-created="{{ service.created_at }}">
     {{ service.service_name }} - Rs.{{ service.price }} - {{ service.description }}
 </option>
-
 
                 {% endfor %}
             </select>
@@ -78,11 +65,9 @@
             <label for="end_time">End Time:</label>
             <input type="text" id="end_time" name="end_time" readonly>
 
-            <!-- Map Section -->
+            <!-- 🌍 Map Section -->
             <label for="map">Select Location:</label>
-            <div id="map">
-                <div id="spinner"></div>
-            </div>
+            <div id="map" style="height: 300px;"></div>
             <input type="hidden" id="latitude" name="latitude">
             <input type="hidden" id="longitude" name="longitude">
 
@@ -103,56 +88,51 @@
             let dateInput = document.getElementById("date");
             let startTimeInput = document.getElementById("start_time");
             let endTimeInput = document.getElementById("end_time");
-
             let flatpickrInstance;
+            let map, marker;
 
-            // 🌍 Initialize Map
-            var map, marker;
+            // ✅ Initialize Map with Default Location
             function initMap(lat, lng) {
                 map = L.map("map").setView([lat, lng], 13);
-                var tileLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
                     attribution: "© OpenStreetMap",
                 }).addTo(map);
-
-                tileLayer.on("load", function () {
-                    document.getElementById("spinner").style.display = "none";
-                });
 
                 marker = L.marker([lat, lng], { draggable: true }).addTo(map);
                 document.getElementById("latitude").value = lat;
                 document.getElementById("longitude").value = lng;
 
                 marker.on("dragend", function () {
-                    var position = marker.getLatLng();
+                    let position = marker.getLatLng();
                     document.getElementById("latitude").value = position.lat.toFixed(6);
                     document.getElementById("longitude").value = position.lng.toFixed(6);
                 });
             }
 
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    function (position) {
-                        initMap(position.coords.latitude, position.coords.longitude);
-                    },
-                    function () {
-                        initMap(27.7172, 85.3240);
-                    }
-                );
-            } else {
-                initMap(27.7172, 85.3240);
-            }
+            // ✅ Get User Location
+            navigator.geolocation.getCurrentPosition(
+                function (position) {
+                    initMap(position.coords.latitude, position.coords.longitude);
+                },
+                function () {
+                    initMap(27.7172, 85.3240); // Default to Kathmandu
+                }
+            );
 
-            // 🎯 Enable Date & Start Time Inputs When a Service is Selected
+            // ✅ Enable Date Selection Based on Service Availability
             serviceSelect.addEventListener("change", function () {
                 let selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
-
                 if (!selectedOption.value) return;
 
                 let durationHMS = selectedOption.getAttribute("data-duration") || "00:00:00";
                 let workDaysString = selectedOption.getAttribute("data-workdays") || "";
                 let workDays = workDaysString.split(",").map(day => day.trim());
 
-                // ✅ Convert Work Days to JavaScript Format
+                let openingTime = selectedOption.dataset.openingTime || "08:00";
+let closingTime = selectedOption.dataset.closingTime || "20:00";
+
+                let createdAt = selectedOption.getAttribute("data-created") || new Date().toISOString().split("T")[0];
+
                 const dayMapping = { "Sunday": 0, "Monday": 1, "Tuesday": 2, "Wednesday": 3, "Thursday": 4, "Friday": 5, "Saturday": 6 };
                 let allowedDays = workDays.map(day => dayMapping[day]).filter(day => day !== undefined);
 
@@ -166,14 +146,25 @@
                     dateFormat: "Y-m-d",
                     enableTime: false,
                     disableMobile: true,
-                    disable: [function (date) { return !allowedDays.includes(date.getDay()); }]
+                    minDate: createdAt,
+                    disable: [date => !allowedDays.includes(date.getDay())]
                 });
 
                 startTimeInput.value = "";
                 endTimeInput.value = "";
+                if (openingTime && closingTime) {
+    console.log("Opening Time:", openingTime, "Closing Time:", closingTime); // ✅ Debugging
+    startTimeInput.setAttribute("min", openingTime);
+    startTimeInput.setAttribute("max", closingTime);
+} else {
+    console.warn("Opening/Closing times missing, using defaults!"); // ✅ Debugging
+    startTimeInput.setAttribute("min", "00:00");  
+    startTimeInput.setAttribute("max", "23:59");  
+}
+
+
             });
 
-            // ⏳ Auto-calculate End Time
             startTimeInput.addEventListener("change", function () {
                 let selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
 
@@ -184,65 +175,76 @@
 
                 let durationHMS = selectedOption.getAttribute("data-duration") || "00:00:00";
                 let [durationHours, durationMinutes, durationSeconds] = durationHMS.split(":").map(Number);
-
                 let durationInMinutes = (durationHours * 60) + durationMinutes + (durationSeconds / 60);
-                if (durationInMinutes === 0) {
-                    endTimeInput.value = "";
-                    return;
-                }
+
+                let openingTime = selectedOption.getAttribute("data-opening-time") || "08:00";
+                let closingTime = selectedOption.getAttribute("data-closing-time") || "20:00";
 
                 let [startHours, startMinutes] = startTimeInput.value.split(":").map(Number);
                 let totalMinutes = startMinutes + durationInMinutes;
                 let endHours = startHours + Math.floor(totalMinutes / 60);
                 let endMinutes = totalMinutes % 60;
+                let endTimeString = `${String(endHours).padStart(2, "0")}:${String(endMinutes).padStart(2, "0")}`;
 
-                endTimeInput.value = `${String(endHours).padStart(2, "0")}:${String(endMinutes).padStart(2, "0")}`;
-            });
-        });
-        
-    document.addEventListener("DOMContentLoaded", function () {
-        let bookingForm = document.getElementById("booking-form");
-
-        bookingForm.addEventListener("submit", function (event) {
-            event.preventDefault();  // ✅ Prevent default form submission
-
-            let formData = new FormData(bookingForm);
-
-            fetch(bookingForm.action, {
-                method: "POST",
-                body: formData,
-                headers: {
-                    "X-CSRFToken": "{{ csrf_token }}"
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    // ❌ Show error dialog for already booked slot
+                if (endTimeString > closingTime) {
                     Swal.fire({
-                        title: "Time Slot Unavailable!",
-                        text: data.error,
+                        title: "Invalid End Time!",
+                        text: "The selected time exceeds working hours. Please choose an earlier start time.",
                         icon: "error",
                         confirmButtonColor: "#d33"
                     });
+                    endTimeInput.value = "";
                 } else {
-                    // ✅ Show success dialog for successful booking with email confirmation
-                    Swal.fire({
-                        title: "Booking Confirmed!",
-                        text: data.success,
-                        icon: "success",
-                        confirmButtonColor: "#28a745"
-                    }).then(() => {
-                        window.location.href = "{% url 'booking_history' %}"; // Redirect to booking history
-                    });
+                    endTimeInput.value = endTimeString;
                 }
-            })
-            .catch(error => {
-                console.error("Error:", error);
-                Swal.fire("Error!", "Something went wrong. Please try again.", "error");
             });
         });
+        document.addEventListener("DOMContentLoaded", function () {
+    let bookingForm = document.getElementById("booking-form");
+
+    bookingForm.addEventListener("submit", function (event) {
+        event.preventDefault();  // ✅ Prevent default form submission
+        
+        console.log("🔍 Form submission triggered!");  // ✅ Debugging
+
+        let formData = new FormData(bookingForm);
+
+        console.log("📤 Sending form data:", Object.fromEntries(formData.entries()));  // ✅ Debugging
+
+        fetch(bookingForm.action, {
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("✅ Server Response:", data);  // ✅ Debugging
+            if (data.error) {
+                Swal.fire({
+                    title: "Booking Error!",
+                    text: data.error,
+                    icon: "error",
+                    confirmButtonColor: "#d33"
+                });
+            } else {
+                Swal.fire({
+                    title: "Booking Confirmed!",
+                    text: data.success,
+                    icon: "success",
+                    confirmButtonColor: "#28a745"
+                }).then(() => {
+                    window.location.href = "{% url 'booking_history' %}";  // ✅ Redirect after success
+                });
+            }
+        })
+        .catch(error => {
+            console.error("❌ Error:", error);  // ✅ Debugging network errors
+            Swal.fire("Error!", "Something went wrong. Please try again.", "error");
+        });
     });
+});
 
     </script>
 </body>

@@ -135,7 +135,8 @@
                     <td>
                         {% if booking.status == "Pending" or booking.status == "Confirmed" %}
                             {% if booking.time_left > 24 %}
-                                <button type="button" class="cancel-btn" onclick="confirmCancel('{{ booking.id }}')">
+                                <button type="button" class="cancel-btn" id="cancel-btn-{{ booking.id }}" 
+                                    onclick="confirmCancel('{{ booking.id }}')">
                                     ❌ Cancel
                                 </button>
                             {% else %}
@@ -145,6 +146,7 @@
                             <span class="cancelled-text">Cancelled</span>
                         {% endif %}
                     </td>
+                    
             
                     <!-- ✅ Payment Status -->
                     <td>
@@ -167,62 +169,138 @@
 
     <!-- ✅ Cancel Script -->
     <script>
-        function confirmCancel(bookingId) {
-            Swal.fire({
-                title: "Cancel Booking?",
-                text: "Are you sure you want to cancel this booking?",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#D8648C",
-                cancelButtonColor: "#6c757d",
-                confirmButtonText: "Yes, cancel it!",
-                cancelButtonText: "No, keep it"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    fetch(`/cancel-booking/${bookingId}/`, {
-                        method: "POST",
-                        headers: {
-                            "X-CSRFToken": getCookie("csrftoken"),
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify({ status: "Cancelled" })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            document.getElementById(`status-${bookingId}`).textContent = "Cancelled";
-                            document.getElementById(`status-${bookingId}`).style.color = "red";
-                            let cancelBtn = document.querySelector(`#booking-row-${bookingId} .cancel-btn`);
-                            if (cancelBtn) {
-                                cancelBtn.outerHTML = "<span class='cancelled-text'>Cancelled</span>";
-                            }
-                            Swal.fire("Cancelled!", "Your booking has been cancelled.", "success");
-                        } else {
-                            Swal.fire("Error!", "Something went wrong.", "error");
-                        }
-                    })
-                    .catch(error => {
-                        console.error("Error:", error);
-                        Swal.fire("Error!", "Something went wrong.", "error");
-                    });
+//        function confirmCancel(bookingId) {
+//     Swal.fire({
+//         title: "Cancel Booking?",
+//         text: "Are you sure you want to cancel this booking?",
+//         icon: "warning",
+//         showCancelButton: true,
+//         confirmButtonColor: "#D8648C",
+//         cancelButtonColor: "#6c757d",
+//         confirmButtonText: "Yes, cancel it!",
+//         cancelButtonText: "No, keep it"
+//     }).then((result) => {
+//         if (result.isConfirmed) {
+//             fetch(`/cancel-booking/${bookingId}/`, {
+//                 method: "POST",
+//                 headers: {
+//                     "X-CSRFToken": getCookie("csrftoken"),
+//                     "Content-Type": "application/json"
+//                 },
+//                 body: JSON.stringify({ status: "Cancelled" })
+//             })
+//             .then(response => response.json())
+//             .then(data => {
+//                 if (data.success) {
+//                     let statusElement = document.getElementById(`status-${bookingId}`);
+//                     let cancelBtn = document.querySelector(`#booking-row-${bookingId} .cancel-btn`);
+
+//                     if (statusElement) {
+//                         statusElement.textContent = "Cancelled";
+//                         statusElement.style.color = "red";
+//                     }
+
+//                     if (cancelBtn) {
+//                         cancelBtn.outerHTML = "<span class='cancelled-text'>Cancelled</span>";
+//                     }
+
+//                     Swal.fire("Cancelled!", "Your booking has been cancelled.", "success");
+//                 } else {
+//                     Swal.fire("Error!", data.error || "Something went wrong.", "error");
+//                 }
+//             })
+//             .catch(error => {
+//                 console.error("Error:", error);
+//                 Swal.fire("Error!", "Something went wrong.", "error");
+//             });
+//         }
+//     });
+// }
+
+// function getCookie(name) {
+//     let cookieValue = null;
+//     if (document.cookie && document.cookie !== '') {
+//         const cookies = document.cookie.split(';');
+//         for (let i = 0; i < cookies.length; i++) {
+//             const cookie = cookies[i].trim();
+//             if (cookie.startsWith(name + '=')) {
+//                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+//                 break;
+//             }
+//         }
+//     }
+//     return cookieValue;
+// }
+function confirmCancel(bookingId) {
+    Swal.fire({
+        title: "Cancel Booking?",
+        text: "Are you sure you want to cancel this booking? This action cannot be undone.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#D8648C",
+        cancelButtonColor: "#6c757d",
+        confirmButtonText: "Yes, cancel it!",
+        cancelButtonText: "No, keep it"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/cancel-booking/${bookingId}/`, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken"),
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ status: "Cancelled" })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    let rowElement = document.getElementById(`booking-row-${bookingId}`);
+                    let statusElement = document.getElementById(`status-${bookingId}`);
+                    let cancelBtn = document.getElementById(`cancel-btn-${bookingId}`);
+
+                    if (statusElement) {
+                        statusElement.textContent = "Cancelled";
+                        statusElement.style.color = "red";
+                    }
+
+                    if (cancelBtn) {
+                        cancelBtn.outerHTML = "<span class='cancelled-text'>Cancelled</span>";
+                    }
+
+                    Swal.fire("Cancelled!", "Your booking has been cancelled. The time slot is now available again.", "success");
+
+                    // ✅ Remove the row from the table
+                    if (rowElement) {
+                        rowElement.remove();
+                    }
+                } else {
+                    Swal.fire("Error!", data.error || "Something went wrong.", "error");
                 }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                Swal.fire("Error!", "Something went wrong.", "error");
             });
         }
+    });
+}
 
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.startsWith(name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
             }
-            return cookieValue;
         }
+    }
+    return cookieValue;
+}
+
+
     </script>
 </body>
 <footer class="footer">
