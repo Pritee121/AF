@@ -80,6 +80,60 @@ class ArtistRegisterForm(forms.ModelForm):
         
         return image  # ✅ Ensure correct indentation
 
+
+
+from django import forms
+from .models import Service, WorkingTime
+from datetime import timedelta
+
+class ServiceEditForm(forms.ModelForm):
+    duration_hours = forms.IntegerField(required=False, min_value=0, label="Duration Hours")
+    duration_minutes = forms.IntegerField(required=False, min_value=0, label="Duration Minutes")
+    travel_time_hours = forms.IntegerField(required=False, min_value=0, label="Travel Time Hours")
+    travel_time_minutes = forms.IntegerField(required=False, min_value=0, label="Travel Time Minutes")
+
+    work_days = forms.ModelMultipleChoiceField(
+        queryset=WorkingTime.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+    )
+
+    class Meta:
+        model = Service
+        fields = ['service_name', 'price', 'description', 'work_days']
+
+    def __init__(self, *args, **kwargs):
+        super(ServiceEditForm, self).__init__(*args, **kwargs)
+        
+        # ✅ Pre-fill duration & travel time as hours and minutes
+        if self.instance and self.instance.pk:
+            if self.instance.duration:
+                total_seconds = int(self.instance.duration.total_seconds())
+                self.fields['duration_hours'].initial = total_seconds // 3600
+                self.fields['duration_minutes'].initial = (total_seconds % 3600) // 60
+            
+            if self.instance.travel_time:
+                travel_seconds = int(self.instance.travel_time.total_seconds())
+                self.fields['travel_time_hours'].initial = travel_seconds // 3600
+                self.fields['travel_time_minutes'].initial = (travel_seconds % 3600) // 60
+
+    def clean(self):
+        cleaned_data = super().clean()
+        
+        # ✅ Convert hours & minutes to timedelta for `duration`
+        duration_hours = cleaned_data.get('duration_hours', 0) or 0
+        duration_minutes = cleaned_data.get('duration_minutes', 0) or 0
+        cleaned_data['duration'] = timedelta(hours=duration_hours, minutes=duration_minutes)
+
+        # ✅ Convert hours & minutes to timedelta for `travel_time`
+        travel_hours = cleaned_data.get('travel_time_hours', 0) or 0
+        travel_minutes = cleaned_data.get('travel_time_minutes', 0) or 0
+        cleaned_data['travel_time'] = timedelta(hours=travel_hours, minutes=travel_minutes)
+
+        return cleaned_data
+
+
+
 from django import forms
 from .models import TrainingCertificate
 
@@ -364,3 +418,4 @@ class WorkingTimeForm(forms.ModelForm):
             'opening_time': forms.TimeInput(attrs={'type': 'time'}),
             'closing_time': forms.TimeInput(attrs={'type': 'time'}),
         }
+

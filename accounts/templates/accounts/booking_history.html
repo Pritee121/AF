@@ -92,6 +92,9 @@
     </style>
 </head>
 <body>
+    <header>
+        <a href="{% url 'home' %}">← Home</a>
+    </header>
     <!-- ✅ Booking History Section -->
     <div class="booking-history-container">
         <h2>📅 My Booking History</h2>
@@ -137,10 +140,10 @@
                             {% if booking.time_left > 24 %}
                                 <button type="button" class="cancel-btn" id="cancel-btn-{{ booking.id }}" 
                                     onclick="confirmCancel('{{ booking.id }}')">
-                                    ❌ Cancel
+                                    Cancel
                                 </button>
                             {% else %}
-                                <span class="disabled-text">❌ Cannot Cancel</span>
+                                <span class="disabled-text"> Cannot Cancel</span>
                             {% endif %}
                         {% else %}
                             <span class="cancelled-text">Cancelled</span>
@@ -267,7 +270,7 @@ function confirmCancel(bookingId) {
                         cancelBtn.outerHTML = "<span class='cancelled-text'>Cancelled</span>";
                     }
 
-                    Swal.fire("Cancelled!", "Your booking has been cancelled. The time slot is now available again.", "success");
+                    Swal.fire("Cancelled!", "Your booking has been cancelled", "success");
 
                     // ✅ Remove the row from the table
                     if (rowElement) {

@@ -1,0 +1,112 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Booking Confirmation</title>
+    <style>
+        body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    padding: 20px;
+    text-align: center;
+}
+.container {
+    max-width: 600px;
+    background: #fff;
+    padding: 30px;
+    margin: auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: left;
+    border-top: 5px solid #D8648C; /* Theme Color */
+}
+.header {
+    text-align: center;
+    border-bottom: 2px solid #f8f8f8;
+    padding-bottom: 15px;
+}
+.logo img {
+    width: 180px;
+}
+h2 {
+    color: #D8648C; /* Theme Color */
+    margin-bottom: 5px;
+}
+.greeting {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 20px;
+}
+.details {
+    background: #fbe4ec; /* Light pink background */
+    padding: 15px;
+    border-radius: 5px;
+    margin-top: 15px;
+    text-align: left;
+    border-left: 5px solid #D8648C; /* Accent Border */
+}
+.details p {
+    margin: 8px 0;
+    font-size: 14px;
+    color: #444;
+}
+.highlight {
+    color: #D8648C; /* Theme Color */
+    font-weight: bold;
+}
+.footer {
+    margin-top: 30px;
+    font-size: 12px;
+    color: #777;
+    text-align: center;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 15px;
+}
+.button {
+    display: inline-block;
+    background-color: #D8648C; /* Theme Color */
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 14px;
+    margin-top: 15px;
+    font-weight: bold;
+}
+.button:hover {
+    background-color: #b85072;
+}
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <img src="cid:logo" alt="Artist Finder Logo">
+            </div>
+        </div>
+
+        <h2>🎉 Hello {{ user.first_name }},</h2>
+        <p>Your booking has been **confirmed!**</p>
+
+        <div class="details">
+            <p><strong>🎨 Artist:</strong> {{ artist.first_name }} {{ artist.last_name }}</p>
+            <p><strong>📅 Date:</strong> {{ date }}</p>
+            <p><strong>⏰ Time:</strong> {{ start_time }} - {{ end_time }}</p>
+            <p><strong>💰 Service:</strong> {{ service.service_name }}</p>
+            <p><strong>💳 Payment Method:</strong> {{ payment_method }}</p>
+        </div>
+
+        <p style="text-align: center;">
+            <a href="{{ booking_history_url }}" class="button">View Booking History</a>
+        </p>
+
+        <div class="footer">
+            <p>Best Regards,<br><strong>ArtistFinder Team</strong></p>
+            <p>Need help? <a href="{{ support_url }}" style="color: #28a745; text-decoration: none;">Contact Support</a></p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,4 +1,6 @@
 {% load static %}
+{% load custom_filters %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,6 +20,107 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
+        /* ✅ General Layout */
+.services-container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 2rem;
+}
+
+/* ✅ Service Card Styling */
+.service-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease-in-out;
+}
+
+.service-card:hover {
+    transform: scale(1.02);
+}
+
+/* ✅ Service Title */
+.service-card h3 {
+    color: #D8648C;
+    font-size: 1.6rem;
+    font-weight: bold;
+}
+
+/* ✅ Price & Description */
+.service-card p {
+    color: #555;
+    font-size: 1rem;
+}
+
+/* ✅ Available Time Slots Section */
+.time-slots {
+    margin-top: 15px;
+    padding: 15px;
+    border-radius: 8px;
+    background: rgba(216, 100, 140, 0.1);
+    border-left: 5px solid #D8648C;
+}
+
+/* ✅ Weekday Headers */
+.weekday-header {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #D8648C;
+    margin-top: 10px;
+}
+
+/* ✅ List of Slots */
+.time-slots ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.time-slots ul li {
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 5px;
+    margin: 5px 0;
+    font-size: 0.95rem;
+    transition: all 0.3s ease-in-out;
+}
+
+.time-slots ul li:hover {
+    background: #D8648C;
+    color: #fff;
+}
+
+/* ✅ Buttons */
+.edit-btn, .delete-btn {
+    display: inline-block;
+    padding: 10px 15px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+}
+
+.edit-btn {
+    background-color: #007bff;
+    color: white;
+}
+
+.edit-btn:hover {
+    background-color: #0056b3;
+}
+
+.delete-btn {
+    background-color: #dc3545;
+    color: white;
+}
+
+.delete-btn:hover {
+    background-color: #a71d2a;
+}
+
         /* Footer Styling */
         .footer {
             background: rgba(216, 100, 140, 0.2);
@@ -179,22 +282,28 @@
                 {% for service in services %}
                 <div class="service-card">
                     <h3>{{ service.service_name }}</h3>
-                    <p class="price">Price: Rs.{{ service.price }}</p>
-                    <p class="description">Duration: {{ service.total_duration }} min</p>
-                    <p class="description">Description: {{ service.description }}</p>
-                    <!-- <p class="description">Days: {{ service.work_days }}</p> -->
-
-                    <!-- Display Schedules (Start and End Times) -->
-                    <div class="schedule-list mt-3">
-                        <h5>Service Schedule:</h5>
-                        {% for schedule in service.schedules.all %}
-                            <p>{{ schedule.weekday }}: {{ schedule.start_time }} - {{ schedule.end_time }}</p>
-                        {% empty %}
-                            <p>No schedule added yet for this service.</p>
-                        {% endfor %}
+                    <p class="price"><strong>Price:</strong> Rs.{{ service.price }}</p>
+                    <p class="description"><strong>Duration:</strong> {{ service.total_duration }}</p>
+                    <p class="description"><strong>Description:</strong> {{ service.description }}</p>
+        
+                    <div class="time-slots">
+                        <h5>Available Time Slots Per Weekday:</h5>
+                        {% with service_schedules|get_item:service.id as schedule %}
+                            {% for weekday, slots in schedule.items %}
+                                <p class="weekday-header">{{ weekday }}</p>
+                                <ul>
+                                    {% for slot in slots %}
+                                        <li>{{ slot }}</li>
+                                    {% empty %}
+                                        <li>No available slots</li>
+                                    {% endfor %}
+                                </ul>
+                            {% empty %}
+                                <p>No working days assigned.</p>
+                            {% endfor %}
+                        {% endwith %}
                     </div>
-
-                    <!-- Edit & Delete Buttons -->
+        
                     <a href="{% url 'edit_service' service.id %}" class="edit-btn">Edit Service</a>
                     <form id="delete-service-{{ service.id }}" action="{% url 'delete_service' service.id %}" method="POST" style="display:inline;">
                         {% csrf_token %}
@@ -206,6 +315,8 @@
                 {% endfor %}
             </div>
         </div>
+        
+        
     </section>
 
     <!-- Footer -->

@@ -33,37 +33,15 @@
             <label for="service">Select Service:</label>
             <select id="service" name="service" required>
                 <option value="" disabled selected>Choose a service</option>
-                {% for service in services %}
-                <!-- <option 
-                    value="{{ service.id }}" 
-                    data-duration="{{ service.duration }}" 
-                    data-workdays="{{ service.work_days }}" 
-                    data-created="{{ service.created_at }}">
-                    {{ service.service_name }} - Rs.{{ service.price }} - {{ service.description }}
-                </option> --><option 
-    value="{{ service.id }}" 
-    data-duration="{{ service.duration }}" 
-    data-workdays="{{ service.work_days }}" 
-    data-opening-time="{{ service.opening_time }}"
-    data-closing-time="{{ service.closing_time }}"
-    data-created="{{ service.created_at }}">
-    {{ service.service_name }} - Rs.{{ service.price }} - {{ service.description }}
-</option>
-
-                {% endfor %}
             </select>
-
-            <label for="duration">Duration:</label>
-            <input type="text" id="duration" name="duration" readonly placeholder="Select a service first">
 
             <label for="date">Select Date:</label>
             <input type="text" id="date" name="date" required placeholder="Choose a date" disabled>
 
-            <label for="start_time">Select Start Time:</label>
-            <input type="time" id="start_time" name="start_time" required disabled>
-
-            <label for="end_time">End Time:</label>
-            <input type="text" id="end_time" name="end_time" readonly>
+            <label for="schedule">Select Available Schedule:</label>
+            <select id="schedule" name="schedule" required disabled>
+                <option value="" disabled selected>Choose a date first</option>
+            </select>
 
             <!-- 🌍 Map Section -->
             <label for="map">Select Location:</label>
@@ -84,11 +62,9 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             let serviceSelect = document.getElementById("service");
-            let durationField = document.getElementById("duration");
             let dateInput = document.getElementById("date");
-            let startTimeInput = document.getElementById("start_time");
-            let endTimeInput = document.getElementById("end_time");
-            let flatpickrInstance;
+            let scheduleSelect = document.getElementById("schedule");
+            let services = JSON.parse('{{ services|escapejs }}');
             let map, marker;
 
             // ✅ Initialize Map with Default Location
@@ -119,133 +95,85 @@
                 }
             );
 
-            // ✅ Enable Date Selection Based on Service Availability
+            // ✅ Populate service dropdown
+            services.forEach(service => {
+                let option = new Option(service.service_name, service.id);
+                option.dataset.workDays = service.work_days;
+                option.dataset.schedules = JSON.stringify(service.schedules);
+                serviceSelect.appendChild(option);
+            });
+
+            // ✅ Handle service selection to enable date selection
             serviceSelect.addEventListener("change", function () {
-                let selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
-                if (!selectedOption.value) return;
+                let selectedService = serviceSelect.options[serviceSelect.selectedIndex];
+                let schedules = JSON.parse(selectedService.dataset.schedules);
+                let workDays = selectedService.dataset.workDays.split(",");
 
-                let durationHMS = selectedOption.getAttribute("data-duration") || "00:00:00";
-                let workDaysString = selectedOption.getAttribute("data-workdays") || "";
-                let workDays = workDaysString.split(",").map(day => day.trim());
+                if (window.flatpickrInstance) {
+                    window.flatpickrInstance.destroy();
+                }
 
-                let openingTime = selectedOption.dataset.openingTime || "08:00";
-let closingTime = selectedOption.dataset.closingTime || "20:00";
-
-                let createdAt = selectedOption.getAttribute("data-created") || new Date().toISOString().split("T")[0];
-
-                const dayMapping = { "Sunday": 0, "Monday": 1, "Tuesday": 2, "Wednesday": 3, "Thursday": 4, "Friday": 5, "Saturday": 6 };
-                let allowedDays = workDays.map(day => dayMapping[day]).filter(day => day !== undefined);
-
-                durationField.value = durationHMS;
-                dateInput.disabled = false;
-                startTimeInput.disabled = false;
-
-                if (flatpickrInstance) flatpickrInstance.destroy();
-
-                flatpickrInstance = flatpickr("#date", {
+                // ✅ Enable only valid working days in Flatpickr
+                window.flatpickrInstance = flatpickr(dateInput, {
                     dateFormat: "Y-m-d",
-                    enableTime: false,
-                    disableMobile: true,
-                    minDate: createdAt,
-                    disable: [date => !allowedDays.includes(date.getDay())]
+                    minDate: "today",
+                    disable: [
+                        function (date) {
+                            return !workDays.includes(date.toLocaleDateString('en-US', { weekday: 'long' }));
+                        }
+                    ],
+                    onChange: function (selectedDates) {
+                        let selectedDay = selectedDates[0].toLocaleDateString('en-US', { weekday: 'long' });
+
+                        // ✅ Populate Schedule Dropdown with only available slots
+                        scheduleSelect.innerHTML = '<option value="" disabled selected>Select a time slot</option>';
+                        if (schedules[selectedDay]) {
+                            schedules[selectedDay].forEach(slot => {
+                                let option = document.createElement("option");
+                                option.value = slot;
+                                option.textContent = slot;
+                                scheduleSelect.appendChild(option);
+                            });
+                        } else {
+                            scheduleSelect.innerHTML = '<option value="" disabled>No available slots</option>';
+                        }
+
+                        scheduleSelect.disabled = false;
+                    }
                 });
 
-                startTimeInput.value = "";
-                endTimeInput.value = "";
-                if (openingTime && closingTime) {
-    console.log("Opening Time:", openingTime, "Closing Time:", closingTime); // ✅ Debugging
-    startTimeInput.setAttribute("min", openingTime);
-    startTimeInput.setAttribute("max", closingTime);
-} else {
-    console.warn("Opening/Closing times missing, using defaults!"); // ✅ Debugging
-    startTimeInput.setAttribute("min", "00:00");  
-    startTimeInput.setAttribute("max", "23:59");  
-}
-
-
+                dateInput.disabled = false;
             });
 
-            startTimeInput.addEventListener("change", function () {
-                let selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
+            // ✅ Handle form submission
+            document.getElementById("booking-form").addEventListener("submit", function (event) {
+                event.preventDefault();
 
-                if (!selectedOption.value || !startTimeInput.value) {
-                    endTimeInput.value = "";
-                    return;
-                }
+                let formData = new FormData(this);
 
-                let durationHMS = selectedOption.getAttribute("data-duration") || "00:00:00";
-                let [durationHours, durationMinutes, durationSeconds] = durationHMS.split(":").map(Number);
-                let durationInMinutes = (durationHours * 60) + durationMinutes + (durationSeconds / 60);
-
-                let openingTime = selectedOption.getAttribute("data-opening-time") || "08:00";
-                let closingTime = selectedOption.getAttribute("data-closing-time") || "20:00";
-
-                let [startHours, startMinutes] = startTimeInput.value.split(":").map(Number);
-                let totalMinutes = startMinutes + durationInMinutes;
-                let endHours = startHours + Math.floor(totalMinutes / 60);
-                let endMinutes = totalMinutes % 60;
-                let endTimeString = `${String(endHours).padStart(2, "0")}:${String(endMinutes).padStart(2, "0")}`;
-
-                if (endTimeString > closingTime) {
-                    Swal.fire({
-                        title: "Invalid End Time!",
-                        text: "The selected time exceeds working hours. Please choose an earlier start time.",
-                        icon: "error",
-                        confirmButtonColor: "#d33"
-                    });
-                    endTimeInput.value = "";
-                } else {
-                    endTimeInput.value = endTimeString;
-                }
+                fetch(this.action, {
+                    method: "POST",
+                    body: formData,
+                    headers: {
+                        "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        Swal.fire("Booking Error!", data.error, "error");
+                    } else {
+                        Swal.fire("Booking Confirmed!", data.success, "success").then(() => {
+                            window.location.href = "{% url 'booking_history' %}";
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error("❌ Error:", error);
+                    Swal.fire("Error!", "Something went wrong. Please try again.", "error");
+                });
             });
         });
-        document.addEventListener("DOMContentLoaded", function () {
-    let bookingForm = document.getElementById("booking-form");
-
-    bookingForm.addEventListener("submit", function (event) {
-        event.preventDefault();  // ✅ Prevent default form submission
-        
-        console.log("🔍 Form submission triggered!");  // ✅ Debugging
-
-        let formData = new FormData(bookingForm);
-
-        console.log("📤 Sending form data:", Object.fromEntries(formData.entries()));  // ✅ Debugging
-
-        fetch(bookingForm.action, {
-            method: "POST",
-            body: formData,
-            headers: {
-                "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log("✅ Server Response:", data);  // ✅ Debugging
-            if (data.error) {
-                Swal.fire({
-                    title: "Booking Error!",
-                    text: data.error,
-                    icon: "error",
-                    confirmButtonColor: "#d33"
-                });
-            } else {
-                Swal.fire({
-                    title: "Booking Confirmed!",
-                    text: data.success,
-                    icon: "success",
-                    confirmButtonColor: "#28a745"
-                }).then(() => {
-                    window.location.href = "{% url 'booking_history' %}";  // ✅ Redirect after success
-                });
-            }
-        })
-        .catch(error => {
-            console.error("❌ Error:", error);  // ✅ Debugging network errors
-            Swal.fire("Error!", "Something went wrong. Please try again.", "error");
-        });
-    });
-});
-
     </script>
 </body>
 </html>

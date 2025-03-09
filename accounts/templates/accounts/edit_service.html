@@ -77,13 +77,25 @@
                 {{ service_form.description }}
             </div>
 
-            <h3 class="mb-3">Update Availability</h3>
+            <h3 class="mb-3">Work Days</h3>
+            <div class="row">
+                {% for choice in service_form.work_days %}
+                    <div class="col-md-4">
+                        <div class="form-check">
+                            {{ choice.tag }}
+                            <label class="form-check-label">{{ choice.choice_label }}</label>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <h3 class="mt-4">Update Availability</h3>
             <div id="availability-container">
                 {{ availability_formset.management_form }}
 
                 {% for form in availability_formset %}
                     <div class="availability-entry border p-3 mb-2">
-                        <label>Date:</label>
+                        <label>Available Date:</label>
                         {{ form.available_date }}
                         <label>Time:</label>
                         {{ form.available_time }}
@@ -100,17 +112,9 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            // ✅ Initialize Flatpickr for Date Picker
-            flatpickr(".datepicker", {
-                dateFormat: "Y-m-d"
-            });
-
-            // ✅ Initialize Flatpickr for Time Picker (Clock UI)
-            flatpickr(".timepicker", {
-                enableTime: true,
-                noCalendar: true,
-                dateFormat: "H:i"
-            });
+            // ✅ Initialize Flatpickr for Date & Time Pickers
+            flatpickr(".datepicker", { dateFormat: "Y-m-d" });
+            flatpickr(".timepicker", { enableTime: true, noCalendar: true, dateFormat: "H:i" });
 
             function updateTotalDuration() {
                 let durationHours = parseInt(document.getElementById("id_duration_hours").value) || 0;
@@ -129,11 +133,16 @@
                 document.getElementById("total_duration_display").innerText = `${totalHours}h ${totalMinutes}m`;
             }
 
+            // ✅ Update total duration on input change
             document.getElementById("id_duration_hours").addEventListener("input", updateTotalDuration);
             document.getElementById("id_duration_minutes").addEventListener("input", updateTotalDuration);
             document.getElementById("id_travel_time_hours").addEventListener("input", updateTotalDuration);
             document.getElementById("id_travel_time_minutes").addEventListener("input", updateTotalDuration);
 
+            // ✅ Update total duration when page loads with existing values
+            updateTotalDuration();
+
+            // ✅ Handle adding/removing availability slots dynamically
             document.querySelector(".add-slot-btn").addEventListener("click", function () {
                 let container = document.getElementById("availability-container");
                 let totalForms = document.getElementById("id_form-TOTAL_FORMS");
@@ -142,7 +151,7 @@
                 let newSlot = document.createElement("div");
                 newSlot.classList.add("availability-entry", "border", "p-3", "mb-2");
                 newSlot.innerHTML = `
-                    <label>Date:</label>
+                    <label>Available Date:</label>
                     <input type="text" name="form-${newSlotIndex}-available_date" class="datepicker form-control" required>
                     <label>Time:</label>
                     <input type="text" name="form-${newSlotIndex}-available_time" class="timepicker form-control" required>
@@ -152,6 +161,7 @@
                 container.appendChild(newSlot);
                 totalForms.value = newSlotIndex + 1;
 
+                // Reinitialize flatpickr for new elements
                 flatpickr(".datepicker", { dateFormat: "Y-m-d" });
                 flatpickr(".timepicker", { enableTime: true, noCalendar: true, dateFormat: "H:i" });
 

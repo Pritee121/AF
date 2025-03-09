@@ -525,7 +525,10 @@ body.dark-mode .dropdown-content a:hover {
             <p>City: {{ artist.city }}</p>
             <p>Experience: {{ artist.experience_years }} years</p>
             <p>Works At: {{ artist.works_at }}</p>
-            <p><strong>Number of Appointments Taken:</strong> {{ artist.appointment_count }}</p>
+            <p><strong>Number of Completed Appointments:</strong> {{ artist.appointment_count }}</p>
+
+
+
             <!-- ✅ Display Availability Status -->
             <p class="availability-status {% if artist.is_available %}available{% else %}not-available{% endif %}">
                 {% if artist.is_available %}

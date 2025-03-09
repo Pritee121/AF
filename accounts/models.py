@@ -43,6 +43,8 @@ class User(AbstractUser):
 
     objects = CustomUserManager()  #Use custom manager
 
+    
+
     def __str__(self):
         return self.email
 
@@ -65,13 +67,67 @@ class Work(models.Model):
     def __str__(self):
         return f"{self.title} by {self.artist.first_name}"
     
+# from django.db import models
+# from django.contrib.auth import get_user_model
+
+# User = get_user_model()
+
+# class WorkingTime(models.Model):
+#     artist = models.ForeignKey(User, on_delete=models.CASCADE, default=1)  # ✅ Set default user ID
+#     day = models.CharField(max_length=10, choices=[
+#         ('Monday', 'Monday'),
+#         ('Tuesday', 'Tuesday'),
+#         ('Wednesday', 'Wednesday'),
+#         ('Thursday', 'Thursday'),
+#         ('Friday', 'Friday'),
+#         ('Saturday', 'Saturday'),
+#         ('Sunday', 'Sunday'),
+#     ], unique=True)
+#     opening_time = models.TimeField()
+#     closing_time = models.TimeField()
+
+#     def __str__(self):
+#         return f"{self.day}: {self.opening_time} to {self.closing_time}"
+# from datetime import timedelta
+# class Service(models.Model):
+#     artist = models.ForeignKey(User, related_name="services", on_delete=models.CASCADE)
+#     service_name = models.CharField(max_length=255)
+#     price = models.DecimalField(max_digits=10, decimal_places=2)
+#     duration = models.DurationField()
+#     travel_time = models.DurationField(default=timedelta(minutes=30))
+#     total_duration = models.DurationField(blank=True, null=True)
+#     description = models.TextField(blank=True, null=True)
+#     created_at = models.DateTimeField(auto_now_add=True)
+
+#     work_days = models.ManyToManyField(WorkingTime, blank=True, related_name="services")  # ✅ Correct Many-to-Many
+
+#     def get_work_days(self):
+#         """Fetch all working days for this service."""
+#         return list(self.work_days.values_list("day", flat=True))
+
+#     def save(self, *args, **kwargs):
+#         if self.duration and self.travel_time:
+#             self.total_duration = self.duration + self.travel_time
+#         super().save(*args, **kwargs)
+
+#     def get_total_duration_hms(self):
+#         if self.total_duration:
+#             seconds = int(self.total_duration.total_seconds())
+#             hours, remainder = divmod(seconds, 3600)
+#             minutes, seconds = divmod(remainder, 60)
+#             return f"{hours:02}:{minutes:02}:{seconds:02}"
+#         return "00:00:00"
+
+#     def __str__(self):
+#         return f"{self.service_name} ({self.get_total_duration_hms()}) - {self.artist.first_name}"
 from django.db import models
 from django.contrib.auth import get_user_model
+from datetime import timedelta, datetime
 
 User = get_user_model()
 
 class WorkingTime(models.Model):
-    artist = models.ForeignKey(User, on_delete=models.CASCADE, default=1)  # ✅ Set default user ID
+    artist = models.ForeignKey(User, on_delete=models.CASCADE, default=1)  
     day = models.CharField(max_length=10, choices=[
         ('Monday', 'Monday'),
         ('Tuesday', 'Tuesday'),
@@ -86,7 +142,57 @@ class WorkingTime(models.Model):
 
     def __str__(self):
         return f"{self.day}: {self.opening_time} to {self.closing_time}"
-from datetime import timedelta
+
+# class Service(models.Model):
+#     artist = models.ForeignKey(User, related_name="services", on_delete=models.CASCADE)
+#     service_name = models.CharField(max_length=255)
+#     price = models.DecimalField(max_digits=10, decimal_places=2)
+#     duration = models.DurationField()
+#     travel_time = models.DurationField(default=timedelta(minutes=30))
+#     total_duration = models.DurationField(blank=True, null=True)
+#     description = models.TextField(blank=True, null=True)
+#     created_at = models.DateTimeField(auto_now_add=True)
+
+#     work_days = models.ManyToManyField(WorkingTime, blank=True, related_name="services")  
+
+#     def save(self, *args, **kwargs):
+#         if self.duration and self.travel_time:
+#             self.total_duration = self.duration + self.travel_time
+#         super().save(*args, **kwargs)
+
+#     from datetime import datetime, timedelta
+
+#     def generate_slots_for_day(self, work_day):
+#         """Generate available time slots based on working hours and service duration."""
+#         slots = []
+#         opening = datetime.combine(datetime.today(), work_day.opening_time)
+#         closing = datetime.combine(datetime.today(), work_day.closing_time)
+#         current_time = opening
+
+#         # ✅ Ensure total_duration is not None
+#         if self.total_duration is None:
+#             print(f"⚠️ Warning: Service {self.service_name} has no total duration set!")
+#             return slots  # Return empty list to avoid errors
+
+#         while current_time + self.total_duration <= closing:
+#             next_slot = current_time + self.total_duration
+#             slots.append(f"{current_time.strftime('%H:%M')} - {next_slot.strftime('%H:%M')}")
+#             current_time = next_slot  # Move to the next slot
+
+#         return slots
+
+#     def get_total_duration_hms(self):
+#         """Convert total duration to HH:MM:SS format"""
+#         if self.total_duration:
+#             seconds = int(self.total_duration.total_seconds())
+#             hours, remainder = divmod(seconds, 3600)
+#             minutes, seconds = divmod(remainder, 60)
+#             return f"{hours:02}:{minutes:02}:{seconds:02}"
+#         return "00:00:00"
+#     def __str__(self):
+#         return f"{self.service_name} ({self.total_duration}) - {self.artist.first_name}"
+from datetime import datetime, timedelta
+
 class Service(models.Model):
     artist = models.ForeignKey(User, related_name="services", on_delete=models.CASCADE)
     service_name = models.CharField(max_length=255)
@@ -97,18 +203,47 @@ class Service(models.Model):
     description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    work_days = models.ManyToManyField(WorkingTime, blank=True, related_name="services")  # ✅ Correct Many-to-Many
-
-    def get_work_days(self):
-        """Fetch all working days for this service."""
-        return list(self.work_days.values_list("day", flat=True))
+    work_days = models.ManyToManyField(WorkingTime, blank=True, related_name="services")  
 
     def save(self, *args, **kwargs):
+        """Ensure total duration is calculated before saving"""
         if self.duration and self.travel_time:
             self.total_duration = self.duration + self.travel_time
         super().save(*args, **kwargs)
 
+    def generate_slots_for_day(self, work_day):
+        """Generate available time slots dynamically based on working hours and service duration."""
+        slots = []
+        
+        if self.total_duration is None:
+            print(f"⚠️ Warning: Service {self.service_name} has no total duration set!")
+            return slots  # Return empty list to avoid errors
+
+        # Convert working time into datetime format
+        opening_time = datetime.combine(datetime.today(), work_day.opening_time)
+        closing_time = datetime.combine(datetime.today(), work_day.closing_time)
+        current_time = opening_time
+
+        while current_time + self.total_duration <= closing_time:
+            next_slot = current_time + self.total_duration
+            slots.append(f"{current_time.strftime('%H:%M')} - {next_slot.strftime('%H:%M')}")
+            current_time = next_slot  # Move to the next slot
+
+        return slots
+
+    def get_working_days(self):
+        """Fetch all working days for this service."""
+        return list(self.work_days.values_list("day", flat=True))
+
+    def get_slots_json(self):
+        """Return available slots for each working day in JSON format."""
+        slots_data = {}
+        for work_day in self.work_days.all():
+            slots_data[work_day.day] = self.generate_slots_for_day(work_day)
+        return slots_data
+
     def get_total_duration_hms(self):
+        """Convert total duration to HH:MM:SS format"""
         if self.total_duration:
             seconds = int(self.total_duration.total_seconds())
             hours, remainder = divmod(seconds, 3600)
@@ -451,7 +586,10 @@ class Booking(models.Model):
 
     class Meta:
         unique_together = ('artist', 'date', 'start_time', 'end_time')  # Prevent overlapping bookings
-
+    def mark_completed(self):
+        """ ✅ Marks booking as completed """
+        self.status = "Completed"
+        self.save()
     def calculate_end_time(self):
         """✅ Ensure end_time is calculated correctly."""
         if self.service and self.start_time:
