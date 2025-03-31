@@ -2,178 +2,938 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book {{ artist.first_name }} {{ artist.last_name }}</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Book {{ artist.first_name }} {{ artist.last_name }}</title>
 
-    <!-- Flatpickr for Date Selection -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <!-- Flatpickr + Leaflet -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
 
-    <!-- SweetAlert2 for Alerts -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- Khalti -->
+  <script src="https://khalti.com/static/khalti-checkout.js"></script>
 
-    <!-- Leaflet.js for Maps -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <!-- SweetAlert -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <link rel="stylesheet" href="{% static 'css/book_artist.css' %}">
+  <!-- 🟣 Main Styles -->
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #fff, #fff0f5);
+      color: #333;
+    }
+
+    .booking-section {
+      padding: 60px 5%;
+    }
+
+    .booking-content-split {
+      display: flex;
+      gap: 40px;
+      max-width: 1100px;
+      margin: auto;
+      flex-wrap: wrap;
+    }
+
+    .booking-left, .booking-right {
+      flex: 1;
+      min-width: 300px;
+    }
+
+    /* Left: Artist Card */
+    .artist-card {
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+      text-align: center;
+    }
+
+    .artist-card img {
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid #D8648C;
+      margin-bottom: 15px;
+    }
+
+    .artist-card h2 {
+      font-size: 22px;
+      color: #D8648C;
+      margin: 10px 0 5px;
+    }
+
+    .artist-card p {
+      margin: 4px 0;
+      color: #555;
+    }
+
+    .artist-card .bio {
+      font-style: italic;
+      margin-top: 15px;
+      color: #888;
+      font-size: 14px;
+    }
+
+    /* Right: Booking Form */
+    .booking-title {
+      font-size: 2rem;
+      color: #D8648C;
+      margin-bottom: 20px;
+    }
+
+    .form-row {
+      margin-bottom: 25px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-row.half {
+      flex-direction: row;
+      gap: 20px;
+    }
+
+    .form-row.half > div {
+      flex: 1;
+    }
+
+    label {
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: #333;
+    }
+
+    input, select, textarea {
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: 1.5px solid #ddd;
+      font-size: 15px;
+      background: #fff;
+      transition: all 0.3s ease;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: #D8648C;
+      box-shadow: 0 0 6px rgba(216, 100, 140, 0.2);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    /* Schedule */
+    .schedule-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .schedule-card {
+      padding: 10px 16px;
+      border-radius: 8px;
+      background: #f8f8f8;
+      border: 1px solid #ccc;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .schedule-card:hover,
+    .schedule-card.selected {
+      background: #D8648C;
+      color: white;
+      border-color: #D8648C;
+    }
+
+    #map {
+      width: 100%;
+      height: 300px;
+      border-radius: 10px;
+      border: 2px solid #D8648C;
+      margin-top: 10px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 16px;
+      margin-top: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    #khalti-pay-button {
+      background: linear-gradient(135deg, #D8648C, #E27898);
+      color: white;
+    }
+
+    #khalti-pay-button:hover {
+      transform: scale(1.02);
+    }
+
+    #confirm-booking-button {
+      background: #444;
+      color: white;
+    }
+
+    #confirm-booking-button:hover {
+      background: #111;
+    }
+
+    @media (max-width: 768px) {
+      .booking-content-split {
+        flex-direction: column;
+      }
+
+      .booking-title {
+        font-size: 1.7rem;
+      }
+
+      .form-row.half {
+        flex-direction: column;
+      }
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <a href="{% url 'home' %}">← Home</a>
-    </header>
 
-    <div class="booking-container">
-        <h2>Book {{ artist.first_name }} {{ artist.last_name }}</h2>
+  {% include 'includes/nav.html' %}
+
+  <section class="booking-section">
+    <div class="booking-content-split">
+
+      <!-- Left: Artist Profile -->
+      <div class="booking-left">
+        <div class="artist-card">
+          <img src="{{ artist.profile_image.url }}" alt="{{ artist.first_name }}" />
+          <h1>Artist</h1>
+          <h2>{{ artist.first_name }} {{ artist.last_name }}</h2>
+          <!-- <p>Rated ⭐ 4.8 • {{ artist.city }}</p> -->
+          <p class="bio">"Making you shine for your big day!"</p>
+        </div>
+      </div>
+
+      <!-- Right: Booking Form -->
+      <div class="booking-right">
+        <h1 class="booking-title">Book Your Slot</h1>
 
         <form id="booking-form" method="POST" action="{% url 'book_artist' artist.id %}">
-            {% csrf_token %}
+          {% csrf_token %}
 
-            <label for="service">Select Service:</label>
+          <div class="form-row">
+            <label for="service">Service</label>
             <select id="service" name="service" required>
-                <option value="" disabled selected>Choose a service</option>
+              <option value="">Choose a service</option>
             </select>
+          </div>
 
-            <label for="date">Select Date:</label>
-            <input type="text" id="date" name="date" required placeholder="Choose a date" disabled>
+          <div class="form-row half">
+            <div>
+              <label>Price</label>
+              <input type="text" id="price" readonly>
+            </div>
+            <div>
+              <label>Duration</label>
+              <input type="text" id="duration" readonly>
+            </div>
+          </div>
 
-            <label for="schedule">Select Available Schedule:</label>
-            <select id="schedule" name="schedule" required disabled>
-                <option value="" disabled selected>Choose a date first</option>
-            </select>
+          <div class="form-row">
+            <label>Description</label>
+            <textarea id="description" readonly></textarea>
+          </div>
 
-            <!-- 🌍 Map Section -->
-            <label for="map">Select Location:</label>
-            <div id="map" style="height: 300px;"></div>
+          <div class="form-row">
+            <label>Date</label>
+            <input type="text" id="date" name="date" disabled>
+          </div>
+
+          <div class="form-row">
+            <label>Time Slot</label>
+            <div id="schedule-container" class="schedule-container">
+              <p>Select a date to view available slots</p>
+            </div>
+            <input type="hidden" id="schedule" name="schedule">
+          </div>
+
+          <div class="form-row">
+            <label>Location</label>
+            <div id="map"></div>
             <input type="hidden" id="latitude" name="latitude">
             <input type="hidden" id="longitude" name="longitude">
+          </div>
 
-            <label for="payment_method">Select Payment Method:</label>
-            <select id="payment_method" name="payment_method" required>
-                <option value="khalti">Khalti</option>
-                <option value="cod">Cash on Delivery (COD)</option>
-            </select>
-            
-            <button type="submit">Confirm Booking</button>
+          <div class="form-row">
+            <button type="button" id="khalti-pay-button">Pay with Khalti</button>
+            <button type="submit" id="confirm-booking-button" style="display: none;">Confirm Booking</button>
+          </div>
         </form>
+      </div>
     </div>
+  </section>
+
+
+
+  
+
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            let serviceSelect = document.getElementById("service");
-            let dateInput = document.getElementById("date");
-            let scheduleSelect = document.getElementById("schedule");
-            let services = JSON.parse('{{ services|escapejs }}');
-            let map, marker;
+//         document.addEventListener("DOMContentLoaded", function () {
+//             let serviceSelect = document.getElementById("service");
+//             let dateInput = document.getElementById("date");
+//             let scheduleSelect = document.getElementById("schedule");
+//             let priceInput = document.getElementById("price");
+//             let durationInput = document.getElementById("duration");
+//             let descriptionInput = document.getElementById("description");
+//             let services = JSON.parse('{{ services|escapejs }}');
+//             let map, marker;
 
-            // ✅ Initialize Map with Default Location
-            function initMap(lat, lng) {
-                map = L.map("map").setView([lat, lng], 13);
-                L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-                    attribution: "© OpenStreetMap",
-                }).addTo(map);
+//             // ✅ Initialize Map with Default Location
+//             function initMap(lat, lng) {
+//                 map = L.map("map").setView([lat, lng], 13);
+//                 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+//                     attribution: "© OpenStreetMap",
+//                 }).addTo(map);
 
-                marker = L.marker([lat, lng], { draggable: true }).addTo(map);
-                document.getElementById("latitude").value = lat;
-                document.getElementById("longitude").value = lng;
+//                 marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+//                 document.getElementById("latitude").value = lat;
+//                 document.getElementById("longitude").value = lng;
 
-                marker.on("dragend", function () {
-                    let position = marker.getLatLng();
-                    document.getElementById("latitude").value = position.lat.toFixed(6);
-                    document.getElementById("longitude").value = position.lng.toFixed(6);
-                });
-            }
+//                 marker.on("dragend", function () {
+//                     let position = marker.getLatLng();
+//                     document.getElementById("latitude").value = position.lat.toFixed(6);
+//                     document.getElementById("longitude").value = position.lng.toFixed(6);
+//                 });
+//             }
 
-            // ✅ Get User Location
-            navigator.geolocation.getCurrentPosition(
-                function (position) {
-                    initMap(position.coords.latitude, position.coords.longitude);
-                },
-                function () {
-                    initMap(27.7172, 85.3240); // Default to Kathmandu
-                }
-            );
+//             // ✅ Get User Location
+//             navigator.geolocation.getCurrentPosition(
+//                 function (position) {
+//                     initMap(position.coords.latitude, position.coords.longitude);
+//                 },
+//                 function () {
+//                     initMap(27.7172, 85.3240); // Default to Kathmandu
+//                 }
+//             );
 
-            // ✅ Populate service dropdown
-            services.forEach(service => {
-                let option = new Option(service.service_name, service.id);
-                option.dataset.workDays = service.work_days;
-                option.dataset.schedules = JSON.stringify(service.schedules);
-                serviceSelect.appendChild(option);
-            });
+//             // ✅ Populate service dropdown
+//             services.forEach(service => {
+//                 let option = new Option(service.service_name, service.id);
+//                 option.dataset.price = service.price;
+//                 option.dataset.duration = service.duration;
+//                 option.dataset.description = service.description;
+//                 option.dataset.workDays = service.work_days;
+//                 option.dataset.schedules = JSON.stringify(service.schedules);
+//                 serviceSelect.appendChild(option);
+//             });
 
-            // ✅ Handle service selection to enable date selection
-            serviceSelect.addEventListener("change", function () {
-                let selectedService = serviceSelect.options[serviceSelect.selectedIndex];
-                let schedules = JSON.parse(selectedService.dataset.schedules);
-                let workDays = selectedService.dataset.workDays.split(",");
+//             // ✅ Handle service selection to show details
+//             serviceSelect.addEventListener("change", function () {
+//                 let selectedService = serviceSelect.options[serviceSelect.selectedIndex];
 
-                if (window.flatpickrInstance) {
-                    window.flatpickrInstance.destroy();
-                }
+//                 // Populate read-only fields
+//                 priceInput.value = `Rs. ${selectedService.dataset.price}`;
+//                 durationInput.value = selectedService.dataset.duration;
+//                 descriptionInput.value = selectedService.dataset.description;
 
-                // ✅ Enable only valid working days in Flatpickr
-                window.flatpickrInstance = flatpickr(dateInput, {
-                    dateFormat: "Y-m-d",
-                    minDate: "today",
-                    disable: [
-                        function (date) {
-                            return !workDays.includes(date.toLocaleDateString('en-US', { weekday: 'long' }));
-                        }
-                    ],
-                    onChange: function (selectedDates) {
-                        let selectedDay = selectedDates[0].toLocaleDateString('en-US', { weekday: 'long' });
+//                 let schedules = JSON.parse(selectedService.dataset.schedules);
+//                 let workDays = selectedService.dataset.workDays.split(",");
 
-                        // ✅ Populate Schedule Dropdown with only available slots
-                        scheduleSelect.innerHTML = '<option value="" disabled selected>Select a time slot</option>';
-                        if (schedules[selectedDay]) {
-                            schedules[selectedDay].forEach(slot => {
-                                let option = document.createElement("option");
-                                option.value = slot;
-                                option.textContent = slot;
-                                scheduleSelect.appendChild(option);
-                            });
-                        } else {
-                            scheduleSelect.innerHTML = '<option value="" disabled>No available slots</option>';
-                        }
+//                 if (window.flatpickrInstance) {
+//                     window.flatpickrInstance.destroy();
+//                 }
 
-                        scheduleSelect.disabled = false;
-                    }
-                });
+//                 // ✅ Enable only valid working days in Flatpickr
+//                 window.flatpickrInstance = flatpickr(dateInput, {
+//                     dateFormat: "Y-m-d",
+//                     minDate: "today",
+//                     disable: [
+//                         function (date) {
+//                             return !workDays.includes(date.toLocaleDateString('en-US', { weekday: 'long' }));
+//                         }
+//                     ],
+//                     onChange: function (selectedDates) {
+//                         let selectedDay = selectedDates[0].toLocaleDateString('en-US', { weekday: 'long' });
 
-                dateInput.disabled = false;
-            });
+//                         // ✅ Populate Schedule Dropdown with only available slots
+//                         scheduleSelect.innerHTML = '<option value="" disabled selected>Select a time slot</option>';
+//                         if (schedules[selectedDay]) {
+//                             schedules[selectedDay].forEach(slot => {
+//                                 let option = document.createElement("option");
+//                                 option.value = slot;
+//                                 option.textContent = slot;
+//                                 scheduleSelect.appendChild(option);
+//                             });
+//                         } else {
+//                             scheduleSelect.innerHTML = '<option value="" disabled>No available slots</option>';
+//                         }
 
-            // ✅ Handle form submission
-            document.getElementById("booking-form").addEventListener("submit", function (event) {
-                event.preventDefault();
+//                         scheduleSelect.disabled = false;
+//                     }
+//                 });
 
-                let formData = new FormData(this);
+//                 dateInput.disabled = false;
+//             });
 
-                fetch(this.action, {
-                    method: "POST",
-                    body: formData,
-                    headers: {
-                        "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        Swal.fire("Booking Error!", data.error, "error");
-                    } else {
-                        Swal.fire("Booking Confirmed!", data.success, "success").then(() => {
-                            window.location.href = "{% url 'booking_history' %}";
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error("❌ Error:", error);
-                    Swal.fire("Error!", "Something went wrong. Please try again.", "error");
-                });
-            });
+//             // ✅ Handle form submission
+//             document.getElementById("booking-form").addEventListener("submit", function (event) {
+//                 event.preventDefault();
+
+//                 let formData = new FormData(this);
+
+//                 fetch(this.action, {
+//                     method: "POST",
+//                     body: formData,
+//                     headers: {
+//                         "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value
+//                     }
+//                 })
+//                 .then(response => response.json())
+//                 .then(data => {
+//                     if (data.error) {
+//                         Swal.fire("Booking Error!", data.error, "error");
+//                     } else {
+//                         Swal.fire("Booking Confirmed!", data.success, "success").then(() => {
+//                             window.location.href = "{% url 'booking_history' %}";
+//                         });
+//                     }
+//                 })
+//                 .catch(error => {
+//                     console.error("❌ Error:", error);
+//                     Swal.fire("Error!", "Something went wrong. Please try again.", "error");
+//                 });
+//             });
+//         });
+
+// document.getElementById("khalti-pay-button").addEventListener("click", function () {
+//     let serviceSelect = document.getElementById("service");
+//     let scheduleSelect = document.getElementById("schedule");
+//     let dateInput = document.getElementById("date");
+//     let latitudeInput = document.getElementById("latitude");
+//     let longitudeInput = document.getElementById("longitude");
+//     let csrfToken = document.querySelector("[name=csrfmiddlewaretoken]");
+
+//     if (!serviceSelect.value || !dateInput.value || !scheduleSelect.value) {
+//         Swal.fire("Error", "Please select a service, date, and schedule before proceeding!", "error");
+//         return;
+//     }
+
+//     if (!csrfToken) {
+//         console.error("❌ CSRF Token not found!");
+//         Swal.fire("Error", "CSRF token is missing. Please refresh the page and try again.", "error");
+//         return;
+//     }
+
+//     let requestData = {
+//         service_id: serviceSelect.value,
+//         artist_id: "{{ artist.id }}",  
+//         date: dateInput.value,
+//         schedule: scheduleSelect.value,
+//         latitude: latitudeInput ? latitudeInput.value : null,
+//         longitude: longitudeInput ? longitudeInput.value : null
+//     };
+
+//     console.log("🔍 Sending Data to Server:", requestData);
+
+//     Swal.fire({
+//         title: "Processing Payment...",
+//         text: "Please wait while we redirect you to Khalti...",
+//         allowOutsideClick: false,
+//         allowEscapeKey: false,
+//         didOpen: () => {
+//             Swal.showLoading();
+//         }
+//     });
+
+//     fetch("/initiate-khalti-payment/", { 
+//         method: "POST",
+//         headers: { 
+//             "X-CSRFToken": csrfToken.value,
+//             "Content-Type": "application/json"
+//         },
+//         body: JSON.stringify(requestData)
+//     })
+//     .then(response => response.json())
+//     .then(data => {
+//         console.log("🔍 Khalti API Response:", data);
+
+//         if (data.success) {
+//             sessionStorage.setItem("khalti_pidx", data.pidx);  // ✅ Store pidx
+//             Swal.fire({
+//                 title: "Redirecting...",
+//                 text: "You will be redirected to Khalti for payment.",
+//                 icon: "success",
+//                 timer: 3000,
+//                 showConfirmButton: false
+//             }).then(() => {
+//                 window.location.href = data.payment_url;
+//             });
+//         } else {
+//             Swal.fire("Payment Failed", data.error || "Please try again!", "error");
+//         }
+//     })
+//     .catch(error => {
+//         console.error("❌ Error:", error);
+//         Swal.fire("Error Processing Payment", "There was an issue processing your payment. Please try again.", "error");
+//     });
+// });
+
+
+// document.addEventListener("DOMContentLoaded", function () {
+//     let serviceSelect = document.getElementById("service");
+//     let dateInput = document.getElementById("date");
+//     let scheduleContainer = document.getElementById("schedule-container");
+//     let hiddenScheduleInput = document.getElementById("schedule");
+//     let priceInput = document.getElementById("price");
+//     let durationInput = document.getElementById("duration");
+//     let descriptionInput = document.getElementById("description");
+
+//     let latitudeInput = document.getElementById("latitude");
+//     let longitudeInput = document.getElementById("longitude");
+//     let confirmBookingButton = document.getElementById("confirm-booking-button");
+
+//     let services = JSON.parse('{{ services|escapejs }}');
+
+//     // ✅ Initialize Map
+//     function initMap(lat, lng) {
+//         let map = L.map("map").setView([lat, lng], 13);
+//         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+//             attribution: "© OpenStreetMap",
+//         }).addTo(map);
+
+//         let marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+//         latitudeInput.value = lat;
+//         longitudeInput.value = lng;
+
+//         marker.on("dragend", function () {
+//             let position = marker.getLatLng();
+//             latitudeInput.value = position.lat.toFixed(6);
+//             longitudeInput.value = position.lng.toFixed(6);
+//         });
+//     }
+
+//     // ✅ Get User Location
+//     navigator.geolocation.getCurrentPosition(
+//         function (position) {
+//             initMap(position.coords.latitude, position.coords.longitude);
+//         },
+//         function () {
+//             initMap(27.7172, 85.3240); // Default to Kathmandu
+//         }
+//     );
+
+//     // ✅ Populate Service Dropdown
+//     services.forEach(service => {
+//         let option = new Option(service.service_name, service.id);
+//         option.dataset.price = service.price;
+//         option.dataset.duration = service.duration;
+//         option.dataset.description = service.description;
+//         option.dataset.workDays = service.work_days;
+//         option.dataset.schedules = JSON.stringify(service.schedules);
+//         serviceSelect.appendChild(option);
+//     });
+
+//     // ✅ Handle Service Selection
+//     serviceSelect.addEventListener("change", function () {
+//         let selectedService = serviceSelect.options[serviceSelect.selectedIndex];
+
+//         priceInput.value = `Rs. ${selectedService.dataset.price}`;
+//         durationInput.value = selectedService.dataset.duration;
+//         descriptionInput.value = selectedService.dataset.description;
+
+//         let schedules = JSON.parse(selectedService.dataset.schedules);
+//         let workDays = selectedService.dataset.workDays.split(",");
+
+//         if (window.flatpickrInstance) {
+//             window.flatpickrInstance.destroy();
+//         }
+
+//         // ✅ Enable Only Valid Workdays
+//         window.flatpickrInstance = flatpickr(dateInput, {
+//             dateFormat: "Y-m-d",
+//             minDate: "today",
+//             disable: [
+//                 function (date) {
+//                     return !workDays.includes(date.toLocaleDateString('en-US', { weekday: 'long' }));
+//                 }
+//             ],
+//             onChange: function (selectedDates) {
+//                 let selectedDay = selectedDates[0].toLocaleDateString('en-US', { weekday: 'long' });
+//                 let selectedDate = dateInput.value;
+
+//                 // ✅ Fetch Booked Schedules
+//                 fetch(`/get-booked-schedules/?artist_id={{ artist.id }}&service_id=${selectedService.value}&date=${selectedDate}`)
+//                     .then(response => response.json())
+//                     .then(data => {
+//                         let bookedSlots = data.booked_schedules || [];
+//                         scheduleContainer.innerHTML = '';
+
+//                         if (schedules[selectedDay]) {
+//                             let availableSlots = schedules[selectedDay].filter(slot => !bookedSlots.includes(slot));
+
+//                             if (availableSlots.length > 0) {
+//                                 availableSlots.forEach(slot => {
+//                                     let scheduleCard = document.createElement("div");
+//                                     scheduleCard.classList.add("schedule-card");
+//                                     scheduleCard.textContent = slot;
+//                                     scheduleCard.dataset.value = slot;
+
+//                                     // ✅ Click Event for Schedule Selection
+//                                     scheduleCard.addEventListener("click", function () {
+//                                         document.querySelectorAll(".schedule-card").forEach(card => card.classList.remove("selected"));
+//                                         scheduleCard.classList.add("selected");
+//                                         hiddenScheduleInput.value = slot;
+//                                     });
+
+//                                     scheduleContainer.appendChild(scheduleCard);
+//                                 });
+//                             } else {
+//                                 scheduleContainer.innerHTML = '<p>No available slots for this day.</p>';
+//                             }
+//                         } else {
+//                             scheduleContainer.innerHTML = '<p>No available slots for this day.</p>';
+//                         }
+//                     })
+//                     .catch(error => {
+//                         scheduleContainer.innerHTML = '<p class="error">Error loading schedules.</p>';
+//                     });
+//             }
+//         });
+
+//         dateInput.disabled = false;
+//     });
+
+//     // ✅ Khalti Payment
+//     document.getElementById("khalti-pay-button").addEventListener("click", function () {
+//         if (!serviceSelect.value || !dateInput.value || !hiddenScheduleInput.value) {
+//             Swal.fire("Error", "Please select a service, date, and schedule before proceeding!", "error");
+//             return;
+//         }
+
+//         let csrfToken = document.querySelector("[name=csrfmiddlewaretoken]");
+//         if (!csrfToken) {
+//             Swal.fire("Error", "CSRF token is missing. Please refresh the page and try again.", "error");
+//             return;
+//         }
+
+//         let requestData = {
+//             service_id: serviceSelect.value,
+//             artist_id: "{{ artist.id }}",
+//             date: dateInput.value,
+//             schedule: hiddenScheduleInput.value,
+//             latitude: latitudeInput.value,
+//             longitude: longitudeInput.value
+//         };
+
+//         Swal.fire({
+//             title: "Processing Payment...",
+//             text: "Please wait while we redirect you to Khalti...",
+//             allowOutsideClick: false,
+//             allowEscapeKey: false,
+//             didOpen: () => Swal.showLoading()
+//         });
+
+//         fetch("/initiate-khalti-payment/", {
+//             method: "POST",
+//             headers: {
+//                 "X-CSRFToken": csrfToken.value,
+//                 "Content-Type": "application/json"
+//             },
+//             body: JSON.stringify(requestData)
+//         })
+//         .then(response => response.json())
+//         .then(data => {
+//             if (data.success) {
+//                 sessionStorage.setItem("khalti_pidx", data.pidx);
+//                 Swal.fire({
+//                     title: "Redirecting...",
+//                     text: "You will be redirected to Khalti for payment.",
+//                     icon: "success",
+//                     timer: 3000,
+//                     showConfirmButton: false
+//                 }).then(() => {
+//                     window.location.href = data.payment_url;
+//                 });
+//             } else {
+//                 Swal.fire("Payment Failed", data.error || "Please try again!", "error");
+//             }
+//         })
+//         .catch(error => {
+//             Swal.fire("Error Processing Payment", "There was an issue processing your payment. Please try again.", "error");
+//         });
+//     });
+
+//     // ✅ Handle Form Submission
+//     document.getElementById("booking-form").addEventListener("submit", function (event) {
+//         event.preventDefault();
+
+//         let formData = new FormData(this);
+
+//         fetch(this.action, {
+//             method: "POST",
+//             body: formData,
+//             headers: {
+//                 "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value
+//             }
+//         })
+//         .then(response => response.json())
+//         .then(data => {
+//             if (data.error) {
+//                 Swal.fire("Booking Error!", data.error, "error");
+//             } else {
+//                 Swal.fire("Booking Confirmed!", data.success, "success").then(() => {
+//                     window.location.href = "{% url 'booking_history' %}";
+//                 });
+//             }
+//         })
+//         .catch(error => {
+//             Swal.fire("Error!", "Something went wrong. Please try again.", "error");
+//         });
+//     });
+
+//     console.log("📌 Script Loaded Successfully!");
+// });
+
+document.addEventListener("DOMContentLoaded", function () {
+    let serviceSelect = document.getElementById("service");
+    let dateInput = document.getElementById("date");
+    let scheduleContainer = document.getElementById("schedule-container");
+    let hiddenScheduleInput = document.getElementById("schedule");
+
+    let priceInput = document.getElementById("price");
+    let durationInput = document.getElementById("duration");
+    let descriptionInput = document.getElementById("description");
+
+    let khaltiPayButton = document.getElementById("khalti-pay-button");
+    // let confirmBookingButton = document.getElementById("confirm-booking-button");
+
+    let latitudeInput = document.getElementById("latitude");
+    let longitudeInput = document.getElementById("longitude");
+
+    let services = JSON.parse('{{ services|escapejs }}');
+    let map, marker;
+
+    // ✅ Initialize Leaflet Map Function
+    function initMap(lat, lng) {
+        if (map) {
+            map.remove(); // Remove existing map instance
+        }
+
+        map = L.map("map").setView([lat, lng], 13);
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution: "© OpenStreetMap contributors",
+            maxZoom: 18,
+        }).addTo(map);
+
+        marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+        latitudeInput.value = lat.toFixed(6);
+        longitudeInput.value = lng.toFixed(6);
+
+        marker.on("dragend", function () {
+            let position = marker.getLatLng();
+            latitudeInput.value = position.lat.toFixed(6);
+            longitudeInput.value = position.lng.toFixed(6);
         });
-    </script>
+
+        console.log("📌 Map initialized at:", lat, lng);
+    }
+
+    // ✅ Get User Location
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            function (position) {
+                initMap(position.coords.latitude, position.coords.longitude);
+            },
+            function (error) {
+                console.warn("⚠️ Location access denied! Loading default location...");
+                initMap(27.7172, 85.3240); // Default to Kathmandu
+            }
+        );
+    } else {
+        console.warn("⚠️ Geolocation not supported! Loading default location...");
+        initMap(27.7172, 85.3240); // Default to Kathmandu
+    }
+
+    // ✅ Populate Service Dropdown
+    services.forEach(service => {
+        let option = new Option(service.service_name, service.id);
+        option.dataset.price = service.price;
+        option.dataset.duration = service.duration;
+        option.dataset.description = service.description;
+        option.dataset.workDays = service.work_days;
+        option.dataset.schedules = JSON.stringify(service.schedules);
+        serviceSelect.appendChild(option);
+    });
+
+    // ✅ Handle Service Selection
+    serviceSelect.addEventListener("change", function () {
+        let selectedService = serviceSelect.options[serviceSelect.selectedIndex];
+
+        priceInput.value = `Rs. ${selectedService.dataset.price}`;
+        durationInput.value = selectedService.dataset.duration;
+        descriptionInput.value = selectedService.dataset.description;
+
+        let schedules = JSON.parse(selectedService.dataset.schedules);
+        let workDays = selectedService.dataset.workDays.split(",");
+
+        if (window.flatpickrInstance) {
+            window.flatpickrInstance.destroy();
+        }
+
+        // ✅ Enable Only Valid Workdays
+        window.flatpickrInstance = flatpickr(dateInput, {
+            dateFormat: "Y-m-d",
+            minDate: "today",
+            disable: [
+                function (date) {
+                    return !workDays.includes(date.toLocaleDateString('en-US', { weekday: 'long' }));
+                }
+            ],
+            onChange: function (selectedDates) {
+                let selectedDay = selectedDates[0].toLocaleDateString('en-US', { weekday: 'long' });
+                let selectedDate = dateInput.value;
+
+                console.log(`📆 Selected Date: ${selectedDate}, Day: ${selectedDay}`);
+
+                // ✅ Fetch booked schedules (all services) for this date
+                fetch(`/get-booked-schedules/?artist_id={{ artist.id }}&date=${selectedDate}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            console.error("❌ Error loading schedules:", data.error);
+                            scheduleContainer.innerHTML = '<p class="error">Error loading schedules.</p>';
+                            return;
+                        }
+
+                        let bookedSlots = data.booked_schedules || [];
+                        console.log("🔍 Booked Schedules (all services):", bookedSlots);
+
+                        // ✅ Remove overlapping schedules
+                        scheduleContainer.innerHTML = '';
+                        if (schedules[selectedDay]) {
+                            let availableSlots = schedules[selectedDay].filter(slot => {
+                                return !bookedSlots.some(booked => booked.startsWith(slot) || slot.startsWith(booked));
+                            });
+
+                            if (availableSlots.length > 0) {
+                                availableSlots.forEach(slot => {
+                                    let scheduleCard = document.createElement("div");
+                                    scheduleCard.classList.add("schedule-card");
+                                    scheduleCard.textContent = slot;
+                                    scheduleCard.dataset.value = slot;
+
+                                    // ✅ Click event for selection
+                                    scheduleCard.addEventListener("click", function () {
+                                        document.querySelectorAll(".schedule-card").forEach(card => card.classList.remove("selected"));
+                                        scheduleCard.classList.add("selected");
+                                        hiddenScheduleInput.value = slot;
+                                        confirmBookingButton.style.display = "block";
+                                    });
+
+                                    scheduleContainer.appendChild(scheduleCard);
+                                });
+                            } else {
+                                scheduleContainer.innerHTML = '<p>No available slots for this day.</p>';
+                                confirmBookingButton.style.display = "none";
+                            }
+                        } else {
+                            scheduleContainer.innerHTML = '<p>No available slots for this day.</p>';
+                            confirmBookingButton.style.display = "none";
+                        }
+                    })
+                    .catch(error => {
+                        console.error("❌ Error fetching booked schedules:", error);
+                        scheduleContainer.innerHTML = '<p class="error">Error loading schedules.</p>';
+                    });
+            }
+        });
+
+        dateInput.disabled = false;
+    });
+
+    // ✅ Khalti Payment Button
+    khaltiPayButton.addEventListener("click", function () {
+        let selectedService = serviceSelect.value;
+        let selectedDate = dateInput.value;
+        let selectedSchedule = hiddenScheduleInput.value;
+
+        if (!selectedService || !selectedDate || !selectedSchedule) {
+            Swal.fire("Error", "Please select a service, date, and schedule before proceeding!", "error");
+            return;
+        }
+
+        let csrfToken = document.querySelector("[name=csrfmiddlewaretoken]");
+        if (!csrfToken) {
+            Swal.fire("Error", "CSRF token is missing. Please refresh the page and try again.", "error");
+            return;
+        }
+
+        let requestData = {
+    service_id: selectedService,
+    artist_id: "{{ artist.id }}",
+    date: selectedDate,
+    schedule: selectedSchedule,
+    latitude: latitudeInput.value,      // ✅ Include this
+    longitude: longitudeInput.value     // ✅ Include this
+};
+
+
+        Swal.fire({
+            title: "Processing Payment...",
+            text: "Please wait while we redirect you to Khalti...",
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        fetch("/initiate-khalti-payment/", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": csrfToken.value,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(requestData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                sessionStorage.setItem("khalti_pidx", data.pidx);
+                Swal.fire({
+                    title: "Redirecting...",
+                    text: "You will be redirected to Khalti for payment.",
+                    icon: "success",
+                    timer: 3000,
+                    showConfirmButton: false
+                }).then(() => {
+                    window.location.href = data.payment_url;
+                });
+            } else {
+                Swal.fire("Payment Failed", data.error || "Please try again!", "error");
+            }
+        })
+        .catch(error => {
+            console.error("❌ Error:", error);
+            Swal.fire("Error Processing Payment", "There was an issue processing your payment. Please try again.", "error");
+        });
+    });
+
+    // ✅ Debug: Log all services
+    console.log("📌 Available Services:", services);
+});
+
+</script>
+
+
+
 </body>
 </html>

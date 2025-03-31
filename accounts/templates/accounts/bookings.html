@@ -10,13 +10,66 @@
     <link rel="stylesheet" href="{% static 'css/bookings2.css' %}">
 
     <!-- Leaflet.js for Maps -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
+    <!-- <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
     <!-- SweetAlert2 for Alerts -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
+       /* Header Styling */
+header {
+    background-color: #D8648C;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+}
+
+/* Back Button Styling */
+header a {
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    text-decoration: none !important;  /* Removes underline */
+    padding: 8px 15px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Hover Effect */
+header a:hover {
+    background-color: white;
+    color: #D8648C;
+    text-decoration: none !important;  /* Ensures no underline */
+}
+
+/* Arrow Styling */
+header a::before {
+    content: "← ";
+    font-weight: bold;
+    margin-right: 5px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    header {
+        padding: 10px;
+    }
+
+    header a {
+        font-size: 14px;
+        padding: 6px 12px;
+    }
+}
+
+
         #map-container {
             margin-top: 20px;
             width: 100%;
@@ -40,7 +93,7 @@
 </head>
 <body>
     <header>
-        <a href="{% url 'artist_dashboard' %}">← Back to Home</a>
+        <a href="{% url 'artist_dashboard' %}">Back to Dashboard</a>
     </header>
 
     <div class="bookings-container">
@@ -72,17 +125,17 @@
                         <td>{{ booking.start_time|time:"h:i A" }}</td>
                         <td>{{ booking.end_time|time:"h:i A" }}</td>
                         <td>{{ booking.payment_method|title }}</td>
-                        <td>{{ booking.service.total_duration }}</td>
+                        <td>{{ booking.service.total_duration }} hrs</td>
                         <td id="status-{{ booking.id }}">
                             {{ booking.status }}  <!-- Debugging: Show actual status -->
                         </td>
                         <td>
-                            {% if booking.status|lower == "pending" %}
+                            <!-- {% if booking.status|lower == "pending" %}
                             <button onclick="updateBookingStatus({{ booking.id }}, 'Confirmed')">Confirm</button>
                             <button onclick="updateBookingStatus({{ booking.id }}, 'Cancelled')">Cancel</button>
                         {% else %}
                             <span>No actions available</span>
-                        {% endif %}
+                        {% endif %} -->
                         <button onclick="viewLocation({{ booking.latitude|default:0 }}, {{ booking.longitude|default:0 }})">
                             📍 View Location
                         </button>

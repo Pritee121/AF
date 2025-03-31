@@ -2,238 +2,343 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Booking History</title>
-    <link rel="stylesheet" href="{% static 'css/booking_history.css' %}">
-    <link rel="stylesheet" href="{% static 'css/home.css' %}">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Booking History</title>
+  <link rel="stylesheet" href="{% static 'css/booking_history.css' %}">
+  <link rel="stylesheet" href="{% static 'css/home.css' %}">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <style>
-        /* ✅ General Table Styling */
+  <style>
+    :root {
+        --theme-color: #D8648C;
+        --text-dark: #333;
+        --bg-glass: rgba(255, 255, 255, 0.2);
+        --shadow: 0px 8px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+background-color: #fff0f5; /* or your preferred color like #D8648C */
+margin: 0;
+padding: 0;
+font-family: 'Poppins', sans-serif;
+}
+
+    /* Booking History Container */
+    .booking-history-container {
+        width: 95%;
+        max-width: 1200px;
+        margin: 3rem auto;
+        padding: 2rem;
+        background: var(--bg-glass);
+        backdrop-filter: blur(12px);
+        box-shadow: var(--shadow);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: var(--text-dark);
+        transition: all 0.3s ease;
+    }
+
+    .booking-history-container h2 {
+        color: var(--theme-color);
+        font-size: 28px;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Table Styling */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        border-radius: 12px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.85);
+        box-shadow: var(--shadow);
+    }
+
+    thead {
+        background-color: var(--theme-color);
+        color: white;
+    }
+
+    th, td {
+        padding: 14px 18px;
+        font-size: 15px;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+    }
+
+    tr:nth-child(even) {
+        background-color: #fef2f5;
+    }
+
+    tr:hover {
+        background-color: rgba(216, 100, 140, 0.08);
+        transition: background 0.3s;
+    }
+
+    /* Cancel Button */
+    .cancel-btn {
+        background: #dc3545;
+        color: #fff;
+        padding: 8px 14px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 14px;
+    }
+
+    .cancel-btn:hover {
+        background: #c82333;
+        transform: scale(1.05);
+    }
+
+    .disabled-text {
+        color: #999;
+        font-style: italic;
+    }
+
+    .cancelled-text {
+        color: red;
+        font-weight: bold;
+    }
+
+    /* Payment Status Styling */
+    .pending-payment {
+        color: #f39c12;
+        font-weight: bold;
+    }
+
+    .paid-payment {
+        color: #28a745;
+        font-weight: bold;
+    }
+
+    /* Footer */
+    .footer {
+        background: var(--bg-glass);
+        color: var(--theme-color);
+        text-align: center;
+        padding: 1rem;
+        margin-top: 3rem;
+        backdrop-filter: blur(10px);
+        border-top: 2px solid var(--theme-color);
+        border-radius: 0 0 12px 12px;
+    }
+
+    /* Badge */
+    .badge {
+        position: absolute;
+        top: -6px;
+        right: -10px;
+        background: red;
+        color: white;
+        font-size: 12px;
+        padding: 4px 7px;
+        border-radius: 50%;
+        font-weight: bold;
+        animation: bounce 1s infinite;
+        display: none;
+    }
+
+    @keyframes bounce {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+    }
+
+    .nav-item {
+        position: relative;
+        text-decoration: none;
+        color: #000;
+        font-weight: bold;
+        padding: 10px;
+    }
+
+    /* No Bookings */
+    .no-bookings {
+        font-size: 18px;
+        color: #999;
+        margin-top: 2rem;
+        font-style: italic;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
         .booking-history-container {
-            width: 90%;
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 25px;
-            background: #ffffff;
-            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.12);
-            border-radius: 12px;
-            text-align: center;
-            transition: all 0.3s ease-in-out;
+            padding: 1rem;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            background: #ffffff;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        table, th, td {
+            font-size: 13px;
+            padding: 10px;
         }
 
-        thead {
-            background: #007bff;
-            color: white;
-            font-size: 16px;
+        .badge {
+            font-size: 10px;
+            padding: 3px 5px;
+            top: -3px;
+            right: -6px;
         }
 
-        th, td {
-            padding: 14px;
-            border-bottom: 1px solid #ddd;
-            font-size: 15px;
-            text-align: left;
-            transition: background 0.3s ease-in-out;
+        .booking-history-container h2 {
+            font-size: 22px;
         }
+    }
 
-        tr:nth-child(even) { background: #f8f9fa; }
-        tr:hover { background: rgba(0, 123, 255, 0.1); }
-
-        /* ✅ Cancel Button Styling */
-        .cancel-btn {
-            background: #dc3545;
-            color: #fff;
-            padding: 8px 12px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 0.3s ease-in-out, transform 0.2s ease-in-out;
-            font-size: 14px;
-        }
-
-        .cancel-btn:hover { background: #c82333; transform: scale(1.05); }
-        .disabled-text { color: gray; cursor: not-allowed; }
-        .cancelled-text { color: red; font-weight: bold; }
-
-        /* ✅ Payment Status Styling */
-        .pending-payment { color: orange; font-weight: bold; }
-        .paid-payment { color: green; font-weight: bold; }
-
-        /* ✅ Responsive Design */
-        @media (max-width: 768px) {
-            th, td { font-size: 13px; padding: 10px; }
-            .booking-history-container { padding: 15px; }
-        }
-
-        /* ✅ Fix footer at the bottom */
-        .footer {
-            background: rgba(216, 100, 140, 0.2);
-            color: #D8648C;
-            text-align: center;
-            padding: 15px;
-            border-top: 2px solid #D8648C;
-            backdrop-filter: blur(10px);
-            width: 100%;
-            position: relative;
-            bottom: 0;
-            margin-top: 50px;
-        }
-    </style>
+    /* existing CSS ... (unchanged for brevity) */
+    .refunded-payment {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <a href="{% url 'home' %}">← Home</a>
-    </header>
-    <!-- ✅ Booking History Section -->
-    <div class="booking-history-container">
-        <h2>📅 My Booking History</h2>
 
-        <!-- ✅ Booking Table -->
-        {% if user_bookings %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Artist</th>
-                    <th>Service</th>
-                    <th>Date</th>
-                    <th>Start Time</th>  
-                    <th>End Time</th>  
-                    <th>Duration</th> <!-- ✅ Fix Duration -->
-                    <th>Payment</th>
-                    <th>Price</th>
-                    <th>Status</th>
-                    <th>Cancel</th>
-                    <th>Payment Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for booking in user_bookings %}
-                <tr>
-                    <td>{{ booking.artist.first_name }} {{ booking.artist.last_name }}</td>
-                    <td>{{ booking.service.service_name }}</td>
-                    <td>{{ booking.date }}</td>
-            
-                    <!-- ✅ Fix Start Time & End Time Format -->
-                    <td>{{ booking.start_time|time:"h:i A" }}</td>  
-                    <td>{{ booking.end_time|time:"h:i A" }}</td>  
-            
-                    <!-- ✅ Fix Duration -->
-                    <td>{{ booking.formatted_duration }}</td>
-            
-                    <td>{{ booking.payment_method|title }}</td>
-                    <td>Rs. {{ booking.service.price }}</td>
-                    <td id="status-{{ booking.id }}">{{ booking.status }}</td>
-            
-                    <td>
-                        {% if booking.status == "Pending" or booking.status == "Confirmed" %}
-                            {% if booking.time_left > 24 %}
-                                <button type="button" class="cancel-btn" id="cancel-btn-{{ booking.id }}" 
-                                    onclick="confirmCancel('{{ booking.id }}')">
-                                    Cancel
-                                </button>
-                            {% else %}
-                                <span class="disabled-text"> Cannot Cancel</span>
-                            {% endif %}
-                        {% else %}
-                            <span class="cancelled-text">Cancelled</span>
-                        {% endif %}
-                    </td>
-                    
-            
-                    <!-- ✅ Payment Status -->
-                    <td>
-                        {% if booking.payment_method|lower == "cod" %}
-                            <span class="pending-payment" id="payment-status-{{ booking.id }}">Pending</span>
-                        {% else %}
-                            <span class="paid-payment">Paid</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-            
-            
-        </table>
-        {% else %}
-            <p class="no-bookings">🙁 No bookings found.</p>
-        {% endif %}
-    </div>
+{% include 'includes/nav.html' %}
 
-    <!-- ✅ Cancel Script -->
-    <script>
-//        function confirmCancel(bookingId) {
-//     Swal.fire({
-//         title: "Cancel Booking?",
-//         text: "Are you sure you want to cancel this booking?",
-//         icon: "warning",
-//         showCancelButton: true,
-//         confirmButtonColor: "#D8648C",
-//         cancelButtonColor: "#6c757d",
-//         confirmButtonText: "Yes, cancel it!",
-//         cancelButtonText: "No, keep it"
-//     }).then((result) => {
-//         if (result.isConfirmed) {
-//             fetch(`/cancel-booking/${bookingId}/`, {
-//                 method: "POST",
-//                 headers: {
-//                     "X-CSRFToken": getCookie("csrftoken"),
-//                     "Content-Type": "application/json"
-//                 },
-//                 body: JSON.stringify({ status: "Cancelled" })
-//             })
-//             .then(response => response.json())
-//             .then(data => {
-//                 if (data.success) {
-//                     let statusElement = document.getElementById(`status-${bookingId}`);
-//                     let cancelBtn = document.querySelector(`#booking-row-${bookingId} .cancel-btn`);
+<div class="booking-history-container">
+  <h2>📅 My Booking History</h2>
 
-//                     if (statusElement) {
-//                         statusElement.textContent = "Cancelled";
-//                         statusElement.style.color = "red";
-//                     }
+  {% if user_bookings %}
+  <table>
+    <thead>
+      <tr>
+        <th>Artist</th>
+        <th>Service</th>
+        <th>Date</th>
+        <th>Start Time</th>
+        <th>End Time</th>
+        <th>Duration</th>
+        <th>Payment</th>
+        <th>Price</th>
+        <th>Status</th>
+        <th>Cancel</th>
+        <th>Payment Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for booking in user_bookings %}
+      <tr id="booking-row-{{ booking.id }}">
+        <td>{{ booking.artist.first_name }} {{ booking.artist.last_name }}</td>
+        <td>{{ booking.service.service_name }}</td>
+        <td>{{ booking.date }}</td>
+        <td>{{ booking.start_time|time:"h:i A" }}</td>
+        <td>{{ booking.end_time|time:"h:i A" }}</td>
+        <td>{{ booking.formatted_duration }} hrs</td>
+        <td>{{ booking.payment_method|title }}</td>
+        <td>Rs. {{ booking.service.price }}</td>
+        <td id="status-{{ booking.id }}">{{ booking.status }}</td>
 
-//                     if (cancelBtn) {
-//                         cancelBtn.outerHTML = "<span class='cancelled-text'>Cancelled</span>";
-//                     }
+        <!-- Cancel or Refund -->
+        <td>
+          {% if booking.status == "Pending" or booking.status == "Confirmed" %}
+            {% if booking.time_left > 24 %}
+            <button type="button" class="cancel-btn" id="cancel-btn-{{ booking.id }}" onclick="confirmCancel('{{ booking.id }}')">Cancel</button>
 
-//                     Swal.fire("Cancelled!", "Your booking has been cancelled.", "success");
-//                 } else {
-//                     Swal.fire("Error!", data.error || "Something went wrong.", "error");
-//                 }
-//             })
-//             .catch(error => {
-//                 console.error("Error:", error);
-//                 Swal.fire("Error!", "Something went wrong.", "error");
-//             });
-//         }
-//     });
-// }
+            {% else %}
+              <span class="disabled-text">Cannot Cancel</span>
+            {% endif %}
+          {% elif booking.status == "Cancelled" %}
+            <span class="cancelled-text">Cancelled</span><br>
+            {% if not booking.refund_requested and booking.payment_method|lower == "khalti" %}
+              <button class="cancel-btn" onclick="claimRefund('{{ booking.id }}')" id="refund-btn-{{ booking.id }}">Claim Refund</button>
+            {% else %}
+              <span class="disabled-text">Refunded</span>
+            {% endif %}
+          {% elif booking.status == "Completed" %}
+            <span class="disabled-text">---</span>
+          {% else %}
+            <span class="disabled-text">{{ booking.status }}</span>
+          {% endif %}
+        </td>
 
-// function getCookie(name) {
-//     let cookieValue = null;
-//     if (document.cookie && document.cookie !== '') {
-//         const cookies = document.cookie.split(';');
-//         for (let i = 0; i < cookies.length; i++) {
-//             const cookie = cookies[i].trim();
-//             if (cookie.startsWith(name + '=')) {
-//                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-//                 break;
-//             }
-//         }
-//     }
-//     return cookieValue;
-// }
+        <!-- Payment Status -->
+        <td>
+          {% if booking.payment_method|lower == "cod" %}
+            <span class="pending-payment" id="payment-status-{{ booking.id }}">Pending</span>
+          {% else %}
+            {% if booking.refund_requested %}
+              <span class="refunded-payment" id="payment-status-{{ booking.id }}">Refunded</span>
+            {% else %}
+              <span class="paid-payment" id="payment-status-{{ booking.id }}">Paid</span>
+            {% endif %}
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p class="no-bookings">🙁 No bookings found.</p>
+  {% endif %}
+</div>
+
+{% include 'includes/footer.html' %}
+
+<!-- ✅ Scripts -->
+<script>
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.startsWith(name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+function claimRefund(bookingId) {
+  Swal.fire({
+    title: "Claim Refund?",
+    text: "Do you want to request a refund for this booking?",
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonColor: "#28a745",
+    cancelButtonColor: "#6c757d",
+    confirmButtonText: "Yes, claim it!"
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch(`/claim-refund/${bookingId}/`, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": getCookie("csrftoken"),
+          "Content-Type": "application/json"
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          Swal.fire("Success", data.message, "success");
+
+          // Replace refund button
+          const refundBtn = document.getElementById(`refund-btn-${bookingId}`);
+          if (refundBtn) {
+            refundBtn.outerHTML = "<span class='disabled-text'>Refunded</span>";
+          }
+
+          // Update payment status
+          const paymentStatus = document.getElementById(`payment-status-${bookingId}`);
+          if (paymentStatus) {
+            paymentStatus.textContent = "Refunded";
+            paymentStatus.className = "refunded-payment";
+          }
+
+        } else {
+          Swal.fire("Error", data.error || "Refund failed", "error");
+        }
+      })
+      .catch(error => {
+        console.error("Refund error:", error);
+        Swal.fire("Error", "Something went wrong.", "error");
+      });
+    }
+  });
+}
 function confirmCancel(bookingId) {
     Swal.fire({
         title: "Cancel Booking?",
@@ -257,9 +362,8 @@ function confirmCancel(bookingId) {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    let rowElement = document.getElementById(`booking-row-${bookingId}`);
-                    let statusElement = document.getElementById(`status-${bookingId}`);
-                    let cancelBtn = document.getElementById(`cancel-btn-${bookingId}`);
+                    const statusElement = document.getElementById(`status-${bookingId}`);
+                    const cancelBtn = document.getElementById(`cancel-btn-${bookingId}`);
 
                     if (statusElement) {
                         statusElement.textContent = "Cancelled";
@@ -267,15 +371,14 @@ function confirmCancel(bookingId) {
                     }
 
                     if (cancelBtn) {
-                        cancelBtn.outerHTML = "<span class='cancelled-text'>Cancelled</span>";
+                        const cancelCell = cancelBtn.parentElement;
+                        cancelCell.innerHTML = `
+                            <span class='cancelled-text'>Cancelled</span><br>
+                            <button class='cancel-btn' onclick="claimRefund('${bookingId}')" id='refund-btn-${bookingId}'>Claim Refund</button>
+                        `;
                     }
 
                     Swal.fire("Cancelled!", "Your booking has been cancelled", "success");
-
-                    // ✅ Remove the row from the table
-                    if (rowElement) {
-                        rowElement.remove();
-                    }
                 } else {
                     Swal.fire("Error!", data.error || "Something went wrong.", "error");
                 }
@@ -303,10 +406,35 @@ function getCookie(name) {
     return cookieValue;
 }
 
+function fetchUserChatNotifications() {
+    fetch("{% url 'get_user_chat_notifications' %}")  // Fetch unread messages for users
+        .then(response => response.json())
+        .then(data => {
+            let unreadChats = data.unread_chats || 0;
+            let chatBadge = document.getElementById("chat-badge");
 
-    </script>
+            if (unreadChats > 0) {
+                chatBadge.style.display = "inline-block";
+                chatBadge.innerText = unreadChats;
+            } else {
+                chatBadge.style.display = "none";
+            }
+        })
+        .catch(error => console.error("Error fetching chat notifications:", error));
+}
+
+function clearUserChatNotifications() {
+    fetch("{% url 'mark_user_chat_notifications_read' %}")  // Mark messages as read
+        .then(() => {
+            document.getElementById("chat-badge").style.display = "none";  // Hide badge
+        })
+        .catch(error => console.error("Error marking chat notifications as read:", error));
+}
+
+// ✅ Run Notification Fetch Every 10 Seconds
+setInterval(fetchUserChatNotifications, 10000);
+fetchUserChatNotifications();
+
+</script>
 </body>
-<footer class="footer">
-    <p>Artist Finder &copy; All rights reserved</p>
-</footer>
 </html>

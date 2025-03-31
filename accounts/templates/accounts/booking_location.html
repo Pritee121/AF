@@ -4,17 +4,22 @@
 <head>
     <meta charset="UTF-8">
     <title>Booking Location</title>
-    <!-- Leaflet.js for Maps -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Leaflet Routing Machine (corrected) CSS & JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.min.js"></script>
+
     <style>
-        /* Full-screen map */
         html, body, #map {
             height: 100%;
             margin: 0;
             padding: 0;
         }
-        /* Back button styling */
+
         .back-button {
             position: absolute;
             top: 10px;
@@ -30,12 +35,12 @@
     </style>
 </head>
 <body>
-    <!-- Back button to return to the bookings page -->
     <a href="/bookings/" class="back-button">← Back to Bookings</a>
 
     <div id="map"></div>
-    <script>
-        // Utility to get query parameters from the URL
+
+    <!-- <script>
+        // Get query parameters for client's location
         function getQueryParams() {
             let params = {};
             location.search.substring(1).split("&").forEach(function(param) {
@@ -44,16 +49,111 @@
             });
             return params;
         }
-        const params = getQueryParams();
-        const lat = parseFloat(params.lat) || 27.7172;  // Default to Kathmandu latitude
-        const lng = parseFloat(params.lng) || 85.3240;   // Default to Kathmandu longitude
 
-        // Initialize the map centered at the provided coordinates
-        var map = L.map('map').setView([lat, lng], 13);
+        const params = getQueryParams();
+        const clientLat = parseFloat(params.lat) || 27.7172;
+        const clientLng = parseFloat(params.lng) || 85.3240;
+
+        // Initialize map
+        const map = L.map('map').setView([clientLat, clientLng], 13);
+
+        // Add base layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap'
         }).addTo(map);
-        L.marker([lat, lng]).addTo(map);
+
+        // Add client marker
+        L.marker([clientLat, clientLng]).addTo(map)
+            .bindPopup("Client's Location")
+            .openPopup();
+
+        // Get artist's current location
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                const artistLat = position.coords.latitude;
+                const artistLng = position.coords.longitude;
+
+                // Add route from artist to client
+                if (L.Routing) {
+                    L.Routing.control({
+                        waypoints: [
+                            L.latLng(artistLat, artistLng),
+                            L.latLng(clientLat, clientLng)
+                        ],
+                        routeWhileDragging: false,
+                        draggableWaypoints: false,
+                        addWaypoints: false,
+                        showAlternatives: true,
+                    }).addTo(map);
+                } else {
+                    alert("Routing library not loaded properly.");
+                }
+            }, function() {
+                alert("Could not retrieve your location. Route cannot be shown.");
+            });
+        } else {
+            alert("Geolocation is not supported by your browser.");
+        }
+    </script> -->
+    <script>
+        // 🔁 Make sure this comes before you use getQueryParams()
+        function getQueryParams() {
+            let params = {};
+            location.search.substring(1).split("&").forEach(function(param) {
+                let [key, value] = param.split("=");
+                params[key] = decodeURIComponent(value);
+            });
+            return params;
+        }
+    
+        const params = getQueryParams();
+        const clientLat = parseFloat(params.lat) || 27.7172;
+        const clientLng = parseFloat(params.lng) || 85.3240;
+    
+        const map = L.map('map').setView([clientLat, clientLng], 13);
+    
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+    
+        L.marker([clientLat, clientLng]).addTo(map)
+            .bindPopup("Client's Location")
+            .openPopup();
+    
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                const artistLat = position.coords.latitude;
+                const artistLng = position.coords.longitude;
+    
+                console.log("Artist location:", artistLat, artistLng);
+    
+                L.marker([artistLat, artistLng]).addTo(map)
+                    .bindPopup("Your Location (Artist)")
+                    .openPopup();
+    
+                if (L.Routing && L.Routing.control) {
+                    L.Routing.control({
+                        waypoints: [
+                            L.latLng(artistLat, artistLng),
+                            L.latLng(clientLat, clientLng)
+                        ],
+                        routeWhileDragging: false,
+                        draggableWaypoints: false,
+                        addWaypoints: false,
+                        showAlternatives: true,
+                    }).addTo(map);
+                } else {
+                    console.error("L.Routing or L.Routing.control is undefined.");
+                    alert("Routing could not be initialized. Please try again.");
+                }
+            }, function(error) {
+                console.error("Geolocation error:", error);
+                alert("Could not retrieve your location. Route cannot be shown.");
+            });
+        } else {
+            alert("Geolocation is not supported by your browser.");
+        }
     </script>
+    
 </body>
 </html>

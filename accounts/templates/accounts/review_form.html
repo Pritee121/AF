@@ -77,7 +77,7 @@
     <label for="service">Select a Service:</label>
     <select name="service" required>
         {% for service in services %}
-            <option value="{{ service.id }}">{{ service.service_name }}</option>
+            <option value="{{ service.id }}">{{ service.service_name }} {{ service.price }} </option>
         {% endfor %}
     </select>
 

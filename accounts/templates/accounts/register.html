@@ -7,6 +7,148 @@
     <title>Artist Finder - Register</title>
     <link rel="stylesheet" href="{% static 'css/register1.css' %}">
 </head>
+<style>
+    * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #F5F5F5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.container {
+    display: flex;
+    width: 900px;
+    height: 600px;
+    background-color: white;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.left-panel {
+    width: 50%;
+    background-color: #D8648C;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.left-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, rgba(216, 100, 140, 0.8), rgba(216, 100, 140, 0.4));
+}
+
+.logo {
+    z-index: 1;
+    text-align: center;
+}
+
+.logo img {
+    max-width: 250px;
+    max-height: 250px;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.2));
+}
+
+.right-panel {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    text-align: center;
+}
+
+.right-panel h2 {
+    color: #D8648C;
+    margin-bottom: 30px;
+    font-size: 2.5rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.btn {
+    display: inline-block;
+    width: 100%;
+    padding: 15px 20px;
+    margin: 10px 0;
+    background-color: #D8648C;
+    color: white;
+    text-decoration: none;
+    border-radius: 30px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.btn:hover {
+    background-color: #B0456E;
+    transform: translateY(-3px);
+    box-shadow: 0 7px 14px rgba(216, 100, 140, 0.25);
+}
+
+.right-panel p {
+    margin-top: 20px;
+    color: #666;
+}
+
+.right-panel p a {
+    color: #D8648C;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.right-panel p a:hover {
+    color: #B0456E;
+    text-decoration: underline;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+    .container {
+        flex-direction: column;
+        width: 90%;
+        height: auto;
+    }
+
+    .left-panel, .right-panel {
+        width: 100%;
+        height: auto;
+        padding: 30px;
+    }
+
+    .logo img {
+        max-width: 150px;
+        max-height: 150px;
+    }
+}
+
+/* Accessibility and Focus States */
+.btn:focus,
+.right-panel a:focus {
+    outline: 3px solid rgba(216, 100, 140, 0.5);
+    outline-offset: 3px;
+}
+    </style>
+
 <body>
     <div class="container">
         <div class="left-panel">

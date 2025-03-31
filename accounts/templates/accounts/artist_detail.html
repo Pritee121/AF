@@ -10,8 +10,66 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     
     <link rel="stylesheet" href="{% static 'css/explore_artist2.css' %}">
+    <link rel="stylesheet" href="{% static 'css/nav.css' %}">
+    <!-- <link rel="stylesheet" href="{% static 'css/navbar.css' %}"> -->
 
     <style>
+        body {
+    background-color: #fff0f5; /* or your preferred color like #D8648C */
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+}
+        /* ✅ Stylish Notification Badge */
+        .badge {
+            position: absolute;
+            top: -5px;
+            right: -10px;
+            background: red;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 5px 8px;
+            border-radius: 50%;
+            display: none;
+            animation: bounce 1s infinite;
+        }
+
+        /* ✅ Bounce Animation */
+        @keyframes bounce {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+        }
+
+        /* ✅ Positioning for Notification */
+        .nav-item {
+            position: relative;
+            text-decoration: none;
+            color: black;
+            font-weight: bold;
+            padding: 10px;
+        }
+
+        /* ✅ Responsive Design */
+        @media (max-width: 768px) {
+            .badge {
+                font-size: 10px;
+                padding: 3px 5px;
+                top: -3px;
+                right: -8px;
+            }
+        }
+        body {
+    background-color: #fff0f5; /* or your preferred color like #D8648C */
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+    
+}
         .work-section {
     text-align: center;
     padding: 50px 20px;
@@ -243,9 +301,7 @@
     </style>
 </head>
 <body>
-    <header>
-        <a href="{% url 'home' %}">← Home</a>
-    </header>
+    {% include 'includes/nav.html' %}
 
     <div class="artist-container">
         <!-- ✅ Artist Information Section -->

@@ -4,7 +4,7 @@ from django.urls import path
 from django.shortcuts import redirect
 from django.contrib import messages
 from django.utils.html import format_html
-from .models import User
+from .models import User, Booking
 from .views import approve_artist  # ✅ Import the approval function
 
 class CustomUserAdmin(UserAdmin):
@@ -45,3 +45,12 @@ class CustomUserAdmin(UserAdmin):
     )
 
 admin.site.register(User, CustomUserAdmin)
+
+class BookingAdmin(admin.ModelAdmin):
+    list_display = ('client', 'artist', 'service', 'date', 'start_time', 'end_time', 'status', 'payment_method')
+    list_filter = ('status', 'payment_method', 'date')
+    search_fields = ('client__email', 'artist__email', 'service__service_name')
+    readonly_fields = ('created_at',)
+    ordering = ('-created_at',)
+
+admin.site.register(Booking, BookingAdmin)

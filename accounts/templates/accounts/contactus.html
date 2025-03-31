@@ -209,7 +209,49 @@ body.dark-mode .dropdown-content a:hover {
     bottom: 0;
 }
 
+/* ✅ Stylish Notification Badge */
+.badge {
+            position: absolute;
+            top: -5px;
+            right: -10px;
+            background: red;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 5px 8px;
+            border-radius: 50%;
+            display: none;
+            animation: bounce 1s infinite;
+        }
 
+        /* ✅ Bounce Animation */
+        @keyframes bounce {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+        }
+
+        /* ✅ Positioning for Notification */
+        .nav-item {
+            position: relative;
+            text-decoration: none;
+            color: black;
+            font-weight: bold;
+            padding: 10px;
+        }
+
+        /* ✅ Responsive Design */
+        @media (max-width: 768px) {
+            .badge {
+                font-size: 10px;
+                padding: 3px 5px;
+                top: -3px;
+                right: -8px;
+            }
+        }
 
 
 
@@ -217,37 +259,7 @@ body.dark-mode .dropdown-content a:hover {
     </style>
 </head>
 <body>
-    <header class="header">
-        <div class="logo">
-            <img src="{% static 'imagess/logo.png' %}" alt="Artist Finder Logo">
-        </div>
-        <nav class="navbar">
-            <a href="{% url 'home' %}" class="nav-link">Home</a>
-            <a href="{% url 'booking_history' %}" class="nav-link">Booking History</a>
-            <a href="{% url 'aboutus' %}" class="nav-link">About Us</a>
-            <a href="{% url 'contactus' %}" class="nav-link active">Contact Us</a>
-            <a href="{% url 'chat_list' %}" class="nav-link">Chats</a>
-            <a href="{% url 'artist_list' %}" class="nav-link">View Artists</a>
-        
-            <!-- ✅ Settings Dropdown -->
-            <div class="settings-dropdown">
-                <button id="settings-btn">⚙️</button>  <!-- Settings Icon -->
-                <div id="dropdown-content" class="dropdown-content">
-                    <button id="dark-mode-toggle">🌙 Dark Mode</button>
-                    <a href="{% url 'login' %}" class="nav-link">🚪 Logout</a>
-                </div>
-            </div>
-        
-            <!-- ✅ User Profile Image -->
-            <div class="user-profile">
-                <a href="{% url 'user_profile' %}">
-                    <img src="{{ user.profile_image.url }}" alt="User" class="user-image">
-                </a>
-            </div>
-        </nav>
-        
-        
-    </header>
+    {% include 'includes/nav.html' %}  <!-- ✅ Include Navbar -->
 
     <div class="contact-container">
         <h1>{{ contact_page.title }}</h1>
@@ -274,7 +286,35 @@ body.dark-mode .dropdown-content a:hover {
         </form>
     </div>
 
-    <script>
+    <script>function fetchUserChatNotifications() {
+        fetch("{% url 'get_user_chat_notifications' %}")  // Fetch unread messages for users
+            .then(response => response.json())
+            .then(data => {
+                let unreadChats = data.unread_chats || 0;
+                let chatBadge = document.getElementById("chat-badge");
+    
+                if (unreadChats > 0) {
+                    chatBadge.style.display = "inline-block";
+                    chatBadge.innerText = unreadChats;
+                } else {
+                    chatBadge.style.display = "none";
+                }
+            })
+            .catch(error => console.error("Error fetching chat notifications:", error));
+    }
+    
+    function clearUserChatNotifications() {
+        fetch("{% url 'mark_user_chat_notifications_read' %}")  // Mark messages as read
+            .then(() => {
+                document.getElementById("chat-badge").style.display = "none";  // Hide badge
+            })
+            .catch(error => console.error("Error marking chat notifications as read:", error));
+    }
+    
+    // ✅ Run Notification Fetch Every 10 Seconds
+    setInterval(fetchUserChatNotifications, 10000);
+    fetchUserChatNotifications();
+    
         document.getElementById("contactForm").addEventListener("submit", function(event) {
             event.preventDefault();  // ✅ Prevent default page refresh
 

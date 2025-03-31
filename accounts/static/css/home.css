@@ -176,12 +176,12 @@ body {
     justify-content: center;
     gap: 20px;
     padding: 40px 10px;
-    background: #f7f7f7;
+    background: #fff0f5;
 }
 
 /* ✅ Individual Artist Card */
 .artist-card {
-    background: white;
+    background: #fff0f5;
     width: 300px;
     padding: 20px;
     border-radius: 10px;

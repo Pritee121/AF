@@ -3,231 +3,278 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Artist Directory</title>
-    <link rel="stylesheet" href="{% static 'css/artist_directory2.css' %}">
+    <title>Explore Artists</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
-        /* 🌙 Dark Mode Styles */
-body.dark-mode {
-    background-color: #121212;
-    color: #ffffff;
+        body {
+    background-color: #fff0f5; /* or your preferred color like #D8648C */
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
 }
 
-/* ✅ Update other elements for dark mode */
-.dark-mode .header,
-.dark-mode .navbar {
-    background-color: #222;
-}
+        header {
+            background-color: #D8648C;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
 
-.dark-mode .nav-link {
-    color: white;
-}
+        .container {
+            padding: 30px;
+            max-width: 1200px;
+            margin: auto;
+        }
 
-.dark-mode .search-form {
-    background: #333;
-    box-shadow: 0px 4px 6px rgba(255, 255, 255, 0.1);
-}
+        .filter-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
 
-.dark-mode input,
-.dark-mode textarea,
-.dark-mode select {
-    background-color: #222;
-    color: white;
-    border: 1px solid #555;
-}
+        .filter-form select,
+        .filter-form input {
+            padding: 10px;
+            flex: 1 1 200px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
 
-.dark-mode .book-btn {
-    background-color: #D8648C;
-    color: white;
-}
+        .filter-form button {
+            background-color: #D8648C;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
 
-.dark-mode .book-btn:hover {
-    background-color: #b24d70;
-}
+        .artist-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            font-size: 14px;
+        }
 
-.dark-mode .artist-container {
-    background-color: #1a1a1a;
-}
+        .artist-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
 
-/* ✅ Toggle Switch */
-#dark-mode-toggle {
-    position: fixed;
-    top: 10px;
-    right: 20px;
-    background: #222;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    cursor: pointer;
-    border-radius: 5px;
-}
+        .artist-header img {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #ccc;
+        }
 
-.dark-mode #dark-mode-toggle {
-    background: #f8f9fa;
-    color: #222;
-}
-/* Fix footer at the bottom */
-.footer {
-    background: rgba(216, 100, 140, 0.2);
-    color: #D8648C;
-    text-align: center;
-    padding: 15px;
-    border-top: 2px solid #D8648C;
-    backdrop-filter: blur(10px);
-    width: 100%;
-    position: relative; /* Use relative positioning */
-    bottom: 0;
-    margin-top: 250px;
-}
+        .artist-details h3 {
+            margin: 0;
+            font-size: 18px;
+        }
 
+        .services-list {
+            margin-top: 10px;
+        }
 
+        .services-list h4 {
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
 
+        .services-list li {
+            margin-bottom: 8px;
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-left: 4px solid #D8648C;
+            border-radius: 5px;
+            list-style: none;
+        }
 
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
 
+        .action-buttons button {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 5px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            font-size: 14px;
+        }
+
+        .book-btn {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .book-btn.disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .explore-btn {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .chat-btn {
+            background-color: #ffc107;
+            color: black;
+        }
+
+        .action-buttons button:hover:not(.disabled) {
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            .filter-form {
+                flex-direction: column;
+            }
+
+            .artist-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .artist-header img {
+                margin-bottom: 10px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+        /* ✅ Stylish Notification Badge */
+        .badge {
+            position: absolute;
+            top: -5px;
+            right: -10px;
+            background: red;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 5px 8px;
+            border-radius: 50%;
+            display: none;
+            animation: bounce 1s infinite;
+        }
+
+        /* ✅ Bounce Animation */
+        @keyframes bounce {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+        }
+
+        /* ✅ Positioning for Notification */
+        .nav-item {
+            position: relative;
+            text-decoration: none;
+            color: black;
+            font-weight: bold;
+            padding: 10px;
+        }
+
+        /* ✅ Responsive Design */
+        @media (max-width: 768px) {
+            .badge {
+                font-size: 10px;
+                padding: 3px 5px;
+                top: -3px;
+                right: -8px;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="back-to-home">
-        <button onclick="window.location.href='{% url 'home' %}'">Back to Home</button>
+
+    {% include 'includes/nav.html' %}
+
+    <div class="container">
+        <!-- 🔍 Filter Form -->
+        <form method="get" class="filter-form">
+            <select name="city">
+                <option value="all">All Cities</option>
+                {% for city in cities %}
+                    <option value="{{ city }}" {% if city == request.GET.city %}selected{% endif %}>{{ city }}</option>
+                {% endfor %}
+            </select>
+
+            <input type="text" name="entered_price" placeholder="Max Price" value="{{ entered_price }}">
+            <input type="text" name="keyword" placeholder="Search Service..." value="{{ keyword }}">
+
+            <button type="submit">Search</button>
+        </form>
+
+        <!-- 🎨 Artist Cards -->
+        {% if artists %}
+            {% for artist in artists %}
+                <div class="artist-card">
+                    <div class="artist-header">
+                        {% if artist.profile_image %}
+                            <img src="{{ artist.profile_image.url }}" alt="Artist Image">
+                        {% else %}
+                            <img src="{% static 'images/default-avatar.png' %}" alt="Default Avatar">
+                        {% endif %}
+                        <div class="artist-details">
+                            <h3>{{ artist.first_name }} {{ artist.last_name }}</h3>
+                            <p><strong>Email:</strong> {{ artist.email }}</p>
+                            <p><strong>City:</strong> {{ artist.city }}</p>
+                        </div>
+                    </div>
+
+                    <div class="services-list">
+                        <h4>Services:</h4>
+                        {% for service in artist.services.all %}
+                            {% if not keyword or keyword|lower in service.service_name|lower %}
+                                <li>
+                                    <strong>{{ service.service_name }}</strong> — {{ service.description|default:"No description" }}<br>
+                                    💰 Price: Rs. {{ service.price }}<br>
+                                    ⏱ Duration: {{ service.get_total_duration_hms }}
+                                </li>
+                            {% endif %}
+                        {% empty %}
+                            <p>No services listed.</p>
+                        {% endfor %}
+
+                        <!-- ⭐ Action Buttons -->
+                        <div class="action-buttons">
+                            {% if artist.is_available %}
+                                <button onclick="window.location.href='{% url 'book_artist' artist.id %}'" class="book-btn">Book Now</button>
+                            {% else %}
+                                <button class="book-btn disabled" disabled title="This artist is currently unavailable">Not Available</button>
+                            {% endif %}
+
+                            <button onclick="window.location.href='{% url 'artist_detail' artist.id %}'" class="explore-btn">Explore Artist</button>
+                            <button onclick="window.location.href='{% url 'start_chat' artist.id %}'" class="chat-btn">💬 Chat Now</button>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No artists found matching your criteria.</p>
+        {% endif %}
     </div>
-    <!-- <button id="dark-mode-toggle">🌙 Dark Mode</button> -->
 
-  <!-- ✅ Filter Section -->
-<div class="filter-container">
-    <label for="city-filter">Filter by City:</label>
-    <select id="city-filter" onchange="filterArtists()">
-        <option value="all">All Cities</option>
-        {% for city in cities %}
-            <option value="{{ city }}">{{ city }}</option>
-        {% endfor %}
-    </select>
-
-    <label for="price-filter">Filter by Price:</label>
-<select id="price-filter" onchange="filterArtists()">
-    <option value="all">All Prices</option>
-    {% for range in price_ranges %}
-        <option value="{{ range }}">{{ range }}</option>
-    {% endfor %}
-</select>
-
-</div>
-
-<!-- ✅ Artists List -->
-<div class="artist-container">
-    {% for artist in artists %}
-    <div class="artist-card" data-city="{{ artist.city }}">
-        <div class="artist-image">
-            {% if artist.profile_image %}
-                <img src="{{ artist.profile_image.url }}" alt="{{ artist.first_name }} {{ artist.last_name }}">
-            {% else %}
-                <img src="{% static 'images/default_profile.png' %}" alt="Default Profile Image">
-            {% endif %}
-        </div>
-        <div class="artist-info">
-            <h3>{{ artist.first_name }} {{ artist.last_name }}</h3>
-            <p>Email: {{ artist.email }}</p>
-            <p class="artist-city">City: {{ artist.city }}</p>
-
-            <!-- ✅ Display Services and Prices -->
-            {% if artist.services.exists %}
-                <h4>Services Offered:</h4>
-                <ul>
-                    {% for service in artist.services.all %}
-                        <li class="service-item" data-price="{{ service.price }}">
-                            {{ service.service_name }} - Rs. {{ service.price }}
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p>No services listed.</p>
-            {% endif %}
-
-            <div class="button-group">
-                <button onclick="window.location.href='{% url 'book_artist' artist.id %}'">Book Now
-                </button>
-                <button onclick="window.location.href='{% url 'start_chat' artist.id %}'">
-                    💬 Chat Now
-                </button>
-                <button onclick="window.location.href='{% url 'artist_detail' artist.id %}'">Explore Artist</button>
-            </div>
-        </div>
-    </div>
-    {% empty %}
-    <p>No artists registered yet.</p>
-    {% endfor %}
-</div>
-
-    <script>
-     function filterArtists() {
-    let selectedCity = document.getElementById("city-filter").value.toLowerCase();
-    let selectedPrice = document.getElementById("price-filter").value;
-    let artists = document.querySelectorAll(".artist-card");
-
-    artists.forEach(artist => {
-        let artistCity = artist.getAttribute("data-city").toLowerCase();
-        let serviceItems = artist.querySelectorAll(".service-item");
-        let showArtist = false;
-
-        serviceItems.forEach(service => {
-            let servicePrice = parseInt(service.getAttribute("data-price"));
-
-            if (priceMatches(servicePrice, selectedPrice)) {
-                showArtist = true;
-            }
-        });
-
-        if ((selectedCity === "all" || artistCity === selectedCity) && showArtist) {
-            artist.style.display = "block";
-        } else {
-            artist.style.display = "none";
-        }
-    });
-}
-
-function priceMatches(servicePrice, selectedPrice) {
-    if (selectedPrice === "all") return true;
-
-    let priceParts = selectedPrice.split("-");
-    if (selectedPrice.includes("+")) {
-        let minPrice = parseInt(selectedPrice.replace("+", ""));
-        return servicePrice >= minPrice;
-    } else if (priceParts.length === 2) {
-        let minPrice = parseInt(priceParts[0]);
-        let maxPrice = parseInt(priceParts[1]);
-        return servicePrice >= minPrice && servicePrice <= maxPrice;
-    }
-    return false;
-}
-
-
-document.addEventListener("DOMContentLoaded", function () {
-    const darkModeToggle = document.getElementById("dark-mode-toggle");
-    const body = document.body;
-
-    // ✅ Check if dark mode is enabled in localStorage
-    if (localStorage.getItem("darkMode") === "enabled") {
-        body.classList.add("dark-mode");
-        darkModeToggle.textContent = "☀ Light Mode";
-    }
-
-    // ✅ Toggle Dark Mode
-    darkModeToggle.addEventListener("click", function () {
-        body.classList.toggle("dark-mode");
-
-        // ✅ Save the preference in localStorage
-        if (body.classList.contains("dark-mode")) {
-            localStorage.setItem("darkMode", "enabled");
-            darkModeToggle.textContent = "☀ Light Mode";
-        } else {
-            localStorage.setItem("darkMode", "disabled");
-            darkModeToggle.textContent = "🌙 Dark Mode";
-        }
-    });
-});
-
-    </script>
 </body>
-<footer class="footer">
-    <p>Artist Finder &copy; All rights reserved</p>
-</footer>
 </html>

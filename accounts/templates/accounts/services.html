@@ -276,7 +276,7 @@
        
         <a href="{% url 'working_time' %}" class="btn btn-primary">Working Time</a>
 
-
+        <!-- <a href="{% url 'add_service' %}" class="btn btn-success">➕ Add Service</a> -->
         <div class="services-container">
             <div class="grid">
                 {% for service in services %}
@@ -303,7 +303,26 @@
                             {% endfor %}
                         {% endwith %}
                     </div>
-        
+                    <!-- ✅ Service Reviews (Latest 1–2) -->
+                    <div class="service-reviews">
+                        {% with service_reviews|get_item:service.id as reviews %}
+                        {% if reviews %}
+                            {% for review in reviews|dictsortreversed:"created_at"|slice:":2" %}
+                                <p>
+                                    ⭐ {{ review.rating }}/5 —
+                                    <strong>{% if review.is_anonymous %}Anonymous{% else %}{{ review.user.first_name }}{% endif %}</strong><br>
+                                    {{ review.comment }}<br>
+                                    <small>{{ review.created_at|date:"M d, Y h:i A" }}</small>
+                                </p>
+                            {% endfor %}
+                        {% else %}
+                            <p>No reviews yet.</p>
+                        {% endif %}
+                    {% endwith %}
+                    
+                      </div>
+                      
+
                     <a href="{% url 'edit_service' service.id %}" class="edit-btn">Edit Service</a>
                     <form id="delete-service-{{ service.id }}" action="{% url 'delete_service' service.id %}" method="POST" style="display:inline;">
                         {% csrf_token %}

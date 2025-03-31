@@ -6,8 +6,208 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Artist Finder</title>
     <link rel="stylesheet" href="{% static 'css/home.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
     <style>
-        /* ✅ Centering the search form */
+body {
+    background-color: #fff0f5; /* or your preferred color like #D8648C */
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* RECOMMENDED SECTION */
+.recommended-section {
+    padding: 80px 20px;
+    background: linear-gradient(120deg, #fff5f7, #ffe0ec);
+    font-family: 'Poppins', sans-serif;
+    text-align: center;
+    overflow: hidden;
+}
+
+.recommended-section h2 {
+    font-size: 3rem;
+    font-weight: 800;
+    color: #D8648C;
+    text-shadow: 2px 2px 4px rgba(216, 100, 140, 0.3);
+    margin-bottom: 50px;
+    position: relative;
+    animation: floatTitle 1.5s ease forwards;
+}
+
+/* CONTAINER */
+.recommended-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 40px;
+    max-width: 1300px;
+    margin: 0 auto;
+    animation: fadeIn 1.2s ease-out;
+}
+
+/* CARDS */
+.recommended-card {
+    position: relative;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 25px rgba(216, 100, 140, 0.25);
+    backdrop-filter: blur(15px);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 2px solid transparent;
+    animation: bounceIn 0.8s ease-in-out;
+}
+
+.recommended-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 15px 30px rgba(216, 100, 140, 0.4);
+    border-color: #D8648C;
+}
+
+/* CARD CONTENT */
+.recommended-card h3 {
+    font-size: 1.6rem;
+    color: #D8648C;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.recommended-card p {
+    font-size: 0.95rem;
+    margin: 10px 0;
+    color: #444;
+    line-height: 1.5;
+}
+
+.recommended-card p i {
+    color: #D8648C;
+    margin-right: 6px;
+}
+
+/* BUTTON */
+.book-now-btn {
+    margin-top: 20px;
+    padding: 12px 28px;
+    border-radius: 50px;
+    background: linear-gradient(145deg, #D8648C, #f98eb4);
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 0 12px #f398b8;
+    transition: all 0.3s ease;
+}
+
+.book-now-btn:hover {
+    background: linear-gradient(145deg, #c7577e, #e86e9c);
+    transform: scale(1.08);
+    box-shadow: 0 0 20px #e86e9c;
+}
+
+/* ANIMATIONS */
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    60% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes floatTitle {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* MOBILE OPTIMIZATION */
+@media (max-width: 600px) {
+    .recommended-section h2 {
+        font-size: 2.2rem;
+    }
+
+    .book-now-btn {
+        width: 100%;
+    }
+}
+
+
+
+    @keyframes pulseGlow {
+    0% {
+        box-shadow: 0 0 10px #ff6ec4, 0 0 20px #ff6ec4, 0 0 30px #ff6ec4;
+    }
+    50% {
+        box-shadow: 0 0 20px #ff6ec4, 0 0 30px #ff6ec4, 0 0 40px #ff6ec4;
+    }
+    100% {
+        box-shadow: 0 0 10px #ff6ec4, 0 0 20px #ff6ec4, 0 0 30px #ff6ec4;
+    }
+}
+
+@keyframes gradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.explore-btn {
+    background: linear-gradient(-45deg, #ff6ec4, #7873f5, #42e695, #f6e27a);
+    background-size: 300% 300%;
+    animation: gradientShift 6s ease infinite, pulseGlow 2.5s ease-in-out infinite;
+    
+    color: white;
+    font-size: 20px;
+    padding: 15px 35px;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: 600;
+    position: relative;
+    transition: all 0.3s ease-in-out;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    box-shadow: 0 0 15px rgba(255, 110, 196, 0.4);
+}
+
+.explore-btn:hover {
+    transform: scale(1.05) translateY(-2px);
+    box-shadow: 0 0 25px rgba(255, 110, 196, 0.7);
+}
+
+.explore-btn:active {
+    transform: scale(0.98);
+    box-shadow: 0 0 12px rgba(255, 110, 196, 0.5);
+}
+
 .search-form {
     display: flex;
     justify-content: center;
@@ -451,42 +651,172 @@ body.dark-mode .dropdown-content a:hover {
                 right: -8px;
             }
         }
+
+        .recommended-card i {
+    color: #D8648C;
+    margin-right: 6px;
+    min-width: 18px;
+}
+body {
+    background-color: #fff0f5;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* === Artist Grid Container === */
+.artist-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 30px;
+    padding: 60px 20px;
+    background-color: #fff0f5;
+}
+
+/* === Aesthetic Artist Card === */
+.artist-card {
+    background-color: #fbedf7; /* 💖 Elegant light card background */
+    border: 1px solid rgba(216, 100, 140, 0.2);
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(216, 100, 140, 0.1);
+    padding: 25px;
+    text-align: center;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(6px);
+}
+
+.artist-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 30px rgba(216, 100, 140, 0.2);
+}
+
+
+/* === Profile Image === */
+.artist-profile-image {
+    width: 90px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid #D8648C;
+    margin-bottom: 12px;
+}
+
+/* === Name and Info === */
+.artist-card h3 {
+    font-size: 1.2rem;
+    color: #D8648C;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.artist-card p {
+    font-size: 0.9rem;
+    color: #444;
+    margin: 4px 0;
+    line-height: 1.4;
+}
+
+/* === Availability Pill === */
+.availability-status {
+    display: inline-block;
+    padding: 5px 12px;
+    font-size: 0.75rem;
+    border-radius: 12px;
+    margin: 10px 0;
+    color: white;
+    background-color: rgb(146, 214, 162);
+}
+
+.not-available {
+    background-color: #dc3545;
+}
+
+/* === Button Group === */
+.button-group {
+    margin-top: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* === Buttons === */
+.artist-card button {
+    background: linear-gradient(to right, #D8648C, #f48fb1);
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 25px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.artist-card button:hover {
+    background: linear-gradient(to right, #c34b75, #ec6f9c);
+    transform: scale(1.05);
+}
+
+.book-btn.disabled {
+    background: #ccc !important;
+    cursor: not-allowed;
+}
+.clean-service-wrapper {
+    position: relative;
+    height: 40px;
+    margin-top: 18px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+/* Shared service pill style */
+.clean-service {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 8px 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 50px;
+    white-space: nowrap;
+    opacity: 0;
+    color: #fff;
+    z-index: 1;
+    animation: fadeInOut 25s infinite ease-in-out;
+    transition: opacity 0.3s ease;
+}
+
+/* Unique colors for each badge */
+.service-color-1 { background: linear-gradient(135deg, #ff758c, #ff7eb3); }
+.service-color-2 { background: linear-gradient(135deg, #a18cd1, #fbc2eb); }
+.service-color-3 { background: linear-gradient(135deg, #89f7fe, #66a6ff); }
+.service-color-4 { background: linear-gradient(135deg, #f6d365, #fda085); }
+.service-color-5 { background: linear-gradient(135deg, #84fab0, #8fd3f4); }
+
+/* Animation delays for smooth rotation */
+.clean-service:nth-child(1) { animation-delay: 0s; }
+.clean-service:nth-child(2) { animation-delay: 5s; }
+.clean-service:nth-child(3) { animation-delay: 10s; }
+.clean-service:nth-child(4) { animation-delay: 15s; }
+.clean-service:nth-child(5) { animation-delay: 20s; }
+
+/* Smooth fade-in and out */
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translateX(-50%) scale(0.95); }
+    5% { opacity: 1; transform: translateX(-50%) scale(1); }
+    20% { opacity: 1; }
+    25% { opacity: 0; transform: translateX(-50%) scale(0.95); }
+    100% { opacity: 0; }
+}
+
+
+
+
     </style>
 </head>
 <body>
-    <header class="header">
-        <div class="logo">
-            <img src="{% static 'imagess/logo.png' %}" alt="Artist Finder Logo">
-        </div>
-        <nav class="navbar">
-            <a href="{% url 'home' %}" class="nav-link active">Home</a>
-            <a href="{% url 'booking_history' %}" class="nav-link">Booking History</a>
-            <a href="{% url 'aboutus' %}" class="nav-link">About Us</a>
-            <a href="{% url 'contactus' %}" class="nav-link">Contact Us</a>
-            <a href="{% url 'chat_list' %}" class="nav-item" onclick="clearUserChatNotifications()">
-                Chats <span id="chat-badge" class="badge">0</span>
-            </a>
-            
-            <a href="{% url 'artist_list' %}" class="nav-link">View Artists</a>
-        
-            <!-- ✅ Settings Dropdown -->
-            <div class="settings-dropdown">
-                <button id="settings-btn">⚙️</button>  <!-- Settings Icon -->
-                <div id="dropdown-content" class="dropdown-content">
-                    <button id="dark-mode-toggle">🌙 Dark Mode</button>
-                    <a href="{% url 'login' %}" class="nav-link">🚪 Logout</a>
-                </div>
-            </div>
-        
-            <!-- ✅ User Profile Image -->
-            <div class="user-profile">
-                <a href="{% url 'user_profile' %}">
-                    <img src="{{ user.profile_image.url }}" alt="User" class="user-image">
-                </a>
-            </div>
-        </nav>
-        
-    </header>
+    {% include 'includes/nav.html' %}  <!-- ✅ Include Navbar -->
     
    <!-- ✅ Search Form -->
 <form method="GET" action="{% url 'home' %}" class="search-form">
@@ -503,6 +833,10 @@ body.dark-mode .dropdown-content a:hover {
             <!-- <a href="{% url 'customize_booking' %}" class="custom-btn">Customize your booking</a> -->
 
             <p>Find Your Perfect Glam!</p>
+            <form action="{% url 'artist_list' %}" method="get">
+                <button type="submit" class="explore-btn">Explore Our Artist</button>
+            </form>
+            
         </div>
         <div class="frame">
             <img src="{% static 'images/work1.jpg' %}" alt="Makeup Products">
@@ -523,9 +857,22 @@ body.dark-mode .dropdown-content a:hover {
             <h3>{{ artist.first_name }} {{ artist.last_name }}</h3>
             <p>Email: {{ artist.email }}</p>
             <p>City: {{ artist.city }}</p>
-            <p>Experience: {{ artist.experience_years }} years</p>
-            <p>Works At: {{ artist.works_at }}</p>
+            <!-- <p>Experience: {{ artist.experience_years }} years</p> -->
+            <!-- <p>Works At: {{ artist.works_at }}</p> -->
             <p><strong>Number of Completed Appointments:</strong> {{ artist.appointment_count }}</p>
+
+            {% if artist.services.all %}
+<div class="clean-service-wrapper">
+    {% for service in artist.services.all|slice:":5" %}
+        <div class="clean-service service-color-{{ forloop.counter }}">
+            {{ service.service_name }} — Rs. {{ service.price }}
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+
+            
 
 
 
@@ -553,28 +900,36 @@ body.dark-mode .dropdown-content a:hover {
             <button onclick="window.location.href='{% url 'artist_detail' artist.id %}'">Explore Artist</button>
            <!-- ✅ Add Chat Now Button -->
            <button onclick="window.location.href='{% url 'start_chat' artist.id %}'">
-            💬 Chat Now
+            💬 Chat
         </button>
         
 
 
-            <!-- ✅ Show Review Button only if user has a confirmed booking -->
+          
+            <!-- ✅ Show Review Button only if user has a completed booking -->
             {% if user.is_authenticated %}
-                {% if artist.id in booked_artists %}
-                    <button onclick="window.location.href='{% url 'add_review' artist.id %}'">Add Review</button>
-                {% endif %}
-            {% endif %}
+    {% if booked_artists %}
+        {% if artist.id in booked_artists %}
+            <button onclick="window.location.href='{% url 'add_review' artist.id %}'">Add Review</button>
+        {% endif %}
+    {% endif %}
+{% endif %}
 
-            <!-- ✅ Show Artist Reviews -->
+
+
+        
             <!-- ✅ Show Artist Reviews -->
             <h4>Reviews:</h4>
 {% for review in artist.artist_reviews.all %}
-    <p>
-        ⭐ {{ review.rating }}/5 - 
-        <strong>{% if review.is_anonymous %}Anonymous{% else %}{{ review.user.first_name }}{% endif %}</strong>: {{ review.comment }}
-        <br>
-        <small>🕒 {{ review.created_at|date:"F d, Y h:i A" }}</small>
-    </p>
+<p>
+    ⭐ {{ review.rating }}/5 - 
+    <strong>{% if review.is_anonymous %}Anonymous{% else %}{{ review.user.first_name }}{% endif %}</strong> 
+    reviewed <strong>{{ review.service.service_name }}</strong>:
+    {{ review.comment }}
+    <br>
+    <small>🕒 {{ review.created_at|date:"F d, Y h:i A" }}</small>
+</p>
+
 
     <!-- ✅ Display Artist Reply -->
     {% if review.artist_reply %}
@@ -609,17 +964,58 @@ body.dark-mode .dropdown-content a:hover {
 <div class="recommended-section">
     <h2>✨ Recommended for You ✨</h2>
     <div class="recommended-container">
-        {% for artist in recommended_artists %}
-            <div class="recommended-card" onclick="window.location.href='{% url 'artist_detail' artist.id %}'">
-                <img src="{% if artist.profile_image %}{{ artist.profile_image.url }}{% else %}{% static 'images/default.jpg' %}{% endif %}" 
-                     alt="{{ artist.first_name }}'s Profile Image">
-                <h3>{{ artist.first_name }} {{ artist.last_name }}</h3>
-                <p>{{ artist.city }}</p>
+        {% if recommended_artists %}
+            {% for artist in recommended_artists %}
+                <div class="recommended-card" onclick="window.location.href='{% url 'artist_detail' artist.id %}'">
+                    <img src="{% if artist.profile_image %}{{ artist.profile_image.url }}{% else %}{% static 'images/default.jpg' %}{% endif %}" 
+                        alt="{{ artist.first_name }}'s Profile Image">
+                    <h3>{{ artist.first_name }} {{ artist.last_name }}</h3>
+                    <p>{{ artist.city }}</p>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No recommended artists available at the moment.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ✅ Recommended Services Section -->
+<div class="recommended-section">
+    <h2>🌟 Recommended Services 🌟</h2>
+    <div class="recommended-container">
+        {% for service in recommended_services %}
+            <div class="recommended-card">
+                <h3>{{ service.service_name }}</h3>
+
+                <!-- <p><i class="fas fa-tags"></i> <strong>Category:</strong> {{ service.category|default:"General" }}</p> -->
+                
+                <p><i class="fas fa-money-bill-wave"></i> <strong>Price:</strong> Rs. {{ service.price }}</p>
+                <!-- <p> -->
+                    <!-- <i class="fas fa-signal"></i> -->
+                    <!-- <strong>Price Tier:</strong> -->
+                    <!-- {{ service.get_price_band }} -->
+                <!-- </p> -->
+                
+                
+                <p><i class="fas fa-clock"></i> <strong>Duration:</strong> {{ service.get_total_duration_hms }}</p>
+                
+                <p><i class="fas fa-align-left"></i> <strong>Description:</strong> {{ service.description|truncatewords:20 }}</p>
+                
+                <p><i class="fas fa-user"></i> <strong>Artist:</strong> {{ service.artist.first_name }} {{ service.artist.last_name }}</p>
+
+                <button class="book-now-btn" onclick="window.location.href='{% url 'book_artist' service.artist.id %}'">
+                    <i class="fas fa-calendar-check"></i> Book Artist
+                </button>
             </div>
+        {% empty %}
+            <p>No recommended services at the moment.</p>
         {% endfor %}
     </div>
 </div>
 
+
+
+{% include 'includes/footer.html' %}  
 
 
 
@@ -717,7 +1113,5 @@ fetchUserChatNotifications();
 
  
 </body>
-<footer class="footer">
-    <p>Artist Finder &copy; All rights reserved</p>
-</footer>
+
 </html>

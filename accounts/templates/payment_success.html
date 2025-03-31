@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Success</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.0.0"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #fdf0f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        
+        .container {
+            text-align: center;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+            max-width: 420px;
+            width: 100%;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .success-icon {
+            font-size: 60px;
+            color: #D8648C;
+            animation: pop 0.5s ease-in-out;
+        }
+
+        @keyframes pop {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        h1 {
+            color: #D8648C;
+            font-size: 24px;
+            margin: 20px 0 10px;
+        }
+
+        .congrats {
+            font-size: 18px;
+            font-weight: bold;
+            color: #444;
+            margin-bottom: 10px;
+        }
+
+        p {
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #D8648C;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            background: #b65074;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <i class="fa-solid fa-circle-check success-icon"></i>
+        <h1>Payment Successful!</h1>
+        <p class="congrats">🎉 Congratulations! Your Booking is Confirmed.</p>
+        <p>Thank you for your payment. We look forward to serving you!</p>
+        <a href="{% url 'home' %}" class="btn">Go Back to Home</a>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Confetti effect 🎉
+            function launchConfetti() {
+                var duration = 2 * 1000; // 2 seconds
+                var end = Date.now() + duration;
+
+                (function frame() {
+                    confetti({
+                        particleCount: 5,
+                        angle: 60,
+                        spread: 55,
+                        origin: { x: 0 }
+                    });
+                    confetti({
+                        particleCount: 5,
+                        angle: 120,
+                        spread: 55,
+                        origin: { x: 1 }
+                    });
+
+                    if (Date.now() < end) {
+                        requestAnimationFrame(frame);
+                    }
+                })();
+            }
+
+            launchConfetti();  // Start confetti when page loads
+
+            let pidx = sessionStorage.getItem("khalti_pidx");  // Retrieve stored pidx
+
+            if (pidx) {
+                fetch("/verify-khalti-payment/", {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": "{{ csrf_token }}",
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: new URLSearchParams({ "pidx": pidx })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: "Payment Successful 🎉",
+                            text: "Your booking has been confirmed!",
+                            icon: "success",
+                            confirmButtonColor: "#D8648C"
+                        }).then(() => {
+                            window.location.href = "{% url 'booking_history' %}";
+                        });
+                    } else {
+                        Swal.fire({
+                            title: "Payment Failed",
+                            text: data.error || "Something went wrong!",
+                            icon: "error",
+                            confirmButtonColor: "#D8648C"
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error("Error verifying payment:", error);
+                    Swal.fire({
+                        title: "Verification Error",
+                        text: "Failed to verify payment. Contact support.",
+                        icon: "error",
+                        confirmButtonColor: "#D8648C"
+                    });
+                });
+
+                sessionStorage.removeItem("khalti_pidx");  // Clear stored pidx
+            }
+        });
+    </script>
+
+</body>
+</html>

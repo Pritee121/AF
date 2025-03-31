@@ -1,0 +1,53 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+
+<header class="header">
+    <div class="logo">
+        <img src="{% static 'imagess/logo.png' %}" alt="Artist Finder Logo">
+    </div>
+    <nav class="navbar">
+        <a href="{% url 'artist_dashboard' %}" class="nav-item active">Dashboard</a>
+
+        <!-- Chats with Notification Badge -->
+        <a href="{% url 'chat_list' %}" class="nav-item" onclick="clearArtistChatNotifications()">
+            Chats <span id="artist-chat-badge" class="badge">0</span>
+        </a>
+
+        <a href="{% url 'services' %}" class="nav-item">Services</a>
+
+        <!-- Bookings with Notification Badge -->
+        <a href="{% url 'bookings' %}" class="nav-item" onclick="clearNotifications()">
+            Bookings <span id="booking-badge" class="badge">0</span>
+        </a>
+
+        <a href="{% url 'certificates' %}" class="nav-item">Certificates</a>
+        <a href="{% url 'availability_status' %}" class="nav-item">Availability</a>
+
+        <a href="{% url 'artist_profile' %}" class="nav-item profile-link">
+            {% if user.profile_image %}
+                <img src="{{ user.profile_image.url }}" alt="Profile Image" class="profile-img">
+            {% else %}
+                <img src="{% static 'images/default_profile.png' %}" alt="Default Profile" class="profile-img">
+            {% endif %}
+        </a>
+        <a href="{% url 'artist_logout' %}" class="nav-item logout">Logout</a>
+    </nav>
+</header>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Get the current URL path
+        let currentPath = window.location.pathname;
+
+        // Find all nav items
+        let navLinks = document.querySelectorAll(".nav-item");
+
+        navLinks.forEach(link => {
+            if (link.getAttribute("href") === currentPath) {
+                link.classList.add("active");
+            } else {
+                link.classList.remove("active");
+            }
+        });
+    });
+</script>
+

@@ -1,97 +1,209 @@
-/* ✅ General Styling */
+Global Styles
 body {
-    font-family: Arial, sans-serif;
-    background-color: #FCE4EC;
+    font-family: 'Poppins', sans-serif;
+    background-color: #FAF5F8;
     margin: 0;
     padding: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
+/* 🌟 LOGO */
+.logo img {
+    height: 50px;
+    transition: transform 0.3s ease-in-out;
+}
 
-/* ✅ Booking Container */
-.booking-container {
-    width: 90%;
-    max-width: 450px;
-    margin-top: 40px;
-    padding: 25px;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+.logo img:hover {
+    transform: scale(1.1);
+}
+/* Header */
+header {
+    width: 100%;
+    background-color: #D8648C;
+    padding: 15px 0;
     text-align: center;
-    transition: transform 0.3s ease;
 }
 
-.booking-container:hover {
-    transform: scale(1.02);
+header a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 18px;
+    font-weight: 600;
+    transition: 0.3s;
 }
 
-/* ✅ Section Headers */
-h2, h3 {
+header a:hover {
+    opacity: 0.8;
+}
+
+/* Booking Container */
+.booking-container {
+    background-color: #fff;
+    width: 90%;
+    max-width: 550px;
+    padding: 30px;
+    margin: 50px auto;
+    border-radius: 12px;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+    transition: 0.3s;
+}
+
+.booking-container h2 {
+    text-align: center;
     color: #D8648C;
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 20px;
 }
 
-/* ✅ Artist & User Details */
-.artist-details, .user-details {
-    background: #f9f9f9;
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 15px;
-    text-align: left;
-    border-left: 5px solid #D8648C;
+/* Form Styling */
+form {
+    display: flex;
+    flex-direction: column;
 }
 
-.artist-details p, .user-details p {
-    margin: 5px 0;
-    color: #333;
+label {
+    font-size: 15px;
+    color: #444;
+    font-weight: 500;
+    margin-bottom: 6px;
 }
 
-/* ✅ Form Inputs */
-input, select, button {
+input, select, textarea {
     width: 100%;
     padding: 12px;
-    margin-top: 10px;
-    border-radius: 6px;
-    border: 1px solid #D8648C;
+    border: 2px solid #ddd;
+    border-radius: 8px;
     font-size: 14px;
+    outline: none;
+    transition: 0.3s ease-in-out;
+    background-color: #fdfdfd;
 }
 
-/* ✅ Select (Dropdown) */
-select {
-    background: #fff;
-    cursor: pointer;
+input:focus, select:focus, textarea:focus {
+    border-color: #D8648C;
+    box-shadow: 0 0 8px rgba(216, 100, 140, 0.3);
 }
 
-select:hover {
-    border-color: #b65476;
+/* Read-only Input Styles */
+input[readonly], textarea[readonly] {
+    background-color: #f8f8f8;
+    cursor: not-allowed;
+    border: 1px solid #ddd;
 }
 
-/* ✅ Date & Time Inputs */
-input[type="date"],
-input[type="time"] {
-    text-align: center;
-    cursor: pointer;
+/* Map Styling */
+#map {
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 15px;
+    border: 2px solid #D8648C;
 }
 
-/* ✅ Buttons */
+/* Buttons */
 button {
-    background: #D8648C;
-    color: white;
+    padding: 12px;
     font-size: 16px;
-    font-weight: bold;
+    font-weight: 600;
     border: none;
     cursor: pointer;
-    transition: background 0.3s ease, transform 0.2s ease;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    border-radius: 8px;
+    text-align: center;
+    width: 100%;
 }
 
-button:hover {
-    background: #b65476;
-    transform: scale(1.05);
+/* Khalti Payment Button */
+#khalti-pay-button {
+    background: linear-gradient(135deg, #D8648C 0%, #E27898 100%);
+    color: white;
+    margin-top: 15px;
+    box-shadow: 0px 4px 8px rgba(216, 100, 140, 0.2);
 }
 
-/* ✅ Responsive Design */
-@media (max-width: 600px) {
+#khalti-pay-button:hover {
+    background: linear-gradient(135deg, #C2557B 0%, #D8648C 100%);
+    transform: translateY(-2px);
+}
+
+/* Confirm Booking Button */
+#confirm-booking-button {
+    background-color: #444;
+    color: white;
+    margin-top: 10px;
+    display: none;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#confirm-booking-button:hover {
+    background-color: #333;
+    transform: translateY(-2px);
+}
+
+/* Date & Schedule Styling */
+#date, #schedule {
+    background-color: #f9f9f9;
+    cursor: pointer;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
     .booking-container {
         width: 95%;
+        padding: 20px;
+    }
+
+    input, select, textarea {
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    button {
+        padding: 12px;
+        font-size: 15px;
     }
 }
+.badge {
+            position: absolute;
+            top: -5px;
+            right: -10px;
+            background: red;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 5px 8px;
+            border-radius: 50%;
+            display: none;
+            animation: bounce 1s infinite;
+        }
+
+        /* ✅ Bounce Animation */
+        @keyframes bounce {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+        }
+
+        /* ✅ Positioning for Notification */
+        .nav-item {
+            position: relative;
+            text-decoration: none;
+            color: black;
+            font-weight: bold;
+            padding: 10px;
+        }
+
+        /* ✅ Responsive Design */
+        @media (max-width: 768px) {
+            .badge {
+                font-size: 10px;
+                padding: 3px 5px;
+                top: -3px;
+                right: -8px;
+            }
+        }

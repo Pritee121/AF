@@ -36,9 +36,25 @@ from .views import get_notifications, mark_notifications_read
 from .views import working_time_view, delete_working_time 
 from .views import get_service_workdays
  # Import the correct view
-
+from django.urls import path
+from .views import initiate_khalti_payment
+from .views import verify_khalti_payment
+from .views import payment_success
+from .views import get_booked_schedules
 
 urlpatterns = [
+     path('refund/', views.refund_view, name='refund'),
+     path("claim-refund/<int:booking_id>/", views.claim_khalti_refund, name="claim_khalti_refund"),
+
+
+    path('services/<int:service_id>/', views.service_detail, name='service_detail'),  # ✅ Add this
+
+     path("get-booked-schedules/", get_booked_schedules, name="get_booked_schedules"),
+
+     path("payment-success/", payment_success, name="payment_success"),
+
+      path("verify-khalti-payment/", verify_khalti_payment, name="verify_khalti_payment"),
+      path("initiate-khalti-payment/", initiate_khalti_payment, name="initiate_khalti_payment"),
     path('get_service_workdays/<int:service_id>/', get_service_workdays, name='get_service_workdays'),
     path('delete-working-time/<int:time_id>/', delete_working_time, name='delete_working_time'),
      path('working-time/', working_time_view, name='working_time'),

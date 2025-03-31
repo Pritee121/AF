@@ -1,0 +1,131 @@
+{% load static %}
+{% include 'includes/nav.html' %}
+{% block content %}
+
+<div class="booking-history-container">
+    <h2>Cancelled Bookings</h2>
+
+    <!-- ✅ Display messages -->
+    {% if messages %}
+        <div class="message-container">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if cancelled_bookings %}
+    <table>
+        <thead>
+            <tr>
+                <th>Artist</th>
+                <th>Service</th>
+                <th>Date</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+                <th>Payment Method</th>
+                <th>Price</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for booking in cancelled_bookings %}
+            <tr>
+                <td>{{ booking.artist.first_name }} {{ booking.artist.last_name }}</td>
+                <td>{{ booking.service.service_name }}</td>
+                <td>{{ booking.date }}</td>
+                <td>{{ booking.start_time|time:"h:i A" }}</td>
+                <td>{{ booking.end_time|time:"h:i A" }}</td>
+                <td>{{ booking.payment_method }}</td>
+                <td>Rs. {{ booking.service.price }}</td>
+                <td class="cancelled-text">Cancelled</td>
+                <td>
+                    {% if booking.payment_status|lower == "refunded" %}
+                        <span style="color: green; font-weight: bold;">Refunded</span>
+
+                    {% elif booking.payment_method|lower == "khalti" %}
+                        {% if booking.transaction_id and "-" in booking.transaction_id %}
+                            <form method="post" action="{% url 'claim_refund' booking.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="refund-btn">Claim Refund</button>
+                            </form>
+                        {% else %}
+                            <span style="color: orange;" title="ePayment (Pidx) transactions cannot be refunded via API.">Not Refundable</span>
+                        {% endif %}
+
+                    {% else %}
+                        <span style="color: gray;">N/A</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p class="no-bookings">No cancelled bookings eligible for refund.</p>
+    {% endif %}
+</div>
+
+<!-- ✅ Styling -->
+<style>
+    .booking-history-container {
+        padding: 20px;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+    th, td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: center;
+    }
+    th {
+        background-color: #f9f9f9;
+        font-weight: bold;
+    }
+    .refund-btn {
+        background-color: #6c63ff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 6px 12px;
+        cursor: pointer;
+    }
+    .refund-btn:hover {
+        background-color: #4e48d4;
+    }
+    .cancelled-text {
+        color: red;
+        font-weight: bold;
+    }
+    .alert {
+        padding: 10px;
+        margin-bottom: 15px;
+        border-radius: 5px;
+        font-weight: 500;
+    }
+    .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    .alert-error, .alert-danger {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    .alert-info {
+        background-color: #d1ecf1;
+        color: #0c5460;
+    }
+    .no-bookings {
+        font-style: italic;
+        color: gray;
+        padding: 10px;
+    }
+</style>
+
+{% endblock %}

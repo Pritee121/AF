@@ -178,3 +178,56 @@ def mark_artist_chat_notifications_read(request):
     ).exclude(sender=request.user).update(is_read=True)
 
     return JsonResponse({"success": True})
+
+
+
+import json
+import requests
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+# Khalti Test API Keys
+KHALTI_PUBLIC_KEY = "test_public_key_4a2d447147b14c97b71eb21fd44a783d"
+KHALTI_SECRET_KEY = "test_secret_key_0c8b4542a4df404891746abcddbb15eb"
+
+# Khalti API URLs
+KHALTI_VERIFY_URL = "https://khalti.com/api/v2/payment/verify/"
+
+@csrf_exempt
+def khalti_payment(request):
+    """
+    Generates the public key and amount for Khalti checkout.
+    """
+    if request.method == "POST":
+        data = json.loads(request.body)
+        amount = int(data.get("amount", 0)) * 100  # Convert to paisa
+
+        return JsonResponse({
+            "public_key": KHALTI_PUBLIC_KEY,
+            "amount": amount
+        })
+
+@csrf_exempt
+def khalti_verify_payment(request):
+    """
+    Verifies Khalti payment and responds with success or failure.
+    """
+    if request.method == "POST":
+        data = json.loads(request.body)
+        token = data.get("token")
+        amount = data.get("amount")
+
+        headers = {
+            "Authorization": f"Key {KHALTI_SECRET_KEY}"
+        }
+        payload = {
+            "token": token,
+            "amount": amount
+        }
+
+        response = requests.post(KHALTI_VERIFY_URL, data=payload, headers=headers)
+
+        if response.status_code == 200:
+            return JsonResponse({"success": "Payment verified successfully!"})
+        else:
+            return JsonResponse({"error": "Payment verification failed!"}, status=400)

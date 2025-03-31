@@ -1,0 +1,95 @@
+
+.header {
+    background-color: #D8648C;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+    position: sticky;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+/* Logo Styling */
+.logo img {
+    height: 50px;
+    width: auto;
+}
+
+/* Navigation Bar */
+.navbar {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+}
+
+/* Navigation Items */
+.nav-item {
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none; /* Remove underline */
+    padding: 10px 18px;
+    transition: all 0.3s ease-in-out;
+    position: relative;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+/* Active State */
+.nav-item.active {
+    background-color: white;
+    color: #D8648C;
+    border-radius: 6px;
+}
+
+/* Hover Effect */
+.nav-item:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+}
+
+/* Profile Image Styling */
+.profile-link {
+    display: flex;
+    align-items: center;
+}
+
+.profile-img {
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+/* Logout Button */
+.logout {
+    background: white;
+    color: #D8648C;
+    padding: 8px 15px;
+    border-radius: 6px;
+    font-weight: bold;
+    transition: all 0.3s ease-in-out;
+}
+
+.logout:hover {
+    background: #701a37;
+    color: #c03f6e;
+}
+
+/* Responsive Styling */
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .nav-item {
+        padding: 8px;
+        font-size: 14px;
+        width: 100%;
+    }
+}

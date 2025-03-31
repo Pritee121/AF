@@ -44,7 +44,10 @@ INSTALLED_APPS = [
     'channels',
     'chat',
     
+    
 ]
+# settings.py
+X_FRAME_OPTIONS = 'ALLOWALL'
 
 
 ASGI_APPLICATION = "AF.asgi.application"
@@ -283,3 +286,12 @@ LOGGING = {
         },
     },
 }
+
+
+KHALTI_PUBLIC_KEY = "1b8c354bdb724a3596818d026aaa8c9b"
+KHALTI_SECRET_KEY = "176c1f70cc11423e8b03b3c9cadc3e2e"
+KHALTI_API_URL = "https://dev.khalti.com/api/v2/"
+KHALTI_RETURN_URL = "http://127.0.0.1:8000/payment-success/"  # ✅ Change this to your live domain in production
+SITE_URL = "http://127.0.0.1:8000/"  # ✅ Base URL of your site
+KHALTI_TRANSACTION_PIN = "1111"  # Provided by Khalti
+KHALTI_REFUND_URL = "https://dev.khalti.com/api/v2/payment/refund/" 
